@@ -16,9 +16,7 @@
              [security-deposit :as sd]
              [session :as session]
              [stripe-customer :as sc]
-             [stripe-event :as se]]
-            [datomic.api :as d]
-            [io.rkn.conformity :as c]))
+             [stripe-event :as se]]))
 
 (defn partition-norms [part]
   {part {:txes [[{:db/id                 #db/id[:db.part/db]
@@ -36,6 +34,7 @@
                         if/norms
                         license/norms
                         ma/norms
+                        ml/norms
                         news/norms
                         property/norms
                         sd/norms

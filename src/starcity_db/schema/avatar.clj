@@ -21,6 +21,6 @@
       [account :ref :index
        "The account that this avatar belongs to."]))]))
 
-(def norms
+(defn norms [part]
   {:schema.avatar/add-avatar-schema
    {:txes [schema]}})

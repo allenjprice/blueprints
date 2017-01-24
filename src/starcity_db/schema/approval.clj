@@ -15,6 +15,6 @@
       [property :ref
        "The property that this account is being approved for."]))]))
 
-(def norms
+(defn norms [part]
   {:schema/add-approval-schema-9-8-16
    {:txes [schema]}})

@@ -155,7 +155,7 @@
     :requires [:starcity/add-member-license-schema]}
 
    :schema.member-license/add-rent-payments
-   {:txes [rent-statuses
-           rent-methods
+   {:txes [(rent-statuses part)
+           (rent-methods part)
            rent-payment-schema
            add-rent-payments-to-license]}})
