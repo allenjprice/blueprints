@@ -1,6 +1,6 @@
 (defproject starcity-db "0.1.0"
   :description "The Starcity database schema and migration API."
-  :url "http://example.com/FIXME"
+  :url "https://github.com/starcity-properties/starcity-db"
   :license {:name "Eclipse Public License"
             :url  "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.8.0"]
@@ -14,6 +14,6 @@
   :repositories {"my.datomic.com" {:url   "https://my.datomic.com/repo"
                                    :creds :gpg}
 
-                 "releases" {:url      "s3://starjars/releases"
-                             :username :env/aws_access_key
-                             :password :env/aws_secret_key}})
+                 "releases" {:url        "s3://starjars/releases"
+                             :username   :env/aws_access_key
+                             :passphrase :env/aws_secret_key}})
