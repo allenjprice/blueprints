@@ -9,6 +9,8 @@
                  [org.postgresql/postgresql "9.4.1211"]
                  [datomic-schema "1.3.0"]]
 
+  :plugins [[s3-wagon-private "1.2.0"]]
+
   :repositories {"my.datomic.com" {:url   "https://my.datomic.com/repo"
                                    :creds :gpg}
 
