@@ -12,7 +12,8 @@
   :plugins [[s3-wagon-private "1.2.0"]]
 
   :repositories {"my.datomic.com" {:url   "https://my.datomic.com/repo"
-                                   :creds :gpg}
+                                   :username :env/datomic_username
+                                   :password :env/datomic_password}
 
                  "releases" {:url        "s3://starjars/releases"
                              :username   :env/aws_access_key
