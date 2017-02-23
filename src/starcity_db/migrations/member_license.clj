@@ -14,9 +14,7 @@
                            :member-license.status/active
                            :member-license.status/inactive)]
                    [[:db/add e :member-license/status s]
-                    [:db/retract e :member-license/active active]])))
-       (d/transact conn)
-       deref))
+                    [:db/retract e :member-license/active active]])))))
 
 (defn norms [conn]
   {:migration.member-license/use-member-license-status-02162017
