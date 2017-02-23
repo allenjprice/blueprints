@@ -97,6 +97,28 @@
       [ops-fee :float :index
        "The percentage fee that Starcity Ops takes from payments to this property."]))]))
 
+(def ^{:added "1.3.0"} add-unit-licenses-and-number
+  (s/generate-schema
+   [(s/schema
+     unit
+     (s/fields
+      [licenses :ref :many :component
+       "Reference to the priced licenses for this unit."]
+      [number :long :index
+       "This unit's number."]))]))
+
+(def ^{:added "1.3.0"} make-property-licenses-generic
+  [{:db/id               :property-license/license
+    :db/ident            :license-price/license
+    :db/index            true
+    :db/doc              "The license."
+    :db.alter/_attribute :db.part/db}
+   {:db/id               :property-license/base-price
+    :db/ident            :license-price/price
+    :db/index            true
+    :db/doc              "The price."
+    :db.alter/_attribute :db.part/db}])
+
 (defn norms [part]
   {:starcity/add-property-schema
    {:txes [schema]}
@@ -119,4 +141,12 @@
 
    :schema.property.unit/unit-improvements-1-13-17
    {:txes     [unit-improvements]
-    :requires [:starcity/add-unit-schema]}})
+    :requires [:starcity/add-unit-schema]}
+
+   :schema.property.unit/add-unit-licenses-and-number
+   {:txes     [add-unit-licenses-and-number]
+    :requires [:starcity/add-unit-schema]}
+
+   :schema.property/make-property-licenses-generic
+   {:txes     [make-property-licenses-generic]
+    :requires [:starcity/add-property-license-schema]}})

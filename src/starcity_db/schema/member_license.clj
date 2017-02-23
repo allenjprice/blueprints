@@ -141,6 +141,32 @@
       [autopay-failures :long :index
        "The number of times that this payment has failed through autopay."]))]))
 
+(def ^{:added "1.3.0"} member-license-improvements-02162017
+  (s/generate-schema
+   [(s/schema
+     member-license
+     (s/fields
+      [status :ref :index
+       "The status of this member license: active, inactive, renewal, canceled"]
+
+      [move-out :boolean :index
+       "Is this member moving out? Its presence (= true) tells us NOT to auto-renew the license."]))]))
+
+(defn- ^{:added "1.3.0"} member-license-statuses [part]
+  [{:db/id    (d/tempid part)
+    :db/ident :member-license.status/active}
+   {:db/id    (d/tempid part)
+    :db/ident :member-license.status/inactive}
+   {:db/id    (d/tempid part)
+    :db/ident :member-license.status/renewal}
+   {:db/id    (d/tempid part)
+    :db/ident :member-license.status/canceled}])
+
+(def ^{:added "1.3.0"} deprecations-02162017
+  [{:db/id               :member-license/active
+    :db/doc              "DEPRECATED 2/16/17: Use `:member-license.status/active` instead."
+    :db.alter/_attribute :db.part/db}])
+
 ;; =============================================================================
 ;; Norms
 ;; =============================================================================
@@ -150,12 +176,17 @@
    {:txes [schema]}
 
    :schema.member-license/rent-alterations
-   {:txes     [add-autopay
-               schema-improvements]
+   {:txes     [add-autopay schema-improvements]
     :requires [:starcity/add-member-license-schema]}
 
    :schema.member-license/add-rent-payments
    {:txes [(rent-statuses part)
            (rent-methods part)
            rent-payment-schema
-           add-rent-payments-to-license]}})
+           add-rent-payments-to-license]}
+
+   :schema.member-license/improvements-02162017
+   {:txes     [member-license-improvements-02162017
+               (member-license-statuses part)
+               deprecations-02162017]
+    :requires [:schema.member-license/rent-alterations]}})

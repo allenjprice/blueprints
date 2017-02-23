@@ -92,6 +92,18 @@
     :db/isComponent      true
     :db.alter/_attribute :db.part/db}])
 
+(def ^{:added "1.3.0"} rename-license-to-licenses
+  "Since we changed `:account/license` to have cardinality many, the naming
+  should reflect this."
+  [{:db/id    :account/license
+    :db/ident :account/licenses
+    :db/doc   "All licenses that belong to this account."}])
+
+(def ^{:added "1.3.0"} rename-member-application
+  [{:db/id               :account/member-application
+    :db/ident            :account/application
+    :db.alter/_attribute :db.part/db}])
+
 (defn norms [part]
   {:starcity/add-account-schema
    {:txes [schema]}
@@ -112,4 +124,12 @@
 
    :schema.account/license-alterations
    {:txes     [license-alterations]
+    :requires [:starcity/add-account-schema]}
+
+   :schema.account/rename-license-to-licenses
+   {:txes     [rename-license-to-licenses]
+    :requires [:starcity/add-account-schema]}
+
+   :schema.account/rename-member-application
+   {:txes [rename-member-application]
     :requires [:starcity/add-account-schema]}})

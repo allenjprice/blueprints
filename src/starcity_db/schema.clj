@@ -7,10 +7,12 @@
              [charge :as charge]
              [check :as check]
              [community-safety :as cs]
+             [cmd :as cmd]
              [income-file :as if]
              [license :as license]
              [member-application :as ma]
              [member-license :as ml]
+             [msg :as msg]
              [news :as news]
              [property :as property]
              [security-deposit :as sd]
@@ -31,10 +33,12 @@
                         charge/norms
                         check/norms
                         cs/norms
+                        cmd/norms
                         if/norms
                         license/norms
                         ma/norms
                         ml/norms
+                        msg/norms
                         news/norms
                         property/norms
                         sd/norms

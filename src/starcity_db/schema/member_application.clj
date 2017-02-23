@@ -48,7 +48,6 @@
    [(s/schema
      community-fitness
      (s/fields
-      ;; TODO: rename to `experience`
       [prior-community-housing :string :fulltext
        "Response to: 'Have you ever lived in community housing?'"]
 
@@ -114,6 +113,44 @@
    {:db/id  :member-application/submitted-at
     :db/doc "DEPRECATED 11/20/16"}])
 
+(defn- rename-attr [[from to]]
+  {:db/id               from
+   :db/ident            to
+   :db.alter/_attribute :db.part/db})
+
+(defn- rename-attrs [& pairs]
+  (assert (even? (count pairs)))
+  (mapv rename-attr (partition 2 pairs)))
+
+(def ^{:added "1.3.0"} rename-member-application
+  (rename-attrs
+   :member-application/desired-properties :application/communities
+   :member-application/desired-license :application/license
+   :member-application/move-in :application/move-in
+   :member-application/pet :application/pet
+   :member-application/community-fitness :application/fitness
+   :member-application/current-address :application/address
+   :member-application/has-pet :application/has-pet
+   :member-application/status :application/status))
+
+(def ^{:added "1.3.0"} rename-statuses
+  [{:db/id    :member-application.status/approved
+    :db/ident :application.status/approved}
+   {:db/id    :member-application.status/in-progress
+    :db/ident :application.status/in-progress}
+   {:db/id    :member-application.status/rejected
+    :db/ident :application.status/rejected}
+   {:db/id    :member-application.status/submitted
+    :db/ident :application.status/submitted}])
+
+(def ^{:added "1.3.0"} rename-community-fitness
+  (rename-attrs
+   :community-fitness/prior-community-housing :fitness/experience
+   :community-fitness/skills :fitness/skills
+   :community-fitness/free-time :fitness/free-time
+   :community-fitness/why-interested :fitness/interested
+   :community-fitness/dealbreakers :fitness/dealbreakers))
+
 (defn norms [part]
   {:starcity/add-member-application-schema
    {:txes [schema]}
@@ -130,8 +167,18 @@
    :schema/add-member-application-status-11-15-16
    {:txes [(add-status part)]}
 
-   :schema.account/improvements-11-20-16
+   :schema.member-application/improvements-11-20-16
    {:txes     [improvements]
     :requires [:starcity/add-member-application-schema
                :schema/add-has-pet-attr-10-3-16
-               :schema/add-member-application-status-11-15-16]}})
+               :schema/add-member-application-status-11-15-16]}
+
+   :schema.member-application/naming-improvements-020417
+   {:txes     [rename-community-fitness
+               rename-member-application
+               rename-statuses]
+    :requires [:starcity/add-member-application-schema
+               :starcity/add-community-fitness-schema
+               :schema/add-has-pet-attr-10-3-16
+               :schema/add-member-application-status-11-15-16
+               :schema.member-application/improvements-11-20-16]}})

@@ -10,11 +10,9 @@
       [account :ref
        "Account with which this security deposit is associated."]
 
-      ;; TODO: change to float
       [amount-received :long
        "Amount of money that has been received for this security deposit in cents."]
 
-      ;; TODO: change to float
       [amount-required :long
        "Amount of money that is needed for this security deposit in cents."]
 
@@ -59,6 +57,14 @@
     :db/cardinality      :db.cardinality/many
     :db.alter/_attribute :db.part/db}])
 
+(def ^{:added "1.3.0"} improve-charges-attr
+  [{:db/id               :security-deposit/charges
+    :db/isComponent      true
+    :db/index            true
+    :db.alter/_attribute :db.part/db}])
+
+;; TODO: Add `:security-deposit/required` and `:security-deposit/received` w/ type :float
+
 (defn norms [part]
   {:schema/add-security-deposit-schema-8-18-16
    {:txes [(concat schema
@@ -70,4 +76,8 @@
 
    :schema/alter-security-deposit-schema-11-2-16
    {:txes     [change-charge-to-charges]
-    :requires [:schema/add-security-deposit-schema-8-18-16]}})
+    :requires [:schema/add-security-deposit-schema-8-18-16]}
+
+   :schema.security-deposit/improve-charges-attr-02-14-17
+   {:txes [improve-charges-attr]
+    :requires [:schema/alter-security-deposit-schema-11-2-16]}})
