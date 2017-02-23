@@ -7,7 +7,8 @@
   [conn]
   (->> (d/q '[:find ?e ?active
               :where
-              [?e :member-license/active ?active]])
+              [?e :member-license/active ?active]]
+            (d/db conn))
        (mapcat (fn [[e active]]
                  (let [s (if active
                            :member-license.status/active
