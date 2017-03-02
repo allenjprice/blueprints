@@ -104,6 +104,17 @@
     :db/ident            :account/application
     :db.alter/_attribute :db.part/db}])
 
+(def ^{:added "1.4.0"} add-notes-and-slack-handle
+  (s/generate-schema
+   [(s/schema
+     account
+     (s/fields
+      [notes :ref :many :component
+       "Any notes attached to this account."]
+
+      [slack-handle :string :unique-identity
+       "This account's Slack handle."]))]))
+
 (defn norms [part]
   {:starcity/add-account-schema
    {:txes [schema]}
@@ -131,5 +142,8 @@
     :requires [:starcity/add-account-schema]}
 
    :schema.account/rename-member-application
-   {:txes [rename-member-application]
-    :requires [:starcity/add-account-schema]}})
+   {:txes     [rename-member-application]
+    :requires [:starcity/add-account-schema]}
+
+   :schema.account/schema-additions-02272017
+   {:txes [add-notes-and-slack-handle]}})

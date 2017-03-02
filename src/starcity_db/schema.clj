@@ -14,11 +14,13 @@
              [member-license :as ml]
              [msg :as msg]
              [news :as news]
+             [note :as note]
              [property :as property]
              [security-deposit :as sd]
              [session :as session]
              [stripe-customer :as sc]
-             [stripe-event :as se]]))
+             [stripe-event :as se]
+             [tag :as tag]]))
 
 (defn partition-norms [part]
   {part {:txes [[{:db/id                 #db/id[:db.part/db]
@@ -40,10 +42,12 @@
                         ml/norms
                         msg/norms
                         news/norms
+                        note/norms
                         property/norms
                         sd/norms
                         session/norms
                         sc/norms
-                        se/norms]
+                        se/norms
+                        tag/norms]
                        (apply juxt))]
     (apply merge (gen-norms part))))

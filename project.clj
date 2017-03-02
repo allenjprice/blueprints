@@ -1,4 +1,4 @@
-(defproject starcity-db "1.4.0-SNAPSHOT"
+(defproject starcity-db "1.4.0"
   :description "The Starcity database schema and migration API."
   :url "https://github.com/starcity-properties/starcity-db"
   :license {:name "Eclipse Public License"
