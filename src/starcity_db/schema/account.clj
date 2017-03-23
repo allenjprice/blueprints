@@ -115,6 +115,10 @@
       [slack-handle :string :unique-identity
        "This account's Slack handle."]))]))
 
+(defn- ^{:added "1.4.1"} add-collaborator-role [part]
+  [{:db/id    (d/tempid part)
+    :db/ident :account.role/collaborator}])
+
 (defn norms [part]
   {:starcity/add-account-schema
    {:txes [schema]}
@@ -146,4 +150,7 @@
     :requires [:starcity/add-account-schema]}
 
    :schema.account/schema-additions-02272017
-   {:txes [add-notes-and-slack-handle]}})
+   {:txes [add-notes-and-slack-handle]}
+
+   :schema.account/add-collaborator-role-032217
+   {:txes [(add-collaborator-role part)]}})
