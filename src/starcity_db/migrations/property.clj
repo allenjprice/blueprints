@@ -27,9 +27,22 @@
   (concat (name-units conn "52gilbert")
           (name-units conn "2072mission")))
 
+(def ^{:added "1.4.1"} add-tours
+  "For our new Schedule Tour page to work, each property needs to have a value
+  set for `:property/tours`, which indicates whether or not the property is
+  currently accepting tours. This is a flag that will be manipulated
+  administratively from our dashboard."
+  [{:db/id          [:property/internal-name "52gilbert"]
+    :property/tours false}
+   {:db/id          [:property/internal-name "2072mission"]
+    :property/tours true}])
+
 (defn norms [conn]
   {:migration.property/add-ops-fees-12-15-16
    {:txes [(add-ops-fees conn)]}
 
    :migration.property.unit/add-unit-names-1-13-17
-   {:txes [(add-unit-names conn)]}})
+   {:txes [(add-unit-names conn)]}
+
+   :migration.property/add-tours-03232017
+   {:txes [add-tours]}})

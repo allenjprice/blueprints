@@ -119,6 +119,14 @@
     :db/doc              "The price."
     :db.alter/_attribute :db.part/db}])
 
+(def ^{:added "1.4.1"} add-tours-attr
+  (s/generate-schema
+   [(s/schema
+     property
+     (s/fields
+      [tours :boolean :index
+       "Indicates whether or not tours are currently being accepted for this property."]))]))
+
 (defn norms [part]
   {:starcity/add-property-schema
    {:txes [schema]}
@@ -149,4 +157,7 @@
 
    :schema.property/make-property-licenses-generic
    {:txes     [make-property-licenses-generic]
-    :requires [:starcity/add-property-license-schema]}})
+    :requires [:starcity/add-property-license-schema]}
+
+   :schema.property/add-tours-attr-03232017
+   {:txes [add-tours-attr]}})
