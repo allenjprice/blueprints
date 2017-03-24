@@ -16,6 +16,7 @@
              [news :as news]
              [note :as note]
              [property :as property]
+             [referral :as referral]
              [security-deposit :as sd]
              [session :as session]
              [stripe-customer :as sc]
@@ -44,6 +45,7 @@
                         news/norms
                         note/norms
                         property/norms
+                        referral/norms
                         sd/norms
                         session/norms
                         sc/norms
