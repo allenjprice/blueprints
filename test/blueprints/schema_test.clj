@@ -15,14 +15,6 @@
   [conn attr]
   (d/entity (d/db conn) attr))
 
-(defmacro with-attr
-  [symbol attr & exprs]
-  (let [conn (gensym)]
-    `(with-conn ~conn
-       (let [~symbol (attr ~conn ~attr)]
-         (is (created ~symbol))
-         ~@exprs))))
-
 (defmacro test-attr
   [symbol attr & exprs]
   (let [conn (gensym)]
