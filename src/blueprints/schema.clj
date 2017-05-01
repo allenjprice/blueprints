@@ -4,6 +4,7 @@
              [address :as address]
              [approval :as approval]
              [avatar :as avatar]
+             [catalogue :as catalogue]
              [charge :as charge]
              [check :as check]
              [community-safety :as cs]
@@ -16,10 +17,11 @@
              [news :as news]
              [note :as note]
              [onboard :as onboard]
+             [order :as order]
              [property :as property]
              [referral :as referral]
              [security-deposit :as sd]
-             [services :as services]
+             [service :as service]
              [session :as session]
              [stripe :as stripe]
              [stripe-customer :as sc]
@@ -37,6 +39,7 @@
                         address/norms
                         approval/norms
                         avatar/norms
+                        catalogue/norms
                         charge/norms
                         check/norms
                         cs/norms
@@ -49,10 +52,11 @@
                         news/norms
                         note/norms
                         onboard/norms
+                        order/norms
                         property/norms
                         referral/norms
                         sd/norms
-                        services/norms
+                        service/norms
                         session/norms
                         stripe/norms
                         sc/norms
