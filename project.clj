@@ -7,6 +7,7 @@
                  [com.datomic/datomic-free "0.9.5544"]
                  [io.rkn/conformity "0.4.0"]
                  [starcity/toolbelt "0.1.2" :exclusions [com.datomic/datomic-free]]
+                 [prismatic/plumbing "0.5.4"]
                  [datomic-schema "1.3.0"]]
 
   :plugins [[s3-wagon-private "1.2.0"]]

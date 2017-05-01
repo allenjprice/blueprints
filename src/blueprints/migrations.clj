@@ -25,3 +25,6 @@
    (ma/norms conn)
    (property/norms conn)
    (ml/norms conn)))
+
+(defn conform [conn part]
+  (c/ensure-conforms conn (norms conn part)))
