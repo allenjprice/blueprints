@@ -151,6 +151,14 @@
    :community-fitness/why-interested :fitness/interested
    :community-fitness/dealbreakers :fitness/dealbreakers))
 
+(def ^{:added "1.5.1"} add-conflicts-to-fitness
+  (s/generate-schema
+   [(s/schema
+     fitness
+     (s/fields
+      [conflicts :string :fulltext
+       "How is applicant at resolving conflicts?"]))]))
+
 (defn norms [part]
   {:starcity/add-member-application-schema
    {:txes [schema]}
@@ -181,4 +189,7 @@
                :starcity/add-community-fitness-schema
                :schema/add-has-pet-attr-10-3-16
                :schema/add-member-application-status-11-15-16
-               :schema.member-application/improvements-11-20-16]}})
+               :schema.member-application/improvements-11-20-16]}
+
+   :schema.member-application/add-conflicts-to-fitness-05182017
+   {:txes [add-conflicts-to-fitness]}})
