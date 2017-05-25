@@ -151,13 +151,27 @@
    :community-fitness/why-interested :fitness/interested
    :community-fitness/dealbreakers :fitness/dealbreakers))
 
-(def ^{:added "1.5.1"} add-conflicts-to-fitness
+(def ^{:added "1.6.0"} add-conflicts-to-fitness
   (s/generate-schema
    [(s/schema
      fitness
      (s/fields
       [conflicts :string :fulltext
        "How is applicant at resolving conflicts?"]))]))
+
+(defn- ^{:added "1.6.0"} add-application-submitted [part]
+  [{:db/id    (d/tempid part)
+    :db/ident :db.application/submit
+    :db/doc   "Submit a new member application."
+    :db/fn
+    (datomic.function/construct
+     {:lang     "clojure"
+      :params   '[db application-id]
+      :requires '[[datomic.api :as d]]
+      :code     '[{:db/id              application-id
+                   :application/status :application.status/submitted}
+                  [:db.cmd/create :application.community-safety/check {:data {:application-id application-id}}]
+                  [:db.msg/create :application/submitted {:application-id application-id}]]})}])
 
 (defn norms [part]
   {:starcity/add-member-application-schema
@@ -192,4 +206,7 @@
                :schema.member-application/improvements-11-20-16]}
 
    :schema.member-application/add-conflicts-to-fitness-05182017
-   {:txes [add-conflicts-to-fitness]}})
+   {:txes [add-conflicts-to-fitness]}
+
+   :schema.member-application/add-application-submitted-fn-05252017
+   {:txes [(add-application-submitted part)]}})
