@@ -1,4 +1,4 @@
-(defproject starcity/blueprints "1.5.1-SNAPSHOT"
+(defproject starcity/blueprints "1.6.0-SNAPSHOT"
   :description "The Starcity database schema and migration API."
   :url "https://github.com/starcity-properties/starcity-db"
   :license {:name "Eclipse Public License"
@@ -6,9 +6,10 @@
   :dependencies [[org.clojure/clojure "1.9.0-alpha14"]
                  [com.datomic/datomic-free "0.9.5544"]
                  [io.rkn/conformity "0.4.0"]
-                 [starcity/toolbelt "0.1.2" :exclusions [com.datomic/datomic-free]]
+                 [starcity/toolbelt "0.1.3" :exclusions [com.datomic/datomic-free]]
                  [prismatic/plumbing "0.5.4"]
-                 [datomic-schema "1.3.0"]]
+                 [datomic-schema "1.3.0"]
+                 [clj-time "0.13.0"]]
 
   :plugins [[s3-wagon-private "1.2.0"]]
 
