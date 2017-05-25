@@ -1,54 +1,10 @@
 (ns blueprints.schema-test
   (:require [blueprints.schema :as schema]
-            [blueprints.test.datomic :as db :refer [with-conn]]
+            [blueprints.test.datomic :as db :refer :all]
             [clojure.test :refer :all]
             [datomic.api :as d]))
 
 (use-fixtures :once db/conn-fixture)
-
-;; =============================================================================
-;; Helpers
-;; =============================================================================
-
-(defn- attr
-  "Retrieve attr from db."
-  [conn attr]
-  (d/entity (d/db conn) attr))
-
-(defmacro test-attr
-  [symbol attr & exprs]
-  (let [conn (gensym)]
-    `(testing (str "attribute " ~attr)
-       (with-conn ~conn
-         (let [~symbol (attr ~conn ~attr)]
-           (is (created ~symbol))
-           ~@exprs)))))
-
-;; =============================================================================
-;; Validators
-
-(def created (comp not nil?))
-
-(defn unique-identity [attr]
-  (= (:db/unique attr) :db.unique/identity))
-
-(defn value-type [attr type]
-  (= (:db/valueType attr) (keyword "db.type" (name type))))
-
-(defn cardinality [attr card]
-  (= (:db/cardinality attr) (keyword "db.cardinality" (name card))))
-
-(def fulltext
-  "Is `attr` fulltext indexed?"
-  :db/fulltext)
-
-(def indexed
-  "Is `attr` indexed?"
-  :db/index)
-
-(def component
-  "Is `attr` a component attribute?"
-  :db/isComponent)
 
 ;; =============================================================================
 ;; account
@@ -116,14 +72,8 @@
     (is (value-type a :keyword))
     (is (indexed a)))
 
-  (test-attr _ :cat-field.type/text)
-  (test-attr _ :cat-field.type/number)
-  (test-attr _ :cat-field.type/choices)
-
-  (test-attr a :cat-field/choices
-    (is (value-type a :ref))
-    (is (cardinality a :many))
-    (is (indexed a)))
+  (test-attr _ :cat-field.type/desc)
+  (test-attr _ :cat-field.type/quantity)
 
   (test-attr a :cat-field/min
     (is (value-type a :long)))
@@ -133,6 +83,7 @@
 
   (test-attr a :cat-field/step
     (is (value-type a :float))))
+
 
 ;; =============================================================================
 ;; onboard
@@ -147,10 +98,10 @@
     (is (value-type a :instant))
     (is (indexed a)))
 
-  (test-attr a :onboard/moving (is (value-type a :boolean)))
-  (test-attr a :onboard/storage (is (value-type a :boolean)))
-  (test-attr a :onboard/customize (is (value-type a :boolean)))
-  (test-attr a :onboard/cleaning (is (value-type a :boolean))))
+  (test-attr a :onboard/seen
+    (is (value-type a :keyword))
+    (is (cardinality a :many))
+    (is (indexed a))))
 
 ;; =============================================================================
 ;; service & order

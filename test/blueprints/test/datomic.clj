@@ -1,6 +1,7 @@
 (ns blueprints.test.datomic
   (:require [datomic.api :as d]
-            [blueprints.schema :as schema]))
+            [blueprints.schema :as schema]
+            [clojure.test :refer :all]))
 
 ;; =============================================================================
 ;; Connection Fixture
@@ -13,7 +14,7 @@
         db-uri  (str "datomic:mem://" db-name)]
     (d/create-database db-uri)
     (let [conn (d/connect db-uri)]
-      (schema/conform conn :db.part/user)
+      (schema/conform conn :db.part/starcity)
       conn)))
 
 (defn release-conn [conn]
@@ -45,3 +46,44 @@
 
 (defn speculate [db tx-data]
   (:db-after (d/with db tx-data)))
+
+(defn attr
+  "Retrieve attr from db."
+  [conn attr]
+  (d/entity (d/db conn) attr))
+
+(defmacro test-attr
+  [symbol attr & exprs]
+  (let [conn (gensym)]
+    `(testing (str "attribute " ~attr)
+       (with-conn ~conn
+         (let [~symbol (attr ~conn ~attr)]
+           (is (created ~symbol))
+           ~@exprs)))))
+
+;; =============================================================================
+;; Schema Validators
+;; =============================================================================
+
+(def created (comp not nil?))
+
+(defn unique-identity [attr]
+  (= (:db/unique attr) :db.unique/identity))
+
+(defn value-type [attr type]
+  (= (:db/valueType attr) (keyword "db.type" (name type))))
+
+(defn cardinality [attr card]
+  (= (:db/cardinality attr) (keyword "db.cardinality" (name card))))
+
+(def fulltext
+  "Is `attr` fulltext indexed?"
+  :db/fulltext)
+
+(def indexed
+  "Is `attr` indexed?"
+  :db/index)
+
+(def component
+  "Is `attr` a component attribute?"
+  :db/isComponent)
