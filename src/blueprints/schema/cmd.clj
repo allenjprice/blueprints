@@ -77,18 +77,13 @@
       :requires '[[datomic.api :as d]]
       :code     '(let [{:keys [id data ctx]} opts]
                    [(merge
-                     {:db/id      :db.part/starcity
+                     {:db/id      (d/tempid :db.part/starcity)
                       :cmd/uuid   (d/squuid)
                       :cmd/key    key
                       :cmd/status :cmd.status/pending}
                      (when (some? id) {:cmd/id id})
                      (when (some? data) {:cmd/data (pr-str data)})
                      (when (some? ctx) {:cmd/ctx (pr-str ctx)}))])})}])
-
-
-(comment
-  [:db.msg.application/submitted application-id])
-
 
 (defn norms [part]
   {:schema.cmd/add-cmd-schema

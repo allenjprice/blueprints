@@ -170,7 +170,7 @@
       :requires '[[datomic.api :as d]]
       :code     '[{:db/id              application-id
                    :application/status :application.status/submitted}
-                  [:db.cmd/create :application.community-safety/check {:data {:application-id application-id}}]
+                  [:db.cmd/create :application/submit {:data {:application-id application-id}}]
                   [:db.msg/create :application/submitted {:application-id application-id}]]})}])
 
 (defn norms [part]
