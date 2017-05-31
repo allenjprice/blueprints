@@ -39,10 +39,12 @@
     :otherwise
     (format "%s %s" first-name last-name)))
 
-(defn stripe-customer
+(defn ^{:deprecated "1.6.0"} stripe-customer
   "Retrieve the `stripe-customer` that belongs to this account. Produces the
   customer that is on the Stripe master account, NOT the managed one -- the
-  customer on the managed account will be used *only* for autopay."
+  customer on the managed account will be used *only* for autopay.
+
+  DEPRECATED: Prefer `blueprints.models.customer/by-account`"
   [db account]
   (->> (d/q '[:find ?e .
               :in $ ?a
