@@ -119,6 +119,28 @@
   [{:db/id    (d/tempid part)
     :db/ident :account.role/collaborator}])
 
+(def ^{:added "1.7.2"} rename-person-attrs
+  [{:db/id               :account/first-name
+    :db/ident            :person/first-name
+    :db.alter/_attribute :db.part/db}
+   {:db/id               :account/middle-name
+    :db/ident            :person/middle-name
+    :db.alter/_attribute :db.part/db}
+   {:db/id               :account/last-name
+    :db/ident            :person/last-name
+    :db.alter/_attribute :db.part/db}
+   {:db/id               :account/phone-number
+    :db/ident            :person/phone-number
+    :db.alter/_attribute :db.part/db}])
+
+(def ^{:added "1.7.2"} add-emergency-contact
+  (s/generate-schema
+   [(s/schema
+     account
+     (s/fields
+      [emergency-contact :ref :component
+       "Emergency contact information for this account."]))]))
+
 (defn norms [part]
   {:starcity/add-account-schema
    {:txes [schema]}
@@ -153,4 +175,9 @@
    {:txes [add-notes-and-slack-handle]}
 
    :schema.account/add-collaborator-role-032217
-   {:txes [(add-collaborator-role part)]}})
+   {:txes [(add-collaborator-role part)]}
+
+   :schema.account/improvements-06142017
+   {:txes     [rename-person-attrs
+               add-emergency-contact]
+    :requires [:starcity/add-account-schema]}})
