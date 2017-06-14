@@ -38,7 +38,6 @@
    [(s/schema
      pet
      (s/fields
-      ;; TODO: enum?
       [type :keyword "The type of pet."]
       [breed :string "The pet's breed."]
       [weight :long "The weight of the pet."]))]))
@@ -173,6 +172,22 @@
                   [:db.cmd/create :application/submit {:data {:application-id application-id}}]
                   [:db.msg/create :application/submitted {:application-id application-id}]]})}])
 
+(def ^{:added "1.7.1"} add-pet-attrs-06132017
+  (s/generate-schema
+   [(s/schema
+     pet
+     (s/fields
+      [sterile :boolean
+       "Has the pet been sterilized (spayed/neutered)?"]
+      [vaccines :boolean
+       "Are the pet's vaccines, licenses and inoculations current?"]
+      [bitten :boolean
+       "Has the pet ever bitten a human?"]
+      [demeanor :string
+       "Description of the pet's demeanor."]
+      [daytime-care :string
+       "Description of how the pet will be taken care of during the day."]))]))
+
 (defn norms [part]
   {:starcity/add-member-application-schema
    {:txes [schema]}
@@ -209,4 +224,7 @@
    {:txes [add-conflicts-to-fitness]}
 
    :schema.member-application/add-application-submitted-fn-05252017
-   {:txes [(add-application-submitted part)]}})
+   {:txes [(add-application-submitted part)]}
+
+   :schema.member-application.pets/add-attrs-06132017
+   {:txes [add-pet-attrs-06132017]}})
