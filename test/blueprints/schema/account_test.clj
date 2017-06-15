@@ -1,8 +1,6 @@
 (ns blueprints.schema.account-test
-  (:require [blueprints.schema :as schema]
-            [blueprints.test.datomic :as dbt]
-            [clojure.test :refer :all]
-            [datomic.api :as d]))
+  (:require [blueprints.test.datomic :as dbt :refer [test-attr]]
+            [clojure.test :refer :all]))
 
 (use-fixtures :once dbt/conn-fixture)
 
