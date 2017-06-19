@@ -15,14 +15,8 @@
       (testing "can submit an application"
         (let [db-after (speculate db [[:db.application/submit id]])
               app      (d/entity db-after id)
-              cmd      (->> (d/q '[:find ?e . :where [?e :cmd/key :application/submit]] db-after)
-                            (d/entity db-after))
-              msg      (->> (d/q '[:find ?e . :where [?e :msg/key :application/submitted]] db-after)
+              event    (->> (d/q '[:find ?e . :where [?e :event/key :application/submit]] db-after)
                             (d/entity db-after))]
           (is (= :application.status/submitted (:application/status app)))
-          ;; CMD
-          (is (= :application/submit (:cmd/key cmd)))
-          (is (= (:db/id app) (-> cmd :cmd/data read-string :application-id)))
-          ;; MSG
-          (is (= :application/submitted (:msg/key msg)))
-          (is (= (:db/id app) (-> msg :msg/data read-string :application-id))))))))
+          (is (= :application/submit (:event/key event)))
+          (is (= (:db/id app) (-> event :event/params read-string :application-id))))))))
