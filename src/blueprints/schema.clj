@@ -9,6 +9,7 @@
              [check :as check]
              [community-safety :as cs]
              [cmd :as cmd]
+             [event :as event]
              [income-file :as if]
              [license :as license]
              [member-application :as ma]
@@ -44,6 +45,7 @@
                         check/norms
                         cs/norms
                         cmd/norms
+                        event/norms
                         if/norms
                         license/norms
                         ma/norms

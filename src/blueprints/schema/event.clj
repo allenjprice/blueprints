@@ -40,7 +40,9 @@
    {:db/id    (d/tempid part)
     :db/ident :event.status/successful}
    {:db/id    (d/tempid part)
-    :db/ident :event.status/failed}])
+    :db/ident :event.status/failed}
+   {:db/id    (d/tempid part)
+    :db/ident :event.status/seen}])
 
 
 (defn- ^{:added "1.8.0"} add-create-event [part]
