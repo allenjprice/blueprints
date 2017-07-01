@@ -54,7 +54,7 @@
      {:lang     "clojure"
       :params   '[db key opts]
       :requires '[[datomic.api :as d]]
-      :code     '(let [{:keys [id params meta topic triggered-by]} opts]
+      :code     '(let [{:keys [id uuid params meta topic triggered-by]} opts]
                    [(merge
                      {:db/id        (d/tempid :db.part/starcity)
                       :event/uuid   (d/squuid)
