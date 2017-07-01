@@ -34,22 +34,35 @@
        "The instant in time at which this order was placed."]))]))
 
 
-(def ^{:added "1.8.0"} add-order-status
+(def ^{:added "1.8.0"} order-improvements
   (s/generate-schema
    [(s/schema
      order
      (s/fields
+      [payments :ref :many :indexed :component
+       "Ref to payments associated with this order."]
+
       [status :ref :indexed
        "The status of this order."]))]))
 
 
+;;; The way orders (ordering) should work:
+
+;; Order begins life as "received" if it cannot be immediately
+;; An order is transitioned to "placed" when it is ready to be charged.
+
+;; An event will be issued (e.g. `:order/place`) that creates the charge and, if
+;; successful, transitions the order status to "charged". From that point on,
+;; the charge's status will be used for status determination.
+
+
 (defn- ^{:added "1.8.0"} add-order-statuses [part]
   [{:db/id    (d/tempid part)
-    :db/ident :order.status/placed}
-   {:db/id    (d/tempid part)
-    :db/ident :order.status/received}
+    :db/ident :order.status/pending}
    {:db/id    (d/tempid part)
     :db/ident :order.status/canceled}
+   {:db/id    (d/tempid part)
+    :db/ident :order.status/placed}
    {:db/id    (d/tempid part)
     :db/ident :order.status/charged}])
 
@@ -58,5 +71,5 @@
   {:schema.order/add-schema-04132017
    {:txes [schema]}
 
-   :schema.order/add-statuses-06262017
-   {:txes [add-order-status (add-order-statuses part)]}})
+   :schema.order/order-improvements-06292017
+   {:txes [order-improvements (add-order-statuses part)]}})
