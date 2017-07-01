@@ -6,7 +6,7 @@
   :dependencies [[org.clojure/clojure "1.9.0-alpha14"]
                  [com.datomic/datomic-free "0.9.5544"]
                  [io.rkn/conformity "0.4.0"]
-                 [starcity/toolbelt "0.1.5" :exclusions [com.datomic/datomic-free]]
+                 [starcity/toolbelt "0.1.7-SNAPSHOT" :exclusions [com.datomic/datomic-free]]
                  [prismatic/plumbing "0.5.4"]
                  [datomic-schema "1.3.0"]
                  [clj-time "0.13.0"]]
