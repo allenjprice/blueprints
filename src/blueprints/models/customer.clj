@@ -2,11 +2,15 @@
   (:require [clojure.spec :as s]
             [toolbelt.predicates :as p]
             [plumbing.core :as plumbing]
-            [datomic.api :as d]))
+            [datomic.api :as d]
+            [toolbelt.core :as tb]
+            [toolbelt.datomic :as td]))
+
 
 ;; =============================================================================
 ;; Selectors
 ;; =============================================================================
+
 
 (def id
   "The id of the Stripe customer."
@@ -16,6 +20,7 @@
         :args (s/cat :customer p/entity?)
         :ret string?)
 
+
 (def account
   "The account that this customer belongs to."
   :stripe-customer/account)
@@ -24,6 +29,7 @@
         :args (s/cat :customer p/entity?)
         :ret p/entity?)
 
+
 (def bank-token
   "The customer's bank account token, if any."
   :stripe-customer/bank-account-token)
@@ -31,6 +37,7 @@
 (s/fdef bank-token
         :args (s/cat :customer p/entity?)
         :ret (s/? string?))
+
 
 (def managing-property
   "The property that this Stripe customer belongs to, if any."
@@ -45,15 +52,16 @@
 ;; Transactions
 ;; =============================================================================
 
+
 (defn create
   "Create a new Stripe customer."
   [customer-id account & {:keys [bank-account-token managing-property]}]
-  (plumbing/assoc-when
+  (tb/assoc-when
    {:db/id                       (d/tempid :db.part/starcity)
     :stripe-customer/customer-id customer-id
-    :stripe-customer/account     (:db/id account)}
+    :stripe-customer/account     (td/id account)}
    :stripe-customer/bank-account-token bank-account-token
-   :stripe-customer/managed (:db/id managing-property)))
+   :stripe-customer/managed (td/id managing-property)))
 
 (s/def ::bank-account-token string?)
 (s/def ::managing-property p/entity?)
@@ -61,11 +69,18 @@
         :args (s/cat :customer-id string?
                      :account p/entity?
                      :opts (s/keys* :opt-un [::bank-account-token
-                                             ::managing-property])))
+                                             ::managing-property]))
+        :ret (s/keys :req [:db/id
+                           :stripe-customer/customer-id
+                           :stripe-customer/account]
+                     :opt [:stripe-customer/bank-account-token
+                           :stripe-customer/managed]))
+
 
 ;; =============================================================================
 ;; Queries
 ;; =============================================================================
+
 
 (defn by-account
   "Retrieve the `stripe-customer` that belongs to this account. Produces the
@@ -77,9 +92,9 @@
               :where
               [?e :stripe-customer/account ?a]
               [(missing? $ ?e :stripe-customer/managed)]]
-            db (:db/id account))
+            db (td/id account))
        (d/entity db)))
 
 (s/fdef by-account
         :args (s/cat :db p/db? :account p/entity?)
-        :ret (s/? p/entity?))
+        :ret (s/or :entity p/entity? :nothing nil?))
