@@ -12,6 +12,7 @@
              [date :as date]
              [predicates :as p]]))
 
+
 ;; =============================================================================
 ;; Selectors
 ;; =============================================================================
@@ -46,6 +47,9 @@
 
 (def account
   :account/_license)
+
+(def status
+  :member-license/status)
 
 
 (defn managed-account-id
