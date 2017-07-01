@@ -3,19 +3,101 @@
             [datomic.api :as d]
             [toolbelt.predicates :as p]))
 
+
+;; =============================================================================
+;; Spec
+;; =============================================================================
+
+
+(s/def ::role
+  #{:account.role/applicant
+    :account.role/onboarding
+    :account.role/collaborator
+    :account.role/member
+    :account.role/admin})
+
+
 ;; =============================================================================
 ;; Selectors
 ;; =============================================================================
 
-(def email :account/email)
-(def phone-number :account/phone-number)
-(def first-name :account/first-name)
-(def middle-name :account/middle-name)
-(def last-name :account/last-name)
-(def dob :account/dob)
-(def activation-hash :account/activation-hash)
-(def member-application :account/member-application)
-(def role :account/role)
+
+(def email
+  "This account's email."
+  :account/email)
+
+(s/fdef email
+        :args (s/cat :account p/entity?)
+        :ret string?)
+
+
+(def phone-number
+  "This account's phone number."
+  :account/phone-number)
+
+(s/fdef phone-number
+        :args (s/cat :account p/entity?)
+        :ret (s/or :phone string? :nothing nil?))
+
+
+(def first-name
+  :account/first-name)
+
+(s/fdef first-name
+        :args (s/cat :account p/entity?)
+        :ret (s/or :phone string? :nothing nil?))
+
+
+(def middle-name
+  :account/middle-name)
+
+(s/fdef middle-name
+        :args (s/cat :account p/entity?)
+        :ret (s/or :middle-name string? :nothing nil?))
+
+
+(def last-name
+  :account/last-name)
+
+(s/fdef last-name
+        :args (s/cat :account p/entity?)
+        :ret (s/or :last-name string? :nothing nil?))
+
+
+(def dob
+  "Account's date of birth."
+  :account/dob)
+
+(s/fdef dob
+        :args (s/cat :account p/entity?)
+        :ret (s/or :dob inst? :nothing nil?))
+
+
+(def activation-hash
+  :account/activation-hash)
+
+(s/fdef activation-hash
+        :args (s/cat :account p/entity?)
+        :ret (s/or :hash string? :nothing nil?))
+
+
+(def member-application
+  "The account's member application."
+  :account/member-application)
+
+(s/fdef member-application
+        :args (s/cat :account p/entity?)
+        :ret (s/or :application p/entity? :nothing nil?))
+
+
+(def role
+  "The account's role."
+  :account/role)
+
+(s/fdef role
+        :args (s/cat :account p/entity?)
+        :ret ::role)
+
 
 (def security-deposit
   "Retrieve the `security-deposit` for `account`."
@@ -23,21 +105,28 @@
 
 (s/fdef security-deposit
         :args (s/cat :account p/entity?)
-        :ret p/entity?)
+        :ret (s/or :deposit p/entity? :nothing nil?))
+
 
 (defn full-name
   "Full name of person identified by this account, or when no name exists, the
   `email`."
-  [{:keys [:account/first-name :account/last-name :account/middle-name] :as a}]
+  [{:keys [:account/first-name :account/last-name :account/middle-name]
+    :as   account}]
   (cond
     (or (nil? first-name) (nil? last-name))
-    (:account/email a)
+    (:account/email account)
 
     (not (empty? middle-name))
     (format "%s %s %s" first-name middle-name last-name)
 
     :otherwise
     (format "%s %s" first-name last-name)))
+
+(s/fdef full-name
+        :args (s/cat :account p/entity?)
+        :ret string?)
+
 
 (defn ^{:deprecated "1.6.0"} stripe-customer
   "Retrieve the `stripe-customer` that belongs to this account. Produces the
@@ -54,6 +143,7 @@
             db (:db/id account))
        (d/entity db)))
 
+
 (defn approval
   "Produces the `approval` entity for `account`."
   [account]
@@ -61,7 +151,8 @@
 
 (s/fdef approval
         :args (s/cat :account p/entity?)
-        :ret p/entity?)
+        :ret (s/or :approval p/entity? :nothing nil?))
+
 
 (def slack-handle
   "Produces the slack handle for this account."
@@ -71,26 +162,69 @@
         :args (s/cat :account p/entity?)
         :ret (s/or :nothing nil? :handle string?))
 
+
 ;; =============================================================================
 ;; Predicates
 ;; =============================================================================
 
+
 (defn exists?
+  "Does an account exist for this email?"
   [db email]
-  (d/entity db [:account/email email]))
+  (boolean (d/entity db [:account/email email])))
+
+(s/fdef exists?
+        :args (s/cat :db p/db? :email string?)
+        :ret boolean?)
+
 
 (def bank-linked?
   "Is there a bank account linked to this account?"
   (comp not empty? :stripe-customer/_account))
 
+(s/fdef bank-linked?
+        :args (s/cat :account p/entity?)
+        :ret boolean?)
+
+
+(defn- is-role? [role account]
+  (= role (:account/role account)))
+
+(s/fdef is-role?
+        :args (s/cat :role ::role :account p/entity?)
+        :ret boolean?)
+
+
+(def applicant?
+  (partial is-role? :account.role/applicant))
+
+(def onboarding?
+  (partial is-role? :account.role/onboarding))
+
+(def collaborator?
+  (partial is-role? :account.role/collaborator))
+
+(def member?
+  (partial is-role? :account.role/member))
+
+(def admin?
+  (partial is-role? :account.role/admin))
+
+
 ;; =============================================================================
 ;; Queries
 ;; =============================================================================
+
 
 (defn by-email
   "Look up an account by email."
   [db email]
   (d/entity db [:account/email email]))
+
+(s/fdef by-email
+        :args (s/cat :db p/db? :email string?)
+        :ret (s/or :account p/entity? :nothing nil?))
+
 
 (defn by-customer-id
   "Look up an account by Stripe customer id."
@@ -98,9 +232,15 @@
   (:stripe-customer/account
    (d/entity db [:stripe-customer/customer-id customer-id])))
 
+(s/fdef by-customer-id
+        :args (s/cat :db p/db? :customer-id string?)
+        :ret (s/or :account p/entity? :nothing nil?))
+
+
 ;; =============================================================================
 ;; Transactions
 ;; =============================================================================
+
 
 (defn collaborator
   "Create a new collaborator account. This is currently created for the express
@@ -110,9 +250,11 @@
    :account/email email
    :account/role  :account.role/collaborator})
 
+
 ;; =============================================================================
 ;; Metrics
 ;; =============================================================================
+
 
 (defn total-created
   "Produce the number of accounts created between `pstart` and `pend`."
@@ -132,3 +274,20 @@
                      :period-start inst?
                      :period-end inst?)
         :ret integer?)
+
+
+;; =============================================================================
+;; Transformations
+;; =============================================================================
+
+
+(defn clientize
+  "Produce a client-suitable representation of an `account` entity."
+  [account]
+  {:db/id         (:db/id account)
+   :account/name  (full-name account)
+   :account/email (email account)})
+
+(s/fdef clientize
+        :args (s/cat :account p/entity?)
+        :ret (s/keys :req [:db/id :account/name :account/email]))
