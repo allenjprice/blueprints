@@ -19,6 +19,7 @@
              [note :as note]
              [onboard :as onboard]
              [order :as order]
+             [payment :as payment]
              [property :as property]
              [referral :as referral]
              [security-deposit :as sd]
@@ -55,6 +56,7 @@
                         note/norms
                         onboard/norms
                         order/norms
+                        payment/norms
                         property/norms
                         referral/norms
                         sd/norms
