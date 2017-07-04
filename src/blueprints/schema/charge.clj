@@ -2,6 +2,7 @@
   (:require [datomic-schema.schema :as s]
             [datomic.api :as d]))
 
+
 (def ^{:added "1.0.0"} schema
   (s/generate-schema
    [(s/schema
@@ -16,6 +17,7 @@
       [purpose :string :fulltext
        "Description of the purpose of this charge."]))]))
 
+
 (defn- statuses [part]
   [{:db/id    (d/tempid part)
     :db/ident :charge.status/pending}
@@ -23,6 +25,7 @@
     :db/ident :charge.status/succeeded}
    {:db/id    (d/tempid part)
     :db/ident :charge.status/failed}])
+
 
 (defn- ^{:added "1.1.0"} add-charge-status [part]
   (->> (s/generate-schema
@@ -32,6 +35,7 @@
            [status :ref "The status of this charge."]))])
        (concat (statuses part))))
 
+
 (def ^{:added "1.3.0"} add-charge-amount
   (s/generate-schema
    [(s/schema
@@ -39,6 +43,7 @@
      (s/fields
       [amount :float :index
        "The amount in dollars that the charge is for."]))]))
+
 
 (defn norms [part]
   {:starcity/add-charge-schema

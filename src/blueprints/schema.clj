@@ -9,6 +9,7 @@
              [check :as check]
              [community-safety :as cs]
              [cmd :as cmd]
+             [event :as event]
              [income-file :as if]
              [license :as license]
              [member-application :as ma]
@@ -18,6 +19,7 @@
              [note :as note]
              [onboard :as onboard]
              [order :as order]
+             [payment :as payment]
              [property :as property]
              [referral :as referral]
              [security-deposit :as sd]
@@ -44,6 +46,7 @@
                         check/norms
                         cs/norms
                         cmd/norms
+                        event/norms
                         if/norms
                         license/norms
                         ma/norms
@@ -53,6 +56,7 @@
                         note/norms
                         onboard/norms
                         order/norms
+                        payment/norms
                         property/norms
                         referral/norms
                         sd/norms

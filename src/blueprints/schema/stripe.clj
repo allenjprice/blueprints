@@ -2,6 +2,7 @@
   (:require [datomic-schema.schema :as s]
             [datomic.api :as d]))
 
+
 (def ^{:added "1.5.0"} schema
   "Generic attributes to be used across entities in that use Stripe."
   (s/generate-schema
@@ -24,10 +25,25 @@
     :db.alter/_attribute :db.part/db}])
 
 
+(def ^{:added "1.8.0"} schema-improvements
+  (s/generate-schema
+   [(s/schema
+     stripe
+     (s/fields
+      [charge-id :string :unique-identity
+       "The id of the Stripe charge."]
+
+      [invoice-id :string :unique-identity
+       "The id of the Stripe invoice."]))]))
+
+
 (defn norms [part]
   {:schema.stripe/add-schema-04132017
    {:txes [schema]}
 
    :schema.stripe/add-component-to-charge-06152017
    {:txes     [add-component-to-charge]
-    :requires [:schema.stripe/add-schema-04132017]}})
+    :requires [:schema.stripe/add-schema-04132017]}
+
+   :schema.stripe/schema-improvements-06292017
+   {:txes [schema-improvements]}})
