@@ -187,6 +187,7 @@
 ;; Transactions
 ;; =============================================================================
 
+
 (s/def ::account p/entity?)
 (s/def ::uuid uuid?)
 (s/def ::due inst?)
@@ -197,14 +198,15 @@
   [amount & {:keys [uuid account due for status]
              :or   {uuid   (d/squuid)
                     status :payment.status/pending}}]
-  (tb/assoc-when
-   {:db/id          (d/tempid :db.part/starcity)
-    :payment/id     uuid
-    :payment/amount amount
-    :payment/status status}
-   :payment/account (td/id account)
-   :payment/due due
-   :payment/for for))
+  (let [aid (when-some [a account] (td/id account))]
+    (tb/assoc-when
+     {:db/id          (d/tempid :db.part/starcity)
+      :payment/id     uuid
+      :payment/amount amount
+      :payment/status status}
+    :payment/account aid
+    :payment/due due
+    :payment/for for)))
 
 (s/fdef create
         :args (s/cat :amount float?
