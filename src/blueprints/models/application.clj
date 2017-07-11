@@ -1,69 +1,15 @@
 (ns blueprints.models.application
   (:require [clojure.spec :as s]
             [datomic.api :as d]
-            [toolbelt.predicates :as p]))
+            [blueprints.models.event :as event]
+            [toolbelt.predicates :as p]
+            [toolbelt.datomic :as td]))
+
 
 ;; =============================================================================
-;; Selectors
+;; Spec
 ;; =============================================================================
 
-(def account (comp first :account/_member-application))
-(def desired-license :application/license)
-(def move-in-date :application/move-in)
-(def communities :application/communities)
-(def community-fitness :application/fitness)
-(def address :application/address)
-(def has-pet? :application/has-pet)
-(def pet :application/pet)
-(def completed-at :application/submitted-at)
-(def status :application/status)
-
-;; =============================================================================
-;; Predicates
-;; =============================================================================
-
-(defn in-progress?
-  "Has this application been submitted?"
-  [app]
-  (= :application.status/in-progress (status app)))
-
-(s/fdef in-progress?
-        :args (s/cat :application p/entity?)
-        :ret boolean?)
-
-(defn submitted?
-  "Has this application been submitted?"
-  [app]
-  (= :application.status/submitted (status app)))
-
-(s/fdef submitted?
-        :args (s/cat :application p/entity?)
-        :ret boolean?)
-
-(defn approved?
-  "Is this application approved?"
-  [app]
-  (= :application.status/approved (status app)))
-
-(s/fdef approved?
-        :args (s/cat :application p/entity?)
-        :ret boolean?)
-
-(defn rejected?
-  "Is this application rejected?"
-  [app]
-  (= :application.status/rejected (status app)))
-
-(s/fdef rejected?
-        :args (s/cat :application p/entity?)
-        :ret boolean?)
-
-;; alias for convenience
-(def completed? submitted?)
-
-;; =============================================================================
-;; Transactions
-;; =============================================================================
 
 (s/def ::status
   #{:application.status/in-progress
@@ -74,22 +20,115 @@
     :member-application.status/in-progress
     :member-application.status/submitted
     :member-application.status/approved
-    :member-application.status/rejected })
+    :member-application.status/rejected})
+
+
+;; =============================================================================
+;; Selectors
+;; =============================================================================
+
+
+(def account (comp first :account/_member-application))
+
+(def desired-license :application/license)
+
+(def move-in-date :application/move-in)
+
+(def communities :application/communities)
+
+(def community-fitness :application/fitness)
+
+(def address :application/address)
+
+(def has-pet? :application/has-pet)
+
+(def pet :application/pet)
+
+(def completed-at :application/submitted-at)
+
+(def status :application/status)
+
+
+;; =============================================================================
+;; Predicates
+;; =============================================================================
+
+
+(defn in-progress?
+  "Has this application been submitted?"
+  [app]
+  (= :application.status/in-progress (status app)))
+
+(s/fdef in-progress?
+        :args (s/cat :application p/entity?)
+        :ret boolean?)
+
+
+(defn submitted?
+  "Has this application been submitted?"
+  [app]
+  (= :application.status/submitted (status app)))
+
+(s/fdef submitted?
+        :args (s/cat :application p/entity?)
+        :ret boolean?)
+
+
+(defn approved?
+  "Is this application approved?"
+  [app]
+  (= :application.status/approved (status app)))
+
+(s/fdef approved?
+        :args (s/cat :application p/entity?)
+        :ret boolean?)
+
+
+(defn rejected?
+  "Is this application rejected?"
+  [app]
+  (= :application.status/rejected (status app)))
+
+(s/fdef rejected?
+        :args (s/cat :application p/entity?)
+        :ret boolean?)
+
+
+;; alias for convenience
+(def completed? submitted?)
+
+;; =============================================================================
+;; Transactions
+;; =============================================================================
+
 
 (defn change-status
   "Change the status of this application."
   [app new-status]
-  {:db/id                     (:db/id app)
+  {:db/id              (:db/id app)
    :application/status new-status})
 
 (s/fdef change-status
         :args (s/cat :application p/entity?
                      :status ::status)
+        :ret map?)
+
+
+(defn submit
+  "Submit the member application."
+  [application]
+  [(change-status application :application.status/submitted)
+   (event/job :application/submit {:params {:application-id (td/id application)}})])
+
+(s/fdef submit
+        :args (s/cat :application p/entity?)
         :ret vector?)
+
 
 ;; =============================================================================
 ;; Queries
 ;; =============================================================================
+
 
 (defn by-account
   "Retrieve an application by account."
@@ -105,9 +144,11 @@
         :args (s/cat :db p/db? :account p/entity?)
         :ret (s/or :nothing nil? :entity p/entity?))
 
+
 ;; =============================================================================
 ;; Metrics
 ;; =============================================================================
+
 
 (defn total-created
   "Produce the number of applications created between `pstart` and `pend`."
