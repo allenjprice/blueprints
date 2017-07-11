@@ -59,9 +59,9 @@
   (tb/assoc-when
    {:db/id                       (d/tempid :db.part/starcity)
     :stripe-customer/customer-id customer-id
-    :stripe-customer/account     (td/id account)}
+    :stripe-customer/account     (when-some [a account] (td/id a))}
    :stripe-customer/bank-account-token bank-account-token
-   :stripe-customer/managed (td/id managing-property)))
+   :stripe-customer/managed (when-some [p managing-property] (td/id p))))
 
 (s/def ::bank-account-token string?)
 (s/def ::managing-property p/entity?)
