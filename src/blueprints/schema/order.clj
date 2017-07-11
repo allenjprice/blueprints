@@ -48,7 +48,7 @@
 
 ;;; The way orders (ordering) should work:
 
-;; Order begins life as "received" if it cannot be immediately
+;; Order begins life as "pending" when it is created.
 ;; An order is transitioned to "placed" when it is ready to be charged.
 
 ;; An event will be issued (e.g. `:order/place`) that creates the charge and, if
