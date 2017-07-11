@@ -189,20 +189,6 @@
        "Description of how the pet will be taken care of during the day."]))]))
 
 
-(defn- ^{:added "1.8.0"} change-application-submitted-to-events [part]
-  [{:db/id    (d/tempid part)
-    :db/ident :db.application/submit
-    :db/doc   "Submit a new member application."
-    :db/fn
-    (datomic.function/construct
-     {:lang     "clojure"
-      :params   '[db application-id]
-      :requires '[[datomic.api :as d]]
-      :code     '[{:db/id              application-id
-                   :application/status :application.status/submitted}
-                  [:db.event/create :application/submit {:params {:application-id application-id}}]]})}])
-
-
 (defn norms [part]
   {:starcity/add-member-application-schema
    {:txes [schema]}
@@ -242,7 +228,4 @@
    {:txes [(add-application-submitted part)]}
 
    :schema.member-application.pets/add-attrs-06132017
-   {:txes [add-pet-attrs-06132017]}
-
-   :schema.member-application/change-application-submitted-fn-06192017
-   {:txes [(change-application-submitted-to-events part)]}})
+   {:txes [add-pet-attrs-06132017]}})
