@@ -125,6 +125,8 @@
   [order]
   (boolean
    (and (some? (ordered-at order))
+        ;; TODO: Is this function needed any longer? If so, change the below
+        ;; code to inspect payments
         (or (:stripe/subs-id order)
             (when-let [c (:stripe/charge order)]
               (not= (:charge/status c) :charge.status/failed))))))
@@ -187,7 +189,7 @@
        (map (partial d/entity db))))
 
 (s/fdef orders
-        :args (s/cat :db p/entity? :account p/entity?)
+        :args (s/cat :db p/db? :account p/entity?)
         :ret (s/* p/entityd?))
 
 
@@ -294,13 +296,10 @@
         :ret (s/keys :req [:db/id :order/status :stripe/charge]))
 
 
-;; The `charged` status doesn't really seem necessary. This is information we
-;; can obtain from inspecting the payments.
-
-#_(defn is-charged
+(defn is-charged
   "The order has been charged."
   [order]
-  {:db/id        order
+  {:db/id        (td/id order)
    :order/status :order.status/charged})
 
 
