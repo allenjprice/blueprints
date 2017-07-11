@@ -1,5 +1,5 @@
 (ns blueprints.schema.event
-  "The `event` entity will replace `cmd` and `msg`."
+  "The `event` entity replaces `cmd` and `msg`."
   (:require [datomic-schema.schema :as s]
             [datomic.api :as d]))
 
@@ -45,30 +45,6 @@
     :db/ident :event.status/seen}])
 
 
-(defn- ^{:added "1.8.0"} add-create-event [part]
-  [{:db/id    (d/tempid part)
-    :db/ident :db.event/create
-    :db/doc   "Create a new event."
-    :db/fn
-    (datomic.function/construct
-     {:lang     "clojure"
-      :params   '[db key opts]
-      :requires '[[datomic.api :as d]]
-      :code     '(let [{:keys [id uuid params meta topic triggered-by]} opts]
-                   [(merge
-                     {:db/id        (d/tempid :db.part/starcity)
-                      :event/uuid   (d/squuid)
-                      :event/key    key
-                      :event/status :event.status/pending}
-                     (when (some? id) {:event/id id})
-                     (when (some? topic) {:event/topic topic})
-                     (when (some? triggered-by) {:event/triggered-by triggered-by})
-                     (when (some? params) {:event/params (pr-str params)})
-                     (when (some? meta) {:event/meta (pr-str meta)}))])})}])
-
-
 (defn norms [part]
   {:schema.event/add-schema-06142017
-   {:txes [schema
-           (event-statuses part)
-           (add-create-event part)]}})
+   {:txes [schema (event-statuses part)]}})
