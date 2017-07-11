@@ -183,6 +183,16 @@
         :ret boolean?)
 
 
+(defn failed?
+  "Has this payment failed to be charged?"
+  [payment]
+  (= (status payment) :payment.status/failed))
+
+(s/fdef failed?
+        :args (s/cat :payment p/entity?)
+        :ret boolean?)
+
+
 ;; =============================================================================
 ;; Transactions
 ;; =============================================================================
