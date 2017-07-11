@@ -64,6 +64,14 @@
                (licenses [1 2400.0] [3 2400.0] [6 2200.0] [12 2100.0])
                (units "2072mission" 20))]))
 
+
+(def ^{:added "1.8.0"} add-managed-ids
+  [{:db/id [:property/internal-name "52gilbert"]
+    :property/managed-account-id "acct_195qlXH2E3GdRImX"}
+   {:db/id [:property/internal-name "2072mission"]
+    :property/managed-account-id "acct_195qlXH2E3GdRImX"}])
+
+
 (defn properties-present?
   "Are the properties to be seeded already present in the database? This is
   needed because the production properties arrived in the db prior to use of
@@ -73,9 +81,13 @@
     (and (d/entity db [:property/internal-name "52gilbert"])
          (d/entity db [:property/internal-name "2072mission"]))))
 
+
 (defn norms [conn part]
   (merge
    {}
    (when-not (properties-present? conn)
      {:blueprints.seed/add-initial-properties
-      {:txes [(add-initial-properties conn part)]}})))
+      {:txes [(add-initial-properties conn part)]}
+      :blueprints.seed/add-managed-ids
+      {:txes     [add-managed-ids]
+       :requires [:blueprints.seed/add-initial-properties]}})))
