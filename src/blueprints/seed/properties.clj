@@ -1,6 +1,6 @@
 (ns blueprints.seed.properties
   (:require [datomic.api :as d]
-            [plumbing.core :as plumbing]))
+            [toolbelt.core :as tb]))
 
 ;; =============================================================================
 ;; Property TX Generation Helpers
@@ -31,7 +31,7 @@
   [part name internal-name available-on address licenses units
    & {:keys [managed-account-id ops-fee tours]
       :or   {tours false}}]
-  (plumbing/assoc-when
+  (tb/assoc-when
    {:db/id                  (d/tempid part)
     :property/name          name
     :property/internal-name internal-name

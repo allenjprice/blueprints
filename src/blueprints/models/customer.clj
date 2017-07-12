@@ -1,10 +1,9 @@
 (ns blueprints.models.customer
   (:require [clojure.spec :as s]
-            [toolbelt.predicates :as p]
-            [plumbing.core :as plumbing]
             [datomic.api :as d]
             [toolbelt.core :as tb]
-            [toolbelt.datomic :as td]))
+            [toolbelt.datomic :as td]
+            [toolbelt.predicates :as p]))
 
 
 ;; =============================================================================

@@ -1,9 +1,9 @@
 (ns blueprints.models.referral
   (:refer-clojure :exclude [apply])
   (:require [clojure.spec :as s]
-            [plumbing.core :as plumbing]
-            [toolbelt.predicates :as p]
-            [datomic.api :as d]))
+            [datomic.api :as d]
+            [toolbelt.core :as tb]
+            [toolbelt.predicates :as p]))
 
 
 ;; =============================================================================
@@ -50,7 +50,7 @@
 (defn create
   "Create a referral."
   [from source & [account]]
-  (plumbing/assoc-when
+  (tb/assoc-when
    {:db/id           (d/tempid :db.part/starcity)
     :referral/source source
     :referral/from   from}
