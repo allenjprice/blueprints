@@ -214,15 +214,24 @@
       :payment/id     uuid
       :payment/amount amount
       :payment/status status}
-    :payment/account aid
-    :payment/due due
-    :payment/for for)))
+     :payment/account aid
+     :payment/due due
+     :payment/for for)))
 
 (s/fdef create
         :args (s/cat :amount float?
-                     :opts (s/keys* :opt-un [::uuid ::account ::due ::for ::status]))
-        :ret (s/keys :req [:db/id :payment/id :payment/status]
-                     :opt [:payment/account :payment/due :payment/for]))
+                     :opts (s/keys* :opt-un [::uuid
+                                             ::account
+                                             ::due
+                                             ::for
+                                             ::status
+                                             ::charge-id]))
+        :ret (s/keys :req [:db/id
+                           :payment/id
+                           :payment/status]
+                     :opt [:payment/account
+                           :payment/due
+                           :payment/for]))
 
 
 (defn add-invoice
