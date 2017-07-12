@@ -114,6 +114,20 @@
         :ret (s/* p/entity?))
 
 
+(defn computed-name
+  "A human-readable name for this service that takes variants into
+  consideration."
+  [order]
+  (let [service (service order)]
+    (if-let [vn (-> order variant :svc-variant/name)]
+     (str (service/name service) " - " (string/capitalize vn))
+     (service/name service))))0
+
+(s/fdef computed-name
+        :args (s/cat :order p/entity?)
+        :ret string?)
+
+
 ;; =============================================================================
 ;; Predicates
 ;; =============================================================================
@@ -142,6 +156,16 @@
   (= (status order) :order.status/placed))
 
 (s/fdef placed?
+        :args (s/cat :order p/entity?)
+        :ret boolean?)
+
+
+(defn pending?
+  "Is the order pending?"
+  [order]
+  (= (status order) :order.status/pending))
+
+(s/fdef pending?
         :args (s/cat :order p/entity?)
         :ret boolean?)
 
@@ -233,7 +257,7 @@
 (s/def ::desc string?)
 (s/def ::variant integer?)
 (s/def ::price (s/and pos? float?))
-(s/def ::opts (s/keys :opt-un [::quantity ::desc ::variant ::price]))
+(s/def ::opts (s/keys :opt-un [::quantity ::desc ::variant ::price ::status]))
 
 
 (defn create
@@ -262,9 +286,10 @@
 
 
 (defn update
-  [order {:keys [quantity desc variant]}]
+  [order {:keys [quantity desc variant status]}]
   (tb/assoc-when
    {:db/id (td/id order)}
+   :order/status status
    :order/quantity quantity
    :order/desc desc
    :order/variant variant))
@@ -285,15 +310,21 @@
 
 
 (defn add-payment
-  "Add a payment to this order, changing the order's status to `:order.status/placed`."
+  "Add a payment to this order."
   [order payment]
   {:db/id          (td/id order)
-   :order/status   :order.status/placed
    :order/payments (td/id payment)})
 
 (s/fdef add-charge
         :args (s/cat :order p/entity? :charge p/entity?)
         :ret (s/keys :req [:db/id :order/status :stripe/charge]))
+
+
+(defn is-placed
+  "The order has been placed."
+  [order]
+  {:db/id        (td/id order)
+   :order/status :order.status/placed})
 
 
 (defn is-charged
@@ -308,19 +339,12 @@
 ;; =============================================================================
 
 
-(defn- variant-name [order]
-  (-> order :order/variant :svc-variant/name))
-
-
 (defn clientize
   [order]
   (let [service (:order/service order)
-        desc    (if (string/blank? (desc order)) (service/desc service) (desc order))
-        name    (if-let [vn (variant-name order)]
-                  (str (service/name service) " - " (string/capitalize vn))
-                  (service/name service))]
+        desc    (if (string/blank? (desc order)) (service/desc service) (desc order))]
     {:id       (td/id order)
-     :name     name
+     :name     (computed-name order)
      :desc     desc
      :price    (computed-price order)
      :rental   (service/rental service)
