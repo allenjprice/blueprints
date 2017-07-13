@@ -1,8 +1,9 @@
 (ns blueprints.models.account
-  (:require [clojure.spec :as s]
+  (:require [blueprints.models.application :as application]
+            [blueprints.models.approval :as approval]
+            [clojure.spec :as s]
             [datomic.api :as d]
             [toolbelt.predicates :as p]))
-
 
 ;; =============================================================================
 ;; Spec
@@ -211,6 +212,18 @@
   (partial is-role? :account.role/admin))
 
 
+(defn can-approve?
+  "An account can be *approved* if the application is submitted and the account
+  has the `:account.status/applicant` role."
+  [account]
+  (let [application (:account/application account)]
+    (and (application/submitted? application) (applicant? account))))
+
+(s/fdef can-approve?
+        :args (s/cat :account p/entity?)
+        :ret boolean?)
+
+
 ;; =============================================================================
 ;; Queries
 ;; =============================================================================
@@ -249,6 +262,21 @@
   {:db/id         (d/tempid :db.part/starcity)
    :account/email email
    :account/role  :account.role/collaborator})
+
+(s/fdef collaborator
+        :args (s/cat :email string?)
+        :ret (s/keys :req [:db/id :account/email :account/role]))
+
+
+(defn change-role
+  "Produce transaction data to change `account`'s role to `role`."
+  [account role]
+  {:db/id        (:db/id account)
+   :account/role role})
+
+(s/fdef change-role
+        :args (s/cat :account p/entity? :role ::role)
+        :ret (s/keys :req [:db/id :account/role]))
 
 
 ;; =============================================================================

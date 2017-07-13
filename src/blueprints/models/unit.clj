@@ -9,7 +9,15 @@
 ;; Selectors
 ;; =============================================================================
 
-(def property :property/_units)
+
+(def property
+  "The property that this unit is in."
+  :property/_units)
+
+(s/fdef property
+        :args (s/cat :unit p/entity?)
+        :ret p/entity?)
+
 
 (defn rate
   "Determine the rate for `unit` given `license`.
@@ -29,9 +37,11 @@
         :args (s/cat :unit p/entity? :license p/entity?)
         :ret float?)
 
+
 ;; =============================================================================
 ;; Predicates
 ;; =============================================================================
+
 
 (defn available?
   "Returns true iff `unit` is not or will not be occupied by someone during
@@ -55,6 +65,7 @@
         :args (s/cat :db p/db? :unit p/entity? :date inst?)
         :ret boolean?)
 
+
 (defn occupied?
   "Returns true iff `unit` is occupied. Differs from `available?` in that it
   only checks for active licenses -- it does not incorporate any notion of
@@ -75,9 +86,11 @@
         :args (s/cat :db p/db? :unit p/entity?)
         :ret boolean?)
 
+
 ;; =============================================================================
 ;; Queries
 ;; =============================================================================
+
 
 (defn occupied-by
   "Produces the account entity of the member who lives in `unit`."
@@ -94,6 +107,7 @@
 (s/fdef occupied-by
         :args (s/cat :conn p/db? :unit p/entity?)
         :ret p/entity?)
+
 
 (defn by-name
   "Look up a unit by `:unit/name`."

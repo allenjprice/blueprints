@@ -1,15 +1,13 @@
 (ns blueprints.models.approval
-  (:require [blueprints.models
-             [application :as application]
-             [onboard :as onboard]
-             [property :as property]
-             [security-deposit :as deposit]
-             [unit :as unit]]
+  (:require [blueprints.models.application :as application]
+            [blueprints.models.onboard :as onboard]
+            [blueprints.models.property :as property]
+            [blueprints.models.security-deposit :as deposit]
+            [blueprints.models.unit :as unit]
             [clojure.spec :as s]
-            [toolbelt.predicates :as p]
+            [datomic.api :as d]
             [toolbelt.date :as date]
-            [datomic.api :as d]))
-
+            [toolbelt.predicates :as p]))
 
 ;; =============================================================================
 ;; Selectors

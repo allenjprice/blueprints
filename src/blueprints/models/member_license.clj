@@ -218,6 +218,7 @@
 
 
 (defn add-rent-payments
+  "Add rent payments (component entities) to this member `license`."
   [license & payments]
   {:db/id                        (:db/id license)
    :member-license/rent-payments payments})

@@ -1,11 +1,11 @@
 (ns blueprints.models.security-deposit
-  (:require [blueprints.models.check :as check]
+  (:require [blueprints.models.charge :as charge]
+            [blueprints.models.check :as check]
             [clojure.spec :as s]
             [datomic.api :as d]
-            [toolbelt.predicates :as p]
+            [toolbelt.core :as tb]
             [toolbelt.datomic :as td]
-            [blueprints.models.charge :as charge]
-            [toolbelt.core :as tb]))
+            [toolbelt.predicates :as p]))
 
 
 ;; =============================================================================
@@ -256,6 +256,22 @@
         :ret (s/keys :req [:db/id
                            :security-deposit/checks
                            :security-deposit/amount-received]))
+
+
+(defn update-check
+  [security-deposit check updated-check]
+  (let [;; To calculate the new amount, we need at least the check's id, amount and status
+        params (merge (select-keys check [:db/id :check/amount :check/status])
+                      updated-check)]
+    {:db/id                            (td/id security-deposit)
+     :security-deposit/amount-received (new-amount-received security-deposit params)}))
+
+(s/fdef update-check
+        :args (s/cat :security-deposit p/entity?
+                     :check p/entity?
+                     :updated-check check/updated?)
+        :ret (s/keys :req [:db/id :security-deposit/amount-received]))
+
 
 
 (defn add-charge

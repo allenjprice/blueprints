@@ -48,26 +48,40 @@
 
 
 ;; =============================================================================
+;; Predicates
+;; =============================================================================
+
+
+(defn has-verified-bank-account?
+  [customer]
+  (some? (bank-token customer)))
+
+(s/fdef has-verified-bank-account?
+        :args (s/cat :customer p/entity?)
+        :ret boolean?)
+
+
+;; =============================================================================
 ;; Transactions
 ;; =============================================================================
 
 
 (defn create
   "Create a new Stripe customer."
-  [customer-id account & {:keys [bank-account-token managing-property]}]
+  [customer-id account & {:keys [bank-token managing-property]}]
   (tb/assoc-when
    {:db/id                       (d/tempid :db.part/starcity)
     :stripe-customer/customer-id customer-id
     :stripe-customer/account     (when-some [a account] (td/id a))}
-   :stripe-customer/bank-account-token bank-account-token
+   :stripe-customer/bank-account-token bank-token
    :stripe-customer/managed (when-some [p managing-property] (td/id p))))
 
-(s/def ::bank-account-token string?)
+(s/def ::bank-token string?)
 (s/def ::managing-property p/entity?)
 (s/fdef create
         :args (s/cat :customer-id string?
                      :account p/entity?
-                     :opts (s/keys* :opt-un [::bank-account-token
+                     :opts (s/keys* :opt-un [::bank-token
                                              ::managing-property]))
         :ret (s/keys :req [:db/id
                            :stripe-customer/customer-id

@@ -63,6 +63,7 @@
 ;; Lookups
 ;; =============================================================================
 
+
 (defn by-internal-name
   [db internal-name]
   (d/entity db [:property/internal-name internal-name]))
@@ -71,14 +72,21 @@
         :args (s/cat :db p/db? :internal-name string?)
         :ret p/entity?)
 
+
 ;; =============================================================================
 ;; Queries
 ;; =============================================================================
+
 
 (defn occupied-units
   "Produce all units that are currently occupied."
   [db property]
   (filter (partial unit/occupied? db) (units property)))
+
+(s/fdef occupied-units
+        :args (s/cat :db p/db? :property p/entity?)
+        :ret (s/* p/entity?))
+
 
 (defn available-units
   "Produces all available units in `property`.
@@ -87,6 +95,11 @@
   references it.)"
   [db property]
   (remove (partial unit/occupied? db) (units property)))
+
+(s/fdef available-units
+        :args (s/cat :db p/db? :property p/entity?)
+        :ret (s/* p/entity?))
+
 
 (defn total-rent
   "The total rent that can be collected from the current active member
@@ -102,6 +115,11 @@
             db (:db/id property))
        (map second)
        (reduce + 0)))
+
+(s/fdef total-rent
+        :args (s/cat :db p/db? :property p/entity?)
+        :ret number?)
+
 
 (defn- amount-query
   [db property date status]
@@ -121,17 +139,20 @@
            db (:db/id property) date status)
        (reduce #(+ %1 (second %2)) 0)))
 
+
 (defn amount-paid
   "The amount in dollars that has been collected in `property` for the month
   present within `date`."
   [db property date]
   (amount-query db property date :rent-payment.status/paid))
 
+
 (defn amount-due
   "The amount in dollars that is still due in `property` for the month present
   within `date`."
   [db property date]
   (amount-query db property date :rent-payment.status/due))
+
 
 (defn amount-pending
   "The amount in dollars that is pending in `property` for the month present
