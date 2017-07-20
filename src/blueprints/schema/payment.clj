@@ -65,6 +65,18 @@
     :db/ident :payment.for/order}])
 
 
+(def ^{:added "1.10.0"} add-check-ref
+  (s/generate-schema
+   [(s/schema
+     payment
+     (s/fields
+      [check :ref :component :indexed
+       "The check that this payment was made with."]))]))
+
+
 (defn norms [part]
   {:schema.payment/add-schema-06292017
-   {:txes [schema (methods part) (statuses part) (fors part)]}})
+   {:txes [schema (methods part) (statuses part) (fors part)]}
+
+   :schema.payment/add-check-ref-07202017
+   {:txes [add-check-ref]}})

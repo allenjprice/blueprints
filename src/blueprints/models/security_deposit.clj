@@ -1,11 +1,13 @@
 (ns blueprints.models.security-deposit
   (:require [blueprints.models.charge :as charge]
             [blueprints.models.check :as check]
+            [blueprints.models.payment :as payment]
             [clojure.spec :as s]
             [datomic.api :as d]
             [toolbelt.core :as tb]
             [toolbelt.datomic :as td]
-            [toolbelt.predicates :as p]))
+            [toolbelt.predicates :as p]
+            [blueprints.schema.stripe-customer :as sc]))
 
 
 ;; =============================================================================
@@ -13,9 +15,9 @@
 ;; =============================================================================
 
 
-(s/def :security-deposit/payment-method
-  #{:security-deposit.payment-method/ach
-    :security-deposit.payment-method/check})
+(s/def :deposit/method
+  #{:deposit.method/ach
+    :deposit.method/check})
 
 
 ;; =============================================================================
@@ -23,7 +25,7 @@
 ;; =============================================================================
 
 
-(defn amount-received
+(defn ^{:deprecated "1.10.0"} amount-received
   "The amount that we've received towards this deposit so far."
   [deposit]
   (get deposit :security-deposit/amount-received 0))
@@ -32,10 +34,10 @@
         :args (s/cat :deposit p/entity?)
         :ret integer?)
 
-(def received amount-received)
+(def ^{:deprecated "1.10.0"} received amount-received)
 
 
-(defn amount-required
+(defn ^{:deprecated "1.10.0"} amount-required
   "The amount required to consider this security deposit paid."
   [deposit]
   (get deposit :security-deposit/amount-required 0))
@@ -45,28 +47,41 @@
         :ret integer?)
 
 
-(def required amount-required)
+(def ^{:deprecated "1.10.0"} required amount-required)
+
+
+(defn ^{:added "1.10.0"} amount
+  "The amount to be paid."
+  [deposit]
+  (:deposit/amount deposit))
+
+(s/fdef amount
+        :args (s/cat :deposit p/entity?)
+        :ret float?)
 
 
 (def due-by
   "The date that the security deposit is due on."
-  :security-deposit/due-by)
+  :deposit/due)
 
 (s/fdef due-by
         :args (s/cat :deposit p/entity?)
         :ret inst?)
 
 
+(def due due-by)
+
+
 (def account
   "The account that owns this deposit."
-  :security-deposit/account)
+  :deposit/account)
 
 (s/fdef account
         :args (s/cat :deposit p/entity?)
         :ret p/entity?)
 
 
-(def checks
+(def ^{:deprecated "1.10.0"} checks
   "Check entities associated with this deposit."
   :security-deposit/checks)
 
@@ -75,7 +90,7 @@
         :ret (s/* p/entity?))
 
 
-(def charges
+(def ^{:deprecated "1.10.0"} charges
   "Charge entities associated with this deposit."
   :security-deposit/charges)
 
@@ -84,45 +99,61 @@
         :ret (s/* p/entity?))
 
 
+(defn ^{:added "1.10.0"} payments
+  [deposit]
+  (:deposit/payments deposit))
+
+(s/fdef payments
+        :args (s/cat :deposit p/entity?)
+        :ret (s/* p/entity?))
+
+
 (def method
   "The payment method chosen during the onboarding flow."
-  :security-deposit/payment-method)
+  :deposit/method)
 
 (s/fdef method
         :args (s/cat :deposit p/entity?)
-        :ret :security-deposit/payment-method)
+        :ret :deposit/method)
 
 
 (defn amount-remaining
   "The amount still remaining to be paid."
   [deposit]
-  (- (amount-required deposit) (amount-received deposit)))
+  (let [paid (reduce
+              #(+ %1 (if (or (payment/paid? %2) (payment/pending? %2))
+                       (payment/amount %2)
+                       0))
+              0
+              (payments deposit))]
+    (- (amount deposit) paid)))
 
 (s/fdef amount-remaining
         :args (s/cat :deposit p/entity?)
         :ret integer?)
 
 
-(defn- amount-pending-checks [deposit]
-  (->> (:security-deposit/checks deposit)
-       (filter #(or (= (:check/status %) :check.status/received)
-                    (= (:check/status %) :check.status/deposited)))
-       (reduce #(+ %1 (:check/amount %2)) 0)))
+;; (defn- amount-pending-checks [deposit]
+;;   (->> (:security-deposit/checks deposit)
+;;        (filter #(or (= (:check/status %) :check.status/received)
+;;                     (= (:check/status %) :check.status/deposited)))
+;;        (reduce #(+ %1 (:check/amount %2)) 0)))
 
 
-(defn- amount-pending-charges [deposit]
-  (letfn [(-cents [amt] (float (/ amt 100)))]
-    (->> (:security-deposit/charges deposit)
-         (filter #(= (:charge/status %) :charge.status/pending))
-         (reduce #(+ %1 (:charge/amount %2 0)) 0))))
+;; (defn- amount-pending-charges [deposit]
+;;   (letfn [(-cents [amt] (float (/ amt 100)))]
+;;     (->> (:security-deposit/charges deposit)
+;;          (filter #(= (:charge/status %) :charge.status/pending))
+;;          (reduce #(+ %1 (:charge/amount %2 0)) 0))))
 
 
 (defn amount-pending
-  "Using attached checks and charges, determine how much is in a pending state.
-  This means a) checks that have not cleared and b) charges that are in a
-  pending state."
+  "The amount that is still pending, either in the form of charges or checks."
   [deposit]
-  (apply + ((juxt amount-pending-checks amount-pending-charges) deposit)))
+  (reduce
+   #(+ %1 (if (payment/pending? %2) (payment/amount %2) 0))
+   0
+   (payments deposit)))
 
 
 ;; =============================================================================
@@ -131,11 +162,10 @@
 
 
 (defn is-unpaid?
-  "A deposit is considered /unpaid/ if we have received no payment towards it,
-  whether it has cleared or not."
+  "A deposit is considered /unpaid/ if we have received no payment towards
+  it (pending payments excepted)."
   [deposit]
-  (and (= 0 (amount-received deposit))
-       (= 0 (amount-pending deposit))))
+  (= (amount-remaining deposit) (amount deposit)))
 
 (s/fdef is-unpaid?
         :args (s/cat :deposit p/entity?)
@@ -151,9 +181,11 @@
 (defn paid-in-full?
   "Is the deposit completely paid?"
   [deposit]
-  (and (is-paid? deposit)
-       (>= (amount-received deposit)
-           (amount-required deposit))))
+  (<= (amount-remaining deposit) 0))
+
+(s/fdef paid-in-full?
+        :args (s/cat :deposit p/entity?)
+        :ret boolean?)
 
 
 (defn partially-paid?
@@ -161,6 +193,10 @@
   [deposit]
   (and (not (paid-in-full? deposit))
        (is-paid? deposit)))
+
+(s/fdef partially-paid?
+        :args (s/cat :deposit p/entity?)
+        :ret boolean?)
 
 
 ;; =============================================================================
@@ -224,7 +260,7 @@
           (sum-charges deposit))))
 
 
-(defn update-with-check
+(defn ^{:deprecated "1.10.0"} update-with-check
   "Update a security deposit's `amount-received` with an updated check."
   [deposit check updated-check]
   (let [;; To calculate the new amount, we need at least the check's id, amount and status
@@ -240,7 +276,7 @@
         :ret (s/keys :req [:db/id :security-deposit/amount-received]))
 
 
-(defn add-check
+(defn ^{:deprecated "1.10.0"} add-check
   "Add a new `check` to the `security-deposit` entity, taking into consideration
   the check's contribution to the total amount received."
   [deposit check]
@@ -258,7 +294,7 @@
                            :security-deposit/amount-received]))
 
 
-(defn update-check
+(defn ^{:deprecated "1.10.0"} update-check
   [security-deposit check updated-check]
   (let [;; To calculate the new amount, we need at least the check's id, amount and status
         params (merge (select-keys check [:db/id :check/amount :check/status])
@@ -274,7 +310,7 @@
 
 
 
-(defn add-charge
+(defn ^{:deprecated "1.10.0"} add-charge
   "Add a charge to the deposit, updating the `amount-received` when the charge
   has success status.."
   [deposit charge]
@@ -293,24 +329,31 @@
                            :security-deposit/amount-received]))
 
 
+(defn ^{:added "1.10.0"} add-payment
+  "Add a payment to this deposit."
+  [deposit payment]
+  {:db/id            (td/id deposit)
+   :deposit/payments (td/id payment)})
+
+(s/fdef add-payment
+        :args (s/cat :deposit p/entity? :payment p/entity?)
+        :ret (s/keys :req [:db/id :deposit/payments]))
+
+
 (defn create
   "Produce transaction data to create a security deposit entity for `account`.
 
   Only requires an `amount` (and `account` of course), since other details are
   filled in by `account` during the onboarding flow."
   [account amount]
-  {:db/id                            (d/tempid :db.part/starcity)
-   :security-deposit/account         (td/id account)
-   :security-deposit/amount-received 0
-   :security-deposit/amount-required amount})
+  {:db/id           (d/tempid :db.part/starcity)
+   :deposit/account (td/id account)
+   :deposit/amount  (float amount)})
 
 (s/fdef create
         :args (s/cat :account p/entity?
-                     :amount integer?)
-        :ret (s/keys :req [:db/id
-                           :security-deposit/account
-                           :security-deposit/amount-received
-                           :security-deposit/amount-required]))
+                     :amount number?)
+        :ret (s/keys :req [:db/id :deposit/account :deposit/amount]))
 
 
 ;; =============================================================================
@@ -320,17 +363,43 @@
 
 (def by-account
   "Retrieve `security-deposit` given the owning `account`."
-  (comp first :security-deposit/_account))
+  (comp first :deposit/_account))
 
 (s/fdef by-account
-        :args (s/cat :account p/entity?)
-        :ret p/entity?)
+        :args (s/cat :account p/entityd?)
+        :ret p/entityd?)
 
 
-(def by-charge
+(def ^{:deprecated "1.10.0"} by-charge
   "Produce the security deposit given `charge`."
   :security-deposit/_charges)
 
 (s/fdef by-charge
         :args (s/cat :charge p/entity?)
         :ret p/entity?)
+
+
+(defn by-payment
+  "Produce the security deposit given `payment`."
+  [payment]
+  (:deposit/_payments payment))
+
+(s/fdef by-payment
+        :args (s/cat :payment p/entityd?)
+        :ret (s/or :entity p/entityd? :nothing nil?))
+
+
+(defn by-charge-id
+  "Look up a security deposit given a Stripe charge id."
+  [db charge-id]
+  (->> (d/q '[:find ?e .
+              :in $ ?c
+              :where
+              [?e :deposit/payments ?p]
+              [?p :stripe/charge-id ?c]]
+            db charge-id)
+       (d/entity db)))
+
+(s/fdef by-charge-id
+        :args (s/cat :db p/db? :charge-id string?)
+        :ret (s/or :entity p/entity? :nothing nil?))

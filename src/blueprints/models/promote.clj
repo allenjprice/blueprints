@@ -14,17 +14,6 @@
             [toolbelt.predicates :as p]))
 
 
-(defn- assert-onboarded
-  "Asserts that `account` has a paid security deposit and currently has the
-  onboarding status."
-  [account]
-  (let [deposit (deposit/by-account account)]
-    (assert (deposit/is-paid? deposit)
-            "Cannot promote an account with an unpaid security deposit.")
-    (assert (account/onboarding? account)
-            "Cannot promote a non-onboarding account.")))
-
-
 (defn- prorated-amount [commencement rate]
   (let [commencement   (c/to-date-time commencement)
         days-in-month  (t/day (t/last-day-of-the-month commencement))
@@ -52,8 +41,8 @@
         due     (-> (c/to-date-time (date/end-of-day move-in tz))
                     (t/plus (t/days 30))
                     c/to-date)]
-    {:db/id                   (:db/id deposit)
-     :security-deposit/due-by due}))
+    {:db/id       (:db/id deposit)
+     :deposit/due due}))
 
 
 (defn- approval->member-license

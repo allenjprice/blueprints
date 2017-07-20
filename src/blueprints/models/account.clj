@@ -102,7 +102,7 @@
 
 (def security-deposit
   "Retrieve the `security-deposit` for `account`."
-  (comp first :security-deposit/_account))
+  (comp first :deposit/_account))
 
 (s/fdef security-deposit
         :args (s/cat :account p/entity?)

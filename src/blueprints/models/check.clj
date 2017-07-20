@@ -10,33 +10,47 @@
 ;; Selectors
 ;; =============================================================================
 
-;;; Statuses
-
 (def received :check.status/received)
 (def cleared :check.status/cleared)
-(def cancelled :check.status/cancelled)
+(def ^{:deprecated "1.10.0"} cancelled :check.status/canceled)
+(def canceled :check.status/canceled)
 (def bounced :check.status/bounced)
 (def deposited :check.status/deposited)
 
 
 (def statuses
   "All available statuses that a check may have."
-  #{received cleared cancelled bounced deposited})
+  #{received cleared canceled bounced deposited})
 
 
 (def amount
+  "The dollar amount on this check."
   :check/amount)
+
+(s/fdef amount
+        :args (s/cat :check p/entity?)
+        :ret float?)
 
 
 (def status
+  "The status of this check."
   :check/status)
+
+(s/fdef status
+        :args (s/cat :check p/entity?)
+        :ret statuses)
 
 
 (def received-on
+  "Date that this check was received."
   :check/received-on)
 
+(s/fdef received-on
+        :args (s/cat :check p/entity?)
+        :ret inst?)
 
-(defn security-deposit
+
+(defn ^{:deprecated "1.10.0"} security-deposit
   "Produce the security deposit that references this `check`, if any."
   [check]
   (:security-deposit/_checks check))
@@ -52,8 +66,18 @@
   (:rent-payment/_check check))
 
 (s/fdef rent-payment
-        :args (s/cat :check p/entity?)
-        :ret (s/or :nothing nil? :payment p/entity?))
+        :args (s/cat :check p/entityd?)
+        :ret (s/or :nothing nil? :payment p/entityd?))
+
+
+(defn payment
+  "The payment that this check is part of."
+  [check]
+  (:payment/_check check))
+
+(s/fdef payment
+        :args (s/cat :check p/entityd?)
+        :ret p/entityd?)
 
 
 ;; =============================================================================

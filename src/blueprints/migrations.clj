@@ -2,10 +2,11 @@
   (:require [datomic.api :as d]
             [io.rkn.conformity :as c]
             [blueprints.migrations
+             [dates-06122017 :as dates-061222017]
              [member-application :as ma]
              [member-license :as ml]
              [property :as property]
-             [dates-06122017 :as dates-061222017]]))
+             [security-deposit :as deposit]]))
 
 (defn- ^{:added "1.0.x"} add-countries-to-addresses
   "Prior to adding international support, there was no `:address/country`
@@ -26,7 +27,8 @@
    (ma/norms conn)
    (property/norms conn)
    (ml/norms conn)
-   (dates-061222017/norms conn)))
+   (dates-061222017/norms conn)
+   (deposit/norms conn)))
 
 (defn conform [conn part]
   (c/ensure-conforms conn (norms conn part)))

@@ -4,7 +4,8 @@
              [datomic :as td]
              [predicates :as p]]
             [clojure.spec :as s]
-            [toolbelt.core :as tb]))
+            [toolbelt.core :as tb]
+            [blueprints.models.check :as check]))
 
 
 ;; =============================================================================
@@ -103,7 +104,7 @@
 
 
 (def account
-  "The account that this payment pertains to."
+  "The account that made this payment."
   :payment/account)
 
 (s/fdef account
@@ -147,10 +148,10 @@
 ;; =============================================================================
 
 
-(defn- of-method? [m payment]
+(defn- has-method? [m payment]
   (= m (method payment)))
 
-(s/fdef of-method?
+(s/fdef has-method?
         :args (s/cat :method ::method :payment p/entity?)
         :ret boolean?)
 
@@ -158,35 +159,45 @@
 (defn charge?
   "Is this payment paid via a Stripe charge?"
   [payment]
-  (of-method? :payment.method/stripe-charge payment))
+  (has-method? :payment.method/stripe-charge payment))
 
 
 (defn invoice?
   "Is this payment paid via a Stripe invoice?"
   [payment]
-  (of-method? :payment.method/stripe-invoice payment))
+  (has-method? :payment.method/stripe-invoice payment))
 
 
 (defn check?
   "Is this payment paid via a check?"
   [payment]
-  (of-method? :payment.method/check payment))
+  (has-method? :payment.method/check payment))
 
 
-(defn paid?
+(defn- has-status? [m payment]
+  (= m (status payment)))
+
+(s/fdef has-status?
+        :args (s/cat :method ::status :payment p/entity?)
+        :ret boolean?)
+
+(def paid?
   "Has this payment been paid?"
-  [payment]
-  (= (status payment) :payment.status/paid))
+  (partial has-status? :payment.status/paid))
 
-(s/fdef paid?
+
+(def pending?
+  "Is this payment pending?"
+  (partial has-status? :payment.status/pending))
+
+(s/fdef pending?
         :args (s/cat :payment p/entity?)
         :ret boolean?)
 
 
-(defn failed?
+(def failed?
   "Has this payment failed to be charged?"
-  [payment]
-  (= (status payment) :payment.status/failed))
+  (partial has-status? :payment.status/failed))
 
 (s/fdef failed?
         :args (s/cat :payment p/entity?)
@@ -260,6 +271,15 @@
         :ret map?)
 
 
+(defn add-check
+  "Add a check to this payment."
+  [payment check]
+  (let [status (when-let [s (check/status check)] )]
+    {:db/id          (td/id payment)
+    :payment/check  (td/id check)
+    :payment/method :payment.method/check}))
+
+
 (defn is-paid
   "The payment is now paid."
   [payment]
@@ -294,7 +314,7 @@
 
 (s/fdef by-id
         :args (s/cat :db p/db? :uuid uuid?)
-        :ret p/entity?)
+        :ret p/entityd?)
 
 
 (defn by-charge-id
@@ -307,7 +327,7 @@
 
 (s/fdef by-charge-id
         :args (s/cat :db p/db? :charge-id string?)
-        :ret p/entity?)
+        :ret p/entityd?)
 
 
 (defn by-invoice-id
@@ -320,4 +340,4 @@
 
 (s/fdef by-charge-id
         :args (s/cat :db p/db? :invoice-id string?)
-        :ret p/entity?)
+        :ret p/entityd?)

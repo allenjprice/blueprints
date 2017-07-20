@@ -7,7 +7,9 @@
 ;; Connection Fixture
 ;; =============================================================================
 
+
 (def ^:dynamic *conn* nil)
+
 
 (defn acquire-conn []
   (let [db-name (gensym)
@@ -17,8 +19,10 @@
       (schema/conform conn :db.part/starcity)
       conn)))
 
+
 (defn release-conn [conn]
   (d/release conn))
+
 
 (defmacro with-conn
   "Acquires a datomic connection and binds it locally to symbol while executing
@@ -32,6 +36,7 @@
             (when-not *conn*
               (release-conn ~symbol))))))
 
+
 (defn conn-fixture
   "Fixture function to acquire a Datomic connection for all tests in a
   namespace."
@@ -40,6 +45,7 @@
     (binding [*conn* r]
       (test-fn))))
 
+
 ;; =============================================================================
 ;; Helpers
 ;; =============================================================================
@@ -47,10 +53,12 @@
 (defn speculate [db tx-data]
   (:db-after (d/with db tx-data)))
 
+
 (defn attr
   "Retrieve attr from db."
   [conn attr]
   (d/entity (d/db conn) attr))
+
 
 (defmacro test-attr
   [symbol attr & exprs]
@@ -61,28 +69,44 @@
            (is (created ~symbol))
            ~@exprs)))))
 
+
+(defmacro enum-present [attr]
+  (let [conn (gensym)]
+    `(testing (str "attribute " ~attr)
+       (with-conn ~conn
+         (let [attr# (attr ~conn ~attr)]
+           (is (created attr#)))))))
+
+
 ;; =============================================================================
 ;; Schema Validators
 ;; =============================================================================
 
+
 (def created (comp not nil?))
+
 
 (defn unique-identity [attr]
   (= (:db/unique attr) :db.unique/identity))
 
+
 (defn value-type [attr type]
   (= (:db/valueType attr) (keyword "db.type" (name type))))
 
+
 (defn cardinality [attr card]
   (= (:db/cardinality attr) (keyword "db.cardinality" (name card))))
+
 
 (def fulltext
   "Is `attr` fulltext indexed?"
   :db/fulltext)
 
+
 (def indexed
   "Is `attr` indexed?"
   :db/index)
+
 
 (def component
   "Is `attr` a component attribute?"

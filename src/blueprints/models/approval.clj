@@ -105,7 +105,7 @@
     [(create approver approvee unit license move-in)
      ;; Change role
      {:db/id (:db/id approvee) :account/role :account.role/onboarding}
-     (deposit/create approvee (int (unit/rate unit license)))
+     (deposit/create approvee (unit/rate unit license))
      (onboard/create approvee)
      (application/change-status (:account/application approvee)
                                 :application.status/approved)]))

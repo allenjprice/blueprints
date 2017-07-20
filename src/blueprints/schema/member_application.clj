@@ -33,6 +33,7 @@
       [submitted-at :instant
        "The time at which the application was submitted."]))]))
 
+
 (def ^{:added "1.0.0"} pet
   (s/generate-schema
    [(s/schema
@@ -41,6 +42,7 @@
       [type :keyword "The type of pet."]
       [breed :string "The pet's breed."]
       [weight :long "The weight of the pet."]))]))
+
 
 (def ^{:added "1.0.0"} community-fitness
   (s/generate-schema
@@ -62,6 +64,7 @@
       [dealbreakers :string :fulltext
        "Response to: 'Do you have an dealbreakers?'"]))]))
 
+
 (def ^{:added "1.0.x"} add-has-pet
   (s/generate-schema
    [(s/schema
@@ -69,6 +72,7 @@
      (s/fields
       [has-pet :boolean
        "Whether or not applicant has a pet."]))]))
+
 
 (defn- statuses [part]
   [{:db/id    (d/tempid part)
@@ -80,6 +84,7 @@
    {:db/id    (d/tempid part)
     :db/ident :member-application.status/rejected}])
 
+
 (defn- ^{:added "1.1.3"} add-status [part]
   (->> (s/generate-schema
         [(s/schema
@@ -88,6 +93,7 @@
            [status :ref
             "The status of this member's application."]))])
        (concat (statuses part))))
+
 
 (def ^{:added "1.1.4"} improvements
   "A variety of improvements to the application schema that add indices to all
@@ -112,14 +118,17 @@
    {:db/id  :member-application/submitted-at
     :db/doc "DEPRECATED 11/20/16"}])
 
+
 (defn- rename-attr [[from to]]
   {:db/id               from
    :db/ident            to
    :db.alter/_attribute :db.part/db})
 
+
 (defn- rename-attrs [& pairs]
   (assert (even? (count pairs)))
   (mapv rename-attr (partition 2 pairs)))
+
 
 (def ^{:added "1.3.0"} rename-member-application
   (rename-attrs
@@ -132,6 +141,7 @@
    :member-application/has-pet :application/has-pet
    :member-application/status :application/status))
 
+
 (def ^{:added "1.3.0"} rename-statuses
   [{:db/id    :member-application.status/approved
     :db/ident :application.status/approved}
@@ -142,6 +152,7 @@
    {:db/id    :member-application.status/submitted
     :db/ident :application.status/submitted}])
 
+
 (def ^{:added "1.3.0"} rename-community-fitness
   (rename-attrs
    :community-fitness/prior-community-housing :fitness/experience
@@ -150,6 +161,7 @@
    :community-fitness/why-interested :fitness/interested
    :community-fitness/dealbreakers :fitness/dealbreakers))
 
+
 (def ^{:added "1.6.0"} add-conflicts-to-fitness
   (s/generate-schema
    [(s/schema
@@ -157,6 +169,7 @@
      (s/fields
       [conflicts :string :fulltext
        "How is applicant at resolving conflicts?"]))]))
+
 
 (defn- ^{:added "1.6.0"} add-application-submitted [part]
   [{:db/id    (d/tempid part)
@@ -171,6 +184,7 @@
                    :application/status :application.status/submitted}
                   [:db.cmd/create :application/submit {:data {:application-id application-id}}]
                   [:db.msg/create :application/submitted {:application-id application-id}]]})}])
+
 
 (def ^{:added "1.7.1"} add-pet-attrs-06132017
   (s/generate-schema
