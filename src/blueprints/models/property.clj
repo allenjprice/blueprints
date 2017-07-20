@@ -12,23 +12,67 @@
 
 
 (def name
+  "The name of this property."
   :property/name)
+
+(s/fdef name
+        :args (s/cat :property p/entity?)
+        :ret string?)
 
 
 (def internal-name
-  :property/internal-name)
+  "The internal (name) of this property. Can be used as a lookup."
+  :property/code)
+
+(s/fdef internal-name
+        :args (s/cat :property p/entity?)
+        :ret string?)
 
 
-(def managed-account-id
+(def code
+  "Alias to `property/internal-name`"
+  internal-name)
+
+
+(def ^{:deprecated "1.10.0"} managed-account-id
+  "DEPRECATED: Use `property/rent-connect-id` instead."
   :property/managed-account-id)
 
 
+(def ^{:added "1.10.0"} rent-connect-id
+  "The id for the account to route rent payments to."
+  :property/rent-account-id)
+
+(s/fdef rent-connect-id
+        :args (s/cat :property p/entity?)
+        :ret string?)
+
+
+(def ^{:added "1.10.0"} deposit-connect-id
+  "The id for the account to route security deposit payments to."
+  :property/rent-account-id)
+
+(s/fdef deposit-connect-id
+        :args (s/cat :property p/entity?)
+        :ret string?)
+
+
 (def ops-fee
+  "The percentage of rent payments to route to the parent Stripe account."
   :property/ops-fee)
+
+(s/fdef ops-fee
+        :args (s/cat :property p/entity?)
+        :ret float?)
 
 
 (def units
+  "Units in this property."
   :property/units)
+
+(s/fdef units
+        :args (s/cat :property p/entity?)
+        :ret (s/+ p/entityd?))
 
 
 ;; TODO: Actually store this in the DB.
@@ -41,6 +85,10 @@
 (def available-on
   "Date that property is available on."
   :property/available-on)
+
+(s/fdef available-on
+        :args (s/cat :property p/entity?)
+        :ret inst?)
 
 
 (def accepting-tours?
@@ -56,7 +104,7 @@
 (defn llc [property]
   (get {"52gilbert"   "52 Gilbert LLC"
         "2072mission" "2072-2074 Mission LLC"}
-       (internal-name property)))
+       (code property)))
 
 
 ;; =============================================================================
@@ -65,12 +113,18 @@
 
 
 (defn by-internal-name
+  "Look up a property by its internal name."
   [db internal-name]
   (d/entity db [:property/internal-name internal-name]))
 
 (s/fdef by-internal-name
         :args (s/cat :db p/db? :internal-name string?)
         :ret p/entity?)
+
+
+(def by-code
+  "Alias for `property/by-internal-name`."
+  by-internal-name)
 
 
 ;; =============================================================================
