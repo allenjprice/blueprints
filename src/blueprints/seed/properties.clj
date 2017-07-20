@@ -72,6 +72,13 @@
     :property/managed-account-id "acct_195qlXH2E3GdRImX"}])
 
 
+(def ^{:added "1.10.0"} add-deposit-connect-ids
+  [{:db/id                       [:property/code "52gilbert"]
+    :property/deposit-connect-id "acct_195qlXH2E3GdRImX"}
+   {:db/id                       [:property/code "2072mission"]
+    :property/deposit-connect-id "acct_195qlXH2E3GdRImX"}])
+
+
 (defn properties-present?
   "Are the properties to be seeded already present in the database? This is
   needed because the production properties arrived in the db prior to use of
@@ -90,4 +97,7 @@
       {:txes [(add-initial-properties conn part)]}
       :blueprints.seed/add-managed-ids
       {:txes     [add-managed-ids]
+       :requires [:blueprints.seed/add-initial-properties]}
+      :blueprints.seed/add-deposit-connect-ids
+      {:txes     [add-deposit-connect-ids]
        :requires [:blueprints.seed/add-initial-properties]}})))
