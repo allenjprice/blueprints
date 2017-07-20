@@ -112,9 +112,16 @@
         :ret (s/or :entity p/entity? :nothing nil?))
 
 
-(def payment-for
+(defn- infer-payment-for [payment]
+  (cond
+    (some? (:deposit/_payments payment)) :payment.for/deposit
+    (some? (:order/_payments payment)) :payment.for/order))
+
+
+(defn payment-for [payment]
   "What this payment is for."
-  :payment/for)
+  (or (:payment/for payment)
+      (infer-payment-for payment)))
 
 (s/fdef payment-for
         :args (s/cat :payment p/entity?)
@@ -216,33 +223,50 @@
 
 (defn create
   "Create a new payment."
-  [amount & {:keys [uuid account due for status]
-             :or   {uuid   (d/squuid)
-                    status :payment.status/pending}}]
-  (let [aid (when-some [a account] (td/id account))]
+  [amount account & {:keys [uuid due for status method charge-id invoice-id]
+                     :or   {uuid   (d/squuid)
+                            status :payment.status/pending}}]
+  (when (= method :payment.method/stripe-charge)
+    (assert (some? charge-id)
+            "The charge id must be specified when the method is `stripe-charge`!"))
+  (when (= method :payment.method/stripe-invoice)
+    (assert (some? invoice-id)
+            "The invoice id must be specified when the method is `stripe-invoice`!"))
+  (let [method (cond
+                 (and (some? charge-id) (nil? method))  :payment.method/stripe-charge
+                 (and (some? invoice-id) (nil? method)) :payment.method/stripe-invoice)]
     (tb/assoc-when
-     {:db/id          (d/tempid :db.part/starcity)
-      :payment/id     uuid
-      :payment/amount amount
-      :payment/status status}
-     :payment/account aid
-     :payment/due due
-     :payment/for for)))
+     {:db/id           (d/tempid :db.part/starcity)
+      :payment/id      uuid
+      :payment/amount  amount
+      :payment/account (td/id account)
+      :payment/status  status}
+    :stripe/invoice-id invoice-id
+    :stripe/charge-id charge-id
+    :payment/method method
+    :payment/due due
+    :payment/for for)))
 
 (s/fdef create
         :args (s/cat :amount float?
+                     :account p/entity?
                      :opts (s/keys* :opt-un [::uuid
-                                             ::account
                                              ::due
                                              ::for
                                              ::status
-                                             ::charge-id]))
+                                             ::charge-id
+                                             ::invoice-id
+                                             ::method]))
         :ret (s/keys :req [:db/id
                            :payment/id
-                           :payment/status]
-                     :opt [:payment/account
+                           :payment/amount
+                           :payment/status
+                           :payment/account]
+                     :opt [:payment/method
                            :payment/due
-                           :payment/for]))
+                           :payment/for
+                           :stripe/invoice-id
+                           :stripe/charge-id]))
 
 
 (defn add-invoice
@@ -276,8 +300,8 @@
   [payment check]
   (let [status (when-let [s (check/status check)] )]
     {:db/id          (td/id payment)
-    :payment/check  (td/id check)
-    :payment/method :payment.method/check}))
+     :payment/check  (td/id check)
+     :payment/method :payment.method/check}))
 
 
 (defn is-paid
@@ -327,7 +351,7 @@
 
 (s/fdef by-charge-id
         :args (s/cat :db p/db? :charge-id string?)
-        :ret p/entityd?)
+        :ret (s/or :entity p/entityd? :nothing nil?))
 
 
 (defn by-invoice-id
