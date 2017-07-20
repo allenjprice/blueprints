@@ -12,6 +12,7 @@
    {:db/id    (d/tempid part)
     :db/ident :check.status/cancelled}])
 
+
 (defn- ^{:added "1.1.1"} schema [part]
   (->> (s/generate-schema
         [(s/schema
@@ -33,13 +34,24 @@
             "Status of the check wrt operations."]))])
        (concat (statuses part))))
 
+
 (defn- ^{:added "1.2.0"} add-received-status [part]
   [{:db/id    (d/tempid part)
     :db/ident :check.status/received}])
+
+
+(def ^{:added "1.10.0"} fix-canceled-spelling
+  [{:db/id    :check.status/cancelled
+    :db/ident :check.status/canceled}])
+
 
 (defn norms [part]
   {:schema/add-check-schema-11-4-16
    {:txes [(schema part)]}
 
    :schema.check/add-received-status
-   {:txes [(add-received-status part)]}})
+   {:txes [(add-received-status part)]}
+
+   :schema.check/fix-canceled-spelling-07202017
+   {:txes [fix-canceled-spelling]
+    :requires [:schema/add-check-schema-11-4-16]}})
