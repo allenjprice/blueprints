@@ -1,6 +1,7 @@
 (ns blueprints.models.check
   (:refer-clojure :exclude [update])
   (:require [clojure.spec :as s]
+            [datomic.api :as d]
             [toolbelt
              [core :as tb]
              [predicates :as p]]))
@@ -119,7 +120,8 @@
   "Produce the tx-data required to create a `check` entity."
   [name amount date number & {:keys [status received-on bank]}]
   (tb/assoc-when
-   {:check/name   name
+   {:db/id        (d/tempid :db.part/starcity)
+    :check/name   name
     :check/amount amount
     :check/date   date
     :check/number number
