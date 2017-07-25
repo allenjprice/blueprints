@@ -41,7 +41,7 @@
 
 (def ^{:added "1.10.0"} rent-connect-id
   "The id for the account to route rent payments to."
-  :property/rent-account-id)
+  :property/rent-connect-id)
 
 (s/fdef rent-connect-id
         :args (s/cat :property p/entity?)
@@ -50,7 +50,7 @@
 
 (def ^{:added "1.10.0"} deposit-connect-id
   "The id for the account to route security deposit payments to."
-  :property/rent-account-id)
+  :property/deposit-connect-id)
 
 (s/fdef deposit-connect-id
         :args (s/cat :property p/entity?)
