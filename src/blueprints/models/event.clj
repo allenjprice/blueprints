@@ -79,7 +79,8 @@
 (defn job?
   "Is this event a job?"
   [event]
-  (nil? (topic event)))
+  (or (nil? (topic event))
+      (= :job (topic event))))
 
 (s/fdef job?
         :args (s/cat :event p/entity?)
