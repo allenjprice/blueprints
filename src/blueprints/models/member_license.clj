@@ -52,11 +52,25 @@
   :member-license/status)
 
 
-(defn managed-account-id
+(defn ^{:deprecated "1.10.0"} managed-account-id
   "Retrieve the id of the managed Stripe account for the property that
   `member-license` is a part of."
   [member-license]
   (-> member-license unit unit/property property/managed-account-id))
+
+
+(defn rent-connect-id
+  "Retrieve the id of the managed Stripe account used for rent payments for the
+  property that `member-license` belongs to."
+  [member-license]
+  (-> member-license unit unit/property property/rent-connect-id))
+
+
+(defn deposit-connect-id
+  "Retrieve the id of the managed Stripe account used for security deposit
+  payments for the property that `member-license` belongs to."
+  [member-license]
+  (-> member-license unit unit/property property/deposit-connect-id))
 
 
 (def property
