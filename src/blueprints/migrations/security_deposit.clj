@@ -1,7 +1,8 @@
 (ns blueprints.migrations.security-deposit
   (:require [blueprints.models.security-deposit :as deposit]
             [blueprints.models.charge :as charge]
-            [datomic.api :as d]))
+            [datomic.api :as d]
+            [toolbelt.core :as tb]))
 
 
 (defn deposits [db method]
@@ -22,15 +23,16 @@
 
 
 (defn charge->payment [deposit charge]
-  {:db/id            (d/tempid :db.part/starcity)
-   :payment/id       (d/squuid)
-   :payment/method   :payment.method/stripe-charge
-   :payment/status   (charge-status->payment-status (charge/status charge))
-   :payment/amount   (charge/amount charge)
-   :payment/for      :payment.for/deposit
-   :payment/account  (:db/id (charge/account charge))
-   :payment/due      (:security-deposit/due-by deposit)
-   :stripe/charge-id (charge/id charge)})
+  (tb/assoc-when
+   {:db/id            (d/tempid :db.part/starcity)
+    :payment/id       (d/squuid)
+    :payment/method   :payment.method/stripe-charge
+    :payment/status   (charge-status->payment-status (charge/status charge))
+    :payment/amount   (charge/amount charge)
+    :payment/for      :payment.for/deposit
+    :payment/account  (:db/id (charge/account charge))
+    :stripe/charge-id (charge/id charge)}
+   :payment/due      (:security-deposit/due-by deposit)))
 
 
 (defn charge-deposits [conn]
