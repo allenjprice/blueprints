@@ -133,18 +133,13 @@
         :ret integer?)
 
 
-;; (defn- amount-pending-checks [deposit]
-;;   (->> (:security-deposit/checks deposit)
-;;        (filter #(or (= (:check/status %) :check.status/received)
-;;                     (= (:check/status %) :check.status/deposited)))
-;;        (reduce #(+ %1 (:check/amount %2)) 0)))
-
-
-;; (defn- amount-pending-charges [deposit]
-;;   (letfn [(-cents [amt] (float (/ amt 100)))]
-;;     (->> (:security-deposit/charges deposit)
-;;          (filter #(= (:charge/status %) :charge.status/pending))
-;;          (reduce #(+ %1 (:charge/amount %2 0)) 0))))
+(defn amount-paid
+  "The amount that has been paid."
+  [deposit]
+  (reduce
+   #(+ %1 (if (payment/paid? %2) (payment/amount %2) 0))
+   0
+   (payments deposit)))
 
 
 (defn amount-pending
