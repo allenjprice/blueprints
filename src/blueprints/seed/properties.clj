@@ -66,17 +66,17 @@
 
 
 (def ^{:added "1.8.0"} add-managed-ids
-  [{:db/id [:property/internal-name "52gilbert"]
-    :property/managed-account-id "acct_195qlXH2E3GdRImX"}
-   {:db/id [:property/internal-name "2072mission"]
-    :property/managed-account-id "acct_195qlXH2E3GdRImX"}])
+  [{:db/id                       [:property/internal-name "52gilbert"]
+    :property/managed-account-id "acct_191838JDow24Tc1a"}
+   {:db/id                       [:property/internal-name "2072mission"]
+    :property/managed-account-id "acct_191838JDow24Tc1a"}])
 
 
 (def ^{:added "1.10.0"} add-deposit-connect-ids
   [{:db/id                       [:property/code "52gilbert"]
-    :property/deposit-connect-id "acct_195qlXH2E3GdRImX"}
+    :property/deposit-connect-id "acct_191838JDow24Tc1a"}
    {:db/id                       [:property/code "2072mission"]
-    :property/deposit-connect-id "acct_195qlXH2E3GdRImX"}])
+    :property/deposit-connect-id "acct_191838JDow24Tc1a"}])
 
 
 (defn properties-present?
