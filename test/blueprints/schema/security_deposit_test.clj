@@ -40,6 +40,14 @@
     (is (dbt/value-type a :float))
     (is (dbt/indexed a)))
 
+  (test-attr a :deposit/refund-status
+    (is (dbt/value-type a :ref))
+    (is (dbt/indexed a)))
+
+  (dbt/enum-present :deposit.refund-status/initiated)
+  (dbt/enum-present :deposit.refund-status/successful)
+  (dbt/enum-present :deposit.refund-status/failed)
+
   ;; deprecations
 
   (test-attr a :security-deposit/amount-received

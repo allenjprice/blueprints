@@ -141,6 +141,10 @@
    0
    (payments deposit)))
 
+(s/fdef amount-paid
+        :args (s/cat :deposit p/entity?)
+        :ret integer?)
+
 
 (defn amount-pending
   "The amount that is still pending, either in the form of charges or checks."
@@ -149,6 +153,23 @@
    #(+ %1 (if (payment/pending? %2) (payment/amount %2) 0))
    0
    (payments deposit)))
+
+(s/fdef amount-pending
+        :args (s/cat :deposit p/entity?)
+        :ret integer?)
+
+
+(defn refund-status
+  "The status of the refund. `nil` when not refunded, initiated, successful or
+  failed."
+  [deposit]
+  (:deposit/refund-status deposit))
+
+(s/fdef refund-status
+        :args (s/cat :deposit p/entity?)
+        :ret (s/or :nil nil? :status #{:deposit.refund-status/initiated
+                                       :deposit.refund-status/successful
+                                       :deposit.refund-status/failed}))
 
 
 ;; =============================================================================
@@ -190,6 +211,21 @@
        (is-paid? deposit)))
 
 (s/fdef partially-paid?
+        :args (s/cat :deposit p/entity?)
+        :ret boolean?)
+
+
+(defn is-refundable?
+  "Can this security deposit be refunded via Stripe?"
+  [deposit]
+  (and (nil? (refund-status deposit))
+       (seq (payments deposit))
+       (let [charge-total (->> (payments deposit)
+                               (filter #(and (payment/charge? %1) (payment/paid? %1)))
+                               (reduce #(+ %1 (payment/amount %2)) 0))]
+         (= (amount deposit) charge-total))))
+
+(s/fdef is-refundable?
         :args (s/cat :deposit p/entity?)
         :ret boolean?)
 

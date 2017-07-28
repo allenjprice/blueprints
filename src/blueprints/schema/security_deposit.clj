@@ -118,6 +118,22 @@
         "The total amount that is required to be paid."]))])))
 
 
+(defn ^{:added "1.10.2"} add-refund-status [part]
+  (concat
+   (s/generate-schema
+    [(s/schema
+      deposit
+      (s/fields
+       [refund-status :ref :indexed
+        "The status of the security deposit's refund."]))])
+   [{:db/id    (d/tempid part)
+     :db/ident :deposit.refund-status/initiated}
+    {:db/id    (d/tempid part)
+     :db/ident :deposit.refund-status/successful}
+    {:db/id    (d/tempid part)
+     :db/ident :deposit.refund-status/failed}]))
+
+
 (defn norms [part]
   {:schema/add-security-deposit-schema-8-18-16
    {:txes [(concat schema
@@ -132,11 +148,14 @@
     :requires [:schema/add-security-deposit-schema-8-18-16]}
 
    :schema.security-deposit/improve-charges-attr-02-14-17
-   {:txes [improve-charges-attr]
+   {:txes     [improve-charges-attr]
     :requires [:schema/alter-security-deposit-schema-11-2-16]}
 
    :schema.security-deposit/schema-overhaul-07202017
-   {:txes [schema-overhaul]
+   {:txes     [schema-overhaul]
     :requires [:schema/add-security-deposit-schema-8-18-16
                :schema/add-checks-to-security-deposit-schema-11-4-16
-               :schema.security-deposit/improve-charges-attr-02-14-17]}})
+               :schema.security-deposit/improve-charges-attr-02-14-17]}
+
+   :schema.security-deposit/add-refund-status-07272017
+   {:txes [(add-refund-status part)]}})
