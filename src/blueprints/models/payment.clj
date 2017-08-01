@@ -362,6 +362,6 @@
     (assert-invoice py)
     py))
 
-(s/fdef by-charge-id
+(s/fdef by-invoice-id
         :args (s/cat :db p/db? :invoice-id string?)
-        :ret p/entityd?)
+        :ret (s/or :entity p/entityd? :nothing nil?))
