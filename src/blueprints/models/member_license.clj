@@ -178,8 +178,11 @@
          [?m :member-license/rent-payments ?p]
          [?p :rent-payment/period-start ?start]
          [?p :rent-payment/period-end ?end]
-         [(.after ^java.util.Date ?end ?date)]
-         [(.before ^java.util.Date ?start ?date)]]
+         (or-join [?end ?start ?date]
+           [(.equals ^java.util.Date ?end ?date)]
+           [(.equals ^java.util.Date ?start ?date)]
+           (and [(.after ^java.util.Date ?end ?date)]
+             [(.before ^java.util.Date ?start ?date)]))]
        db (:db/id member-license) date))
 
 
