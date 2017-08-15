@@ -7,6 +7,17 @@
              [datomic :as td]
              [predicates :as p]]))
 
+;; =============================================================================
+;; Status
+;; =============================================================================
+
+
+(s/def ::status
+  #{:event.status/pending
+    :event.status/failed
+    :event.status/seen
+    :event.status/successful})
+
 
 ;; =============================================================================
 ;; Selectors
@@ -185,7 +196,23 @@
   [db uuid]
   (d/entity db [:event/uuid uuid]))
 
+
 (defn by-id
   "Look up an event by its `id`."
   [db id]
   (d/entity db [:event/id id]))
+
+
+(defn by-status
+  "Retrieve events with `status`."
+  [db status]
+  (->> (d/q '[:find [?e ...]
+              :in $ ?s
+              :where
+              [?e :event/status ?s]]
+            db status)
+       (map (partial d/entity db))))
+
+(s/fdef by-status
+        :args (s/cat :db p/db? :status ::status)
+        :ret (s/* p/entity?))
