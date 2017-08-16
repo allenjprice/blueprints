@@ -2,7 +2,17 @@
   (:refer-clojure :exclude [name])
   (:require [datomic.api :as d]
             [clojure.spec :as s]
-            [toolbelt.predicates :as p]))
+            [toolbelt.predicates :as p]
+            [toolbelt.core :as tb]))
+
+
+;; =============================================================================
+;; Spec
+;; =============================================================================
+
+
+(s/def ::billed
+  #{:service.billed/once :service.billed/monthly})
 
 
 ;; =============================================================================
@@ -62,7 +72,7 @@
 
 (s/fdef billed
         :args (s/cat :service p/entity?)
-        :ret #{:service.billed/once :service.billed/monthly})
+        :ret ::billed)
 
 
 ;; =============================================================================
@@ -146,3 +156,32 @@
 
 (defn weekly-cleaning [db]
   (by-code db "cleaning,weekly"))
+
+
+;; =============================================================================
+;; Transactions
+;; =============================================================================
+
+
+(defn create
+  "Create a new service."
+  [code name desc billed & {:keys [price rental]
+                            :or   {rental false}}]
+  (tb/assoc-when
+   {:db/id          (d/tempid :db.part/starcity)
+    :service/code   code
+    :service/name   name
+    :service/desc   desc
+    :service/billed billed
+    :service/rental rental}
+   :service/price (float price)))
+
+(s/def ::price (s/and number? pos?))
+(s/def ::rental boolean?)
+(s/fdef create
+        :args (s/cat :code string?
+                     :name string?
+                     :desc string?
+                     :billed ::billed
+                     :opts (s/keys* :opt-un [::price ::rental]))
+        :ret map?)
