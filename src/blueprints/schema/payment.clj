@@ -74,9 +74,35 @@
        "The check that this payment was made with."]))]))
 
 
+(defn- ^{:added "1.11.0"} add-refunded-status [part]
+  [{:db/id    (d/tempid part)
+    :db/ident :payment.status/refunded}])
+
+
+(defn- ^{:added "1.11.0"} add-other-method [part]
+  [{:db/id    (d/tempid part)
+    :db/ident :payment.method/other}])
+
+
+(def ^{:added "1.11.0"} add-date-fields
+  (s/generate-schema
+   [(s/schema
+     payment
+     (s/fields
+      [paid-on :instant :indexed
+       "The instant at which this payment was paid. Needed for legacy reasons w/ `rent-payment.`"]
+      [pstart :instant :indexed
+       "The start date of the period that this payment corresponds to."]
+      [pend :instant :indexed
+       "The end date of the period that this payment corresponds to."]))]))
+
+
 (defn norms [part]
   {:schema.payment/add-schema-06292017
    {:txes [schema (methods part) (statuses part) (fors part)]}
 
    :schema.payment/add-check-ref-07202017
-   {:txes [add-check-ref]}})
+   {:txes [add-check-ref]}
+
+   :schema.payment/improvements-08162017
+   {:txes [(add-refunded-status part) add-date-fields (add-other-method part)]}})
