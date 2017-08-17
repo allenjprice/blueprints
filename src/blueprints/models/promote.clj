@@ -3,7 +3,7 @@
             [blueprints.models.approval :as approval]
             [blueprints.models.member-license :as member-license]
             [blueprints.models.property :as property]
-            [blueprints.models.rent-payment :as rent-payment]
+            [blueprints.models.payment :as payment]
             [blueprints.models.security-deposit :as deposit]
             [blueprints.models.unit :as unit]
             [clj-time.coerce :as c]
@@ -22,14 +22,14 @@
     (tb/round (* (/ rate days-in-month) days-remaining) 2)))
 
 
-(defn- prorated-payment [property start rate]
+(defn- prorated-payment [property account start rate]
   (let [tz    (property/time-zone property)
         start (date/beginning-of-day start tz)]
-    (rent-payment/create (prorated-amount start rate)
-                         start
-                         (date/end-of-month start tz)
-                         :rent-payment.status/due
-                         :due-date start)))
+    (payment/create (prorated-amount start rate) account
+                    :pstart start
+                    :pend (date/end-of-month start tz)
+                    :status :payment.status/due
+                    :due start)))
 
 
 (defn- security-deposit-due-date
@@ -64,6 +64,7 @@
         approval       (approval/by-account account)
         member-license (approval->member-license approval)
         payment        (prorated-payment (approval/property approval)
+                                         account
                                          (approval/move-in approval)
                                          (member-license/rate member-license))]
     [(->> (tb/assoc-when
