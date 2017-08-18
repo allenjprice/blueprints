@@ -258,7 +258,7 @@
 (defn create
   "Create a new payment."
   [amount account & {:keys [uuid due for status method charge-id invoice-id
-                            pstart pend]
+                            pstart pend paid-on]
                      :or   {uuid   (d/squuid)
                             status :payment.status/pending}}]
   (when (= method :payment.method/stripe-charge)
@@ -271,7 +271,8 @@
   (let [method (cond
                  (and (some? charge-id) (nil? method))  :payment.method/stripe-charge
                  (and (some? invoice-id) (nil? method)) :payment.method/stripe-invoice
-                 :otherwise                             method)]
+                 :otherwise                             method)
+        status (if (some? paid-on) :payment.status/paid status)]
     (toolbelt.core/assoc-when
      {:db/id           (d/tempid :db.part/starcity)
       :payment/id      uuid
@@ -284,7 +285,8 @@
      :payment/due due
      :payment/for for
      :payment/pstart pstart
-     :payment/pend pend)))
+     :payment/pend pend
+     :payment/paid-on paid-on)))
 
 (s/fdef create
         :args (s/cat :amount float?
