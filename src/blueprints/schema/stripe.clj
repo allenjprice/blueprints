@@ -37,6 +37,15 @@
        "The id of the Stripe invoice."]))]))
 
 
+(def ^{:added "1.11.0"} add-source-id
+  (s/generate-schema
+   [(s/schema
+     stripe
+     (s/fields
+      [source-id :string :indexed
+       "ID of a Stripe source."]))]))
+
+
 (defn norms [part]
   {:schema.stripe/add-schema-04132017
    {:txes [schema]}
@@ -46,4 +55,7 @@
     :requires [:schema.stripe/add-schema-04132017]}
 
    :schema.stripe/schema-improvements-06292017
-   {:txes [schema-improvements]}})
+   {:txes [schema-improvements]}
+
+   :schema.stripe/add-source-id-08182017
+   {:txes [add-source-id]}})

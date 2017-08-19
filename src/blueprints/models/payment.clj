@@ -21,12 +21,6 @@
                   (method payment))))
 
 
-(defn- assert-invoice [payment]
-  (assert (invoice? payment)
-          (format "Invalid state! Payment should have Stripe invoice method; instead has %s"
-                  (method payment))))
-
-
 ;; =============================================================================
 ;; Specs
 ;; =============================================================================
@@ -163,10 +157,20 @@
 (defn invoice-id
   "The id of the Stripe invoice."
   [payment]
-  (assert-invoice payment)
+  (assert-stripe payment)
   (:stripe/invoice-id payment))
 
 (s/fdef invoice-id
+        :args (s/cat :payment p/entity?)
+        :ret (s/or :string string? :nothing nil?))
+
+
+(defn source-id
+  "The id of the Stripe payment source."
+  [payment]
+  (:stripe/source-id payment))
+
+(s/fdef source-id
         :args (s/cat :payment p/entity?)
         :ret (s/or :string string? :nothing nil?))
 
@@ -193,7 +197,7 @@
 (defn invoice?
   "Is this payment paid via a Stripe invoice?"
   [payment]
-  (has-method? :payment.method/stripe-invoice payment))
+  (some? (invoice-id payment)))
 
 
 (defn autopay?
@@ -253,12 +257,14 @@
 (s/def ::due inst?)
 (s/def ::pstart inst?)
 (s/def ::pend inst?)
+(s/def ::paid-on inst?)
+(s/def ::source-id string?)
 
 
 (defn create
   "Create a new payment."
   [amount account & {:keys [uuid due for status method charge-id invoice-id
-                            pstart pend paid-on]
+                            pstart pend paid-on source-id]
                      :or   {uuid   (d/squuid)
                             status :payment.status/pending}}]
   (when (= method :payment.method/stripe-charge)
@@ -269,8 +275,8 @@
             "The invoice id must be specified when the method is `stripe-invoice`!"))
   ;; TODO: The `method` seems unnecessary.
   (let [method (cond
-                 (and (some? charge-id) (nil? method))  :payment.method/stripe-charge
                  (and (some? invoice-id) (nil? method)) :payment.method/stripe-invoice
+                 (and (some? charge-id) (nil? method))  :payment.method/stripe-charge
                  :otherwise                             method)
         status (if (some? paid-on) :payment.status/paid status)]
     (toolbelt.core/assoc-when
@@ -281,6 +287,7 @@
       :payment/status  status}
      :stripe/invoice-id invoice-id
      :stripe/charge-id charge-id
+     :stripe/source-id source-id
      :payment/method method
      :payment/due due
      :payment/for for
@@ -299,7 +306,9 @@
                                              ::pend
                                              ::charge-id
                                              ::invoice-id
-                                             ::method]))
+                                             ::method
+                                             ::paid-on
+                                             ::source-id]))
         :ret (s/keys :req [:db/id
                            :payment/id
                            :payment/amount
@@ -310,6 +319,8 @@
                            :payment/for
                            :payment/pstart
                            :payment/pend
+                           :payment/paid-on
+                           :stripe/source-id
                            :stripe/invoice-id
                            :stripe/charge-id]))
 
@@ -387,8 +398,8 @@
 
 
 (defn by-charge-id
-  "Look up a payment by its Stripe charge id. Payment must have method
-  `:payment.type/stripe-charge` or `:payment.type/stripe-invoice`."
+  "Look up a payment by its Stripe charge id. Payment must have a Stripe
+  method."
   [db charge-id]
   (let [py (d/entity db [:stripe/charge-id charge-id])]
     (assert-stripe py)
@@ -400,11 +411,11 @@
 
 
 (defn by-invoice-id
-  "Look up a payment by its Stripe invoice id. Payment must have method
-  `:payment.type/stripe-invoice`."
+  "Look up a payment by its Stripe invoice id. Payment must have a Stripe
+  method."
   [db invoice-id]
   (let [py (d/entity db [:stripe/invoice-id invoice-id])]
-    (assert-invoice py)
+    (assert-stripe py)
     py))
 
 (s/fdef by-invoice-id
