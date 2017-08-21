@@ -253,7 +253,7 @@
 ;; =============================================================================
 
 
-(s/def ::quantity (s/and pos? float?))
+(s/def ::quantity (s/and pos? number?))
 (s/def ::desc string?)
 (s/def ::variant integer?)
 (s/def ::price (s/and pos? float?))
@@ -274,7 +274,7 @@
      :order/status  status}
     :order/price price
     :order/variant variant
-    :order/quantity quantity
+    :order/quantity (float quantity)
     :order/desc desc)))
 
 (s/fdef create
