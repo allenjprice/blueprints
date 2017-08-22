@@ -110,4 +110,31 @@
 
 (s/fdef by-account
         :args (s/cat :db p/db? :account p/entity?)
-        :ret (s/or :entity p/entity? :nothing nil?))
+        :ret (s/or :entity p/entityd? :nothing nil?))
+
+
+(defn by-customer-id
+  "Look up a Stripe customer by `customer-id` (Stripe key)."
+  [db customer-id]
+  (d/entity db [:stripe-customer/customer-id customer-id]))
+
+(s/fdef by-customer-id
+        :args (s/cat :db p/db? :customer-id string?)
+        :ret (s/or :entity p/entityd? :nothing nil?))
+
+
+(defn autopay
+  "Retrieve the customer that lives on the connected account for autopay
+  payments--the inverse of `by-account`."
+  [db account]
+  (->> (d/q '[:find ?e .
+              :in $ ?a
+              :where
+              [?e :stripe-customer/account ?a]
+              [?e :stripe-customer/managed _]]
+            db (td/id account))
+       (d/entity db)))
+
+(s/fdef autopay
+        :args (s/cat :db p/db? :account p/entity?)
+        :ret (s/or :entity p/entityd? :nothing nil?))
