@@ -146,7 +146,6 @@
 (defn charge-id
   "The id of the Stripe charge."
   [payment]
-  (assert-stripe payment)
   (:stripe/charge-id payment))
 
 (s/fdef charge-id
@@ -157,7 +156,6 @@
 (defn invoice-id
   "The id of the Stripe invoice."
   [payment]
-  (assert-stripe payment)
   (:stripe/invoice-id payment))
 
 (s/fdef invoice-id
