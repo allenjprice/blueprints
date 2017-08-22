@@ -116,6 +116,15 @@
         :ret (s/or :inst inst? :nothing nil?))
 
 
+(def paid-on
+  "The date at which this payment was paid."
+  :payment/paid-on)
+
+(s/fdef paid-on
+        :args (s/cat :payment p/entity?)
+        :ret (s/or :inst inst? :nothing nil?))
+
+
 (def account
   "The account that made this payment."
   :payment/account)
