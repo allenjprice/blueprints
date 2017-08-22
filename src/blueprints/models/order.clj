@@ -274,7 +274,7 @@
      :order/status  status}
     :order/price price
     :order/variant variant
-    :order/quantity (float quantity)
+    :order/quantity (when-let [q quantity] (float q))
     :order/desc desc)))
 
 (s/fdef create
