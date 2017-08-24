@@ -135,8 +135,8 @@
   (->> (d/q '[:find ?e .
               :in $ ?i
               :where
-              [?rp :rent-payment/invoice-id ?i]
-              [?e :member-license/rent-payments ?rp]]
+              [?p :stripe/invoice-id ?i]
+              [?e :member-license/rent-payments ?p]]
             db invoice-id)
        (d/entity db)))
 
@@ -146,12 +146,12 @@
   their current member license."
   [license]
   (let [payments (:member-license/rent-payments license)]
-    (->> (filter #(= (:rent-payment/status %) :rent-payment.status/paid)
+    (->> (filter #(= (:payment/status %) :payment.status/paid)
                  payments)
          (reduce
           (fn [acc payment]
-            (let [paid-on  (c/to-date-time (:rent-payment/paid-on payment))
-                  due-date (c/to-date-time (:rent-payment/due-date payment))]
+            (let [paid-on  (c/to-date-time (:payment/paid-on payment))
+                  due-date (c/to-date-time (:payment/due payment))]
               (if (t/after? paid-on due-date)
                 (inc acc)
                 acc)))
@@ -176,8 +176,8 @@
          :in $ ?m ?date
          :where
          [?m :member-license/rent-payments ?p]
-         [?p :rent-payment/period-start ?start]
-         [?p :rent-payment/period-end ?end]
+         [?p :payment/pstart ?start]
+         [?p :payment/pend ?end]
          (or-join [?end ?start ?date]
            [(.equals ^java.util.Date ?end ?date)]
            [(.equals ^java.util.Date ?start ?date)]
