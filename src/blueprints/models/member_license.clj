@@ -1,16 +1,24 @@
 (ns blueprints.models.member-license
-  (:require [clj-time
-             [coerce :as c]
-             [core :as t]]
+  (:require [blueprints.models.license :as license]
+            [blueprints.models.property :as property]
+            [blueprints.models.unit :as unit]
+            [clj-time.coerce :as c]
+            [clj-time.core :as t]
             [clojure.spec :as s]
             [datomic.api :as d]
-            [blueprints.models
-             [license :as license]
-             [property :as property]
-             [unit :as unit]]
-            [toolbelt
-             [date :as date]
-             [predicates :as p]]))
+            [toolbelt.date :as date]
+            [toolbelt.predicates :as p]))
+
+;; =============================================================================
+;; Spec
+;; =============================================================================
+
+
+(s/def ::status
+  #{:member-license.status/active
+    :member-license.status/inactive
+    :member-license.status/canceled
+    :member-license.status/renewal})
 
 
 ;; =============================================================================
@@ -18,38 +26,118 @@
 ;; =============================================================================
 
 
-(def rate
-  :member-license/rate)
+(defn rate
+  "The monthly rate in dollars for this `license`."
+  [license]
+  (:member-license/rate license))
 
-(def payments
-  :member-license/rent-payments)
+(s/fdef rate
+        :args (s/cat :license p/entity?)
+        :ret (s/and float? pos?))
 
-(def commencement
-  :member-license/commencement)
 
-(def term
-  (comp :license/term :member-license/license))
+(defn payments
+  "Rent payments made for this `license`."
+  [license]
+  (:member-license/rent-payments license))
 
-(def ends
-  :member-license/ends)
+(s/fdef payments
+        :args (s/cat :license p/entity?)
+        :ret (s/* p/entityd?))
 
-(def unit
-  :member-license/unit)
 
-(def customer
-  :member-license/customer)
+(defn commencement
+  "The commencement date of this `license`."
+  [license]
+  (:member-license/commencement license))
 
-(def subscription-id
-  :member-license/subscription-id)
+(s/fdef commencement
+        :args (s/cat :license p/entity?)
+        :ret inst?)
 
-(def plan-id
-  :member-license/plan-id)
+(def starts
+  "Alias for `blueprints.models.member-license/commencement`."
+  commencement)
 
-(def account
-  :account/_license)
 
-(def status
-  :member-license/status)
+(defn term
+  "The term in months of this `license.`"
+  [license]
+  (-> license :member-license/license :license/term))
+
+(s/fdef term
+        :args (s/cat :license p/entity?)
+        :ret pos-int?)
+
+
+(defn ends
+  "End date of this `license.`"
+  [license]
+  (:member-license/ends license))
+
+(s/fdef ends
+        :args (s/cat :license p/entity?)
+        :ret inst?)
+
+
+(defn unit
+  "The unit that this license is for."
+  [license]
+  (:member-license/unit license))
+
+(s/fdef unit
+        :args (s/cat :license p/entity?)
+        :ret p/entityd?)
+
+
+(defn customer
+  "The Stripe Customer entity that is used for this license's autopay payments."
+  [license]
+  (:member-license/customer license))
+
+(s/fdef customer
+        :args (s/cat :license p/entity?)
+        :ret (s/or :customer p/entityd? :nothing nil?))
+
+
+(defn subscription-id
+  "The Stripe subscription id for autopay."
+  [license]
+  (:member-license/subscription-id license))
+
+(s/fdef subscription-id
+        :args (s/cat :license p/entity?)
+        :ret (s/or :id string? :nothing nil?))
+
+
+(defn plan-id
+  "The Stripe plan id for autopay."
+  [license]
+  (:member-license/plan-id license))
+
+(s/fdef plan-id
+        :args (s/cat :license p/entity?)
+        :ret (s/or :id string? :nothing nil?))
+
+
+(defn account
+  "The account that this member license pertains to."
+  [license]
+  (:account/_license license))
+
+(s/fdef account
+        :args (s/cat :license p/entity?)
+        :ret p/entityd?)
+
+
+(defn status
+  "The status of this member license."
+  [license]
+  (:member-license/status license))
+
+(s/fdef status
+        :args (s/cat :license p/entity?)
+        :ret ::status)
 
 
 (defn ^{:deprecated "1.10.0"} managed-account-id
@@ -73,9 +161,14 @@
   (-> member-license unit unit/property property/deposit-connect-id))
 
 
-(def property
+(defn property
   "The property that the member who holds this license resides in."
-  (comp unit/property unit))
+  [license]
+  (-> license unit unit/property))
+
+(s/fdef property
+        :args (s/cat :license p/entity?)
+        :ret p/entityd?)
 
 
 (def time-zone
@@ -135,8 +228,8 @@
   (->> (d/q '[:find ?e .
               :in $ ?i
               :where
-              [?rp :rent-payment/invoice-id ?i]
-              [?e :member-license/rent-payments ?rp]]
+              [?p :stripe/invoice-id ?i]
+              [?e :member-license/rent-payments ?p]]
             db invoice-id)
        (d/entity db)))
 
@@ -146,12 +239,12 @@
   their current member license."
   [license]
   (let [payments (:member-license/rent-payments license)]
-    (->> (filter #(= (:rent-payment/status %) :rent-payment.status/paid)
+    (->> (filter #(= (:payment/status %) :payment.status/paid)
                  payments)
          (reduce
           (fn [acc payment]
-            (let [paid-on  (c/to-date-time (:rent-payment/paid-on payment))
-                  due-date (c/to-date-time (:rent-payment/due-date payment))]
+            (let [paid-on  (c/to-date-time (:payment/paid-on payment))
+                  due-date (c/to-date-time (:payment/due payment))]
               (if (t/after? paid-on due-date)
                 (inc acc)
                 acc)))
@@ -176,8 +269,8 @@
          :in $ ?m ?date
          :where
          [?m :member-license/rent-payments ?p]
-         [?p :rent-payment/period-start ?start]
-         [?p :rent-payment/period-end ?end]
+         [?p :payment/pstart ?start]
+         [?p :payment/pend ?end]
          (or-join [?end ?start ?date]
            [(.equals ^java.util.Date ?end ?date)]
            [(.equals ^java.util.Date ?start ?date)]

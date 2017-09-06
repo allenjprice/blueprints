@@ -37,7 +37,8 @@
         status (case (:rent-payment/status rent-payment)
                  :rent-payment.status/due     :payment.status/due
                  :rent-payment.status/pending :payment.status/pending
-                 :rent-payment.status/paid    :payment.status/paid)
+                 :rent-payment.status/paid    :payment.status/paid
+                 :payment.status/due)
         id     (d/tempid :db.part/starcity)]
     [(tb/assoc-when
       {:db/id           id

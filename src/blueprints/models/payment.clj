@@ -4,21 +4,17 @@
              [datomic :as td]
              [predicates :as p]]
             [clojure.spec :as s]
-            [blueprints.models.check :as check]))
+            [blueprints.models.check :as check]
+            [blueprints.models.member-license :as member-license]
+            [toolbelt.date :as date]
+            [clj-time.coerce :as c]
+            [clj-time.core :as t]))
 
 
-;; =============================================================================
-;; Helpers
-;; =============================================================================
-
-
-(declare charge? invoice? method)
-
-
-(defn- assert-stripe [payment]
-  (assert (or (charge? payment) (invoice? payment))
-          (format "Invalid state! Payment should have Stripe method; instead has %s"
-                  (method payment))))
+(def max-autopay-failures
+  "The maximum number of times that autopay payments will be tried before the
+  subscription is canceled."
+  3)
 
 
 ;; =============================================================================
@@ -112,6 +108,15 @@
   :payment/pend)
 
 (s/fdef period-end
+        :args (s/cat :payment p/entity?)
+        :ret (s/or :inst inst? :nothing nil?))
+
+
+(def paid-on
+  "The date at which this payment was paid."
+  :payment/paid-on)
+
+(s/fdef paid-on
         :args (s/cat :payment p/entity?)
         :ret (s/or :inst inst? :nothing nil?))
 
@@ -293,6 +298,22 @@
      :payment/pend pend
      :payment/paid-on paid-on)))
 
+
+(s/def ::payment
+  (s/keys :req [:db/id
+                :payment/id
+                :payment/amount
+                :payment/status
+                :payment/account]
+          :opt [:payment/method
+                :payment/due
+                :payment/for
+                :payment/pstart
+                :payment/pend
+                :payment/paid-on
+                :stripe/source-id
+                :stripe/invoice-id
+                :stripe/charge-id]))
 (s/fdef create
         :args (s/cat :amount float?
                      :account p/entity?
@@ -307,20 +328,7 @@
                                              ::method
                                              ::paid-on
                                              ::source-id]))
-        :ret (s/keys :req [:db/id
-                           :payment/id
-                           :payment/amount
-                           :payment/status
-                           :payment/account]
-                     :opt [:payment/method
-                           :payment/due
-                           :payment/for
-                           :payment/pstart
-                           :payment/pend
-                           :payment/paid-on
-                           :stripe/source-id
-                           :stripe/invoice-id
-                           :stripe/charge-id]))
+        :ret ::payment)
 
 
 (defn add-invoice
@@ -350,12 +358,27 @@
 
 
 (defn add-check
-  "Add a check to this payment."
+  "Add a `check` to this `payment`."
   [payment check]
   (let [status (when-let [s (check/status check)] )]
     {:db/id          (td/id payment)
      :payment/check  (td/id check)
      :payment/method :payment.method/check}))
+
+(s/fdef add-check
+        :args (s/cat :payment p/entity? :check p/entity?)
+        :ret map?)
+
+
+(defn add-source
+  "Add a `source-id` to this `payment`."
+  [payment source-id]
+  {:db/id            (td/id payment)
+   :stripe/source-id source-id})
+
+(s/fdef add-source
+        :args (s/cat :payment p/entity? :source-id string?)
+        :ret map?)
 
 
 (defn is-paid
@@ -380,6 +403,41 @@
         :ret map?)
 
 
+(defn- default-due-date
+  "The default due date is the fifth day of the same month as `start` date.
+  Preserves the original year, month, hour, minute and second of `start` date."
+  [start]
+  (let [st (c/to-date-time start)]
+    (c/to-date (t/date-time (t/year st)
+                            (t/month st)
+                            5
+                            (t/hour st)
+                            (t/minute st)
+                            (t/second st)))))
+
+
+(defn autopay
+  "Create an autopay payment given the `member-license`."
+  [member-license amount invoice-id period-start]
+  (let [tz   (member-license/time-zone member-license)
+        pend (date/end-of-month period-start tz)
+        due  (date/end-of-day (default-due-date period-start) tz)]
+    (create (float amount) (member-license/account member-license)
+            :for :payment.for/rent
+            :pstart (date/beginning-of-day period-start tz)
+            :pend pend
+            :paid-on period-start
+            :invoice-id invoice-id
+            :due due)))
+
+(s/fdef autopay
+        :args (s/cat :member-license p/entity?
+                     :amount (s/and pos? number?)
+                     :invoice-id string?
+                     :period-start inst?)
+        :ret ::payment)
+
+
 ;; =============================================================================
 ;; Queries
 ;; =============================================================================
@@ -399,9 +457,7 @@
   "Look up a payment by its Stripe charge id. Payment must have a Stripe
   method."
   [db charge-id]
-  (let [py (d/entity db [:stripe/charge-id charge-id])]
-    (assert-stripe py)
-    py))
+  (d/entity db [:stripe/charge-id charge-id]))
 
 (s/fdef by-charge-id
         :args (s/cat :db p/db? :charge-id string?)
@@ -412,9 +468,7 @@
   "Look up a payment by its Stripe invoice id. Payment must have a Stripe
   method."
   [db invoice-id]
-  (let [py (d/entity db [:stripe/invoice-id invoice-id])]
-    (assert-stripe py)
-    py))
+  (d/entity db [:stripe/invoice-id invoice-id]))
 
 (s/fdef by-invoice-id
         :args (s/cat :db p/db? :invoice-id string?)

@@ -1,22 +1,32 @@
 (ns blueprints.models.unit
   (:require [clojure.spec :as s]
             [datomic.api :as d]
-            [toolbelt
-             [core :refer [find-by]]
-             [predicates :as p]]))
+            [toolbelt.core :as tb]
+            [toolbelt.predicates :as p]))
 
 ;; =============================================================================
 ;; Selectors
 ;; =============================================================================
 
 
-(def property
+(defn code
+  "The internal room code of this room."
+  [unit]
+  (:unit/name unit))
+
+(s/fdef code
+        :args (s/cat :unit p/entity?)
+        :ret string?)
+
+
+(defn property
   "The property that this unit is in."
-  :property/_units)
+  [unit]
+  (:property/_units unit))
 
 (s/fdef property
         :args (s/cat :unit p/entity?)
-        :ret p/entity?)
+        :ret p/entityd?)
 
 
 (defn rate
@@ -29,8 +39,8 @@
         plps (-> unit property :property/licenses)
         pred #(= (:db/id license) (-> % :license-price/license :db/id))]
     (-> (or
-         (find-by pred ulps)
-         (find-by pred plps))
+         (tb/find-by pred ulps)
+         (tb/find-by pred plps))
         :license-price/price)))
 
 (s/fdef rate
