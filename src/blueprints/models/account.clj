@@ -164,6 +164,16 @@
         :ret (s/or :nothing nil? :handle string?))
 
 
+(defn emergency-contact
+  "The emergency contact entity for this `account`."
+  [account]
+  (:account/emergency-contact account))
+
+(s/fdef emergency-contact
+        :args (s/cat :account p/entity?)
+        :ret (s/or :nothing nil? :contact p/entityd?))
+
+
 ;; =============================================================================
 ;; Predicates
 ;; =============================================================================
