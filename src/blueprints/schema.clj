@@ -28,6 +28,7 @@
              [stripe :as stripe]
              [stripe-customer :as sc]
              [stripe-event :as se]
+             [suggestion :as suggestion]
              [tag :as tag]]
             [io.rkn.conformity :as c]))
 
@@ -65,6 +66,7 @@
                         stripe/norms
                         sc/norms
                         se/norms
+                        suggestion/norms
                         tag/norms]
                        (apply juxt))]
     (apply merge (gen-norms part))))
