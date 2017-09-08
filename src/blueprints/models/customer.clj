@@ -90,6 +90,17 @@
                            :stripe-customer/managed]))
 
 
+(defn add-bank-token
+  "Add `bank-token` to the `customer` entity."
+  [customer bank-token]
+  {:db/id                              (td/id customer)
+   :stripe-customer/bank-account-token bank-token})
+
+(s/fdef add-bank-token
+        :args (s/cat :customer p/entity? :bank-token string?)
+        :ret (s/keys :req [:db/id :stripe-customer/bank-account-token]))
+
+
 ;; =============================================================================
 ;; Queries
 ;; =============================================================================

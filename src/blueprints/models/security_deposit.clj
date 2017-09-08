@@ -1,4 +1,5 @@
 (ns blueprints.models.security-deposit
+  (:refer-clojure :exclude [type])
   (:require [blueprints.models.charge :as charge]
             [blueprints.models.check :as check]
             [blueprints.models.payment :as payment]
@@ -18,6 +19,11 @@
 (s/def :deposit/method
   #{:deposit.method/ach
     :deposit.method/check})
+
+
+(s/def :deposit/type
+  #{:deposit.type/full
+    :deposit.type/partial})
 
 
 ;; =============================================================================
@@ -117,6 +123,16 @@
         :ret :deposit/method)
 
 
+(defn type
+  "The deposit type chosen during the onboarding flow."
+  [deposit]
+  (:deposit/type deposit))
+
+(s/fdef type
+        :args (s/cat :deposit p/entity?)
+        :ret :deposit/type)
+
+
 (defn amount-remaining
   "The amount still remaining to be paid."
   [deposit]
@@ -167,9 +183,10 @@
 
 (s/fdef refund-status
         :args (s/cat :deposit p/entity?)
-        :ret (s/or :nil nil? :status #{:deposit.refund-status/initiated
-                                       :deposit.refund-status/successful
-                                       :deposit.refund-status/failed}))
+        :ret (s/or :nothing nil?
+                   :status #{:deposit.refund-status/initiated
+                             :deposit.refund-status/successful
+                             :deposit.refund-status/failed}))
 
 
 ;; =============================================================================
