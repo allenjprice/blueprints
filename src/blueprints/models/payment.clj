@@ -138,10 +138,23 @@
     :otherwise                                       nil))
 
 
-(defn payment-for [payment]
-  "What this payment is for."
+(defn ^{:deprecated "1.11.0" } payment-for
+  "DEPRECATED: Use `payment-for2` instead."
+  [payment]
   (or (:payment/for payment)
       (infer-payment-for payment)))
+
+(s/fdef payment-for
+        :args (s/cat :payment p/entity?)
+        :ret (s/or :for ::for :nothing nil?))
+
+
+(defn payment-for2
+  "What this payment is for."
+  [db payment]
+  (let [payment (d/entity db (td/id payment))]
+    (or (:payment/for payment)
+        (infer-payment-for payment))))
 
 (s/fdef payment-for
         :args (s/cat :payment p/entity?)
