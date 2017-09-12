@@ -180,12 +180,17 @@
 
 (defn order
   "The order that this payment is associated with, if any."
-  [payment]
-  (:order/_payments payment))
+  [db payment]
+  (->> (d/q '[:find ?e .
+              :in $ ?py
+              :where
+              [?e :order/payments ?py]]
+            db (td/id payment))
+       (d/entity db)))
 
 (s/fdef order
-        :args (s/cat :payment p/entityd?)
-        :ret p/entityd?)
+        :args (s/cat :db p/db? :payment p/entity?)
+        :ret (s/or :entity p/entityd? :nothing nil?))
 
 
 ;; =============================================================================
