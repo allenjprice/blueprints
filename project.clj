@@ -4,12 +4,12 @@
   :license {:name "Eclipse Public License"
             :url  "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.9.0-alpha14"]
-                 [com.datomic/datomic-free "0.9.5544"]
                  [io.rkn/conformity "0.4.0"]
-                 [starcity/toolbelt "0.1.7" :exclusions [com.datomic/datomic-free]]
-                 [prismatic/plumbing "0.5.4"]
+                 [starcity/toolbelt "0.1.8-SNAPSHOT" :exclusions [com.datomic/datomic-free]]
                  [datomic-schema "1.3.0"]
                  [clj-time "0.13.0"]]
+
+  :profiles {:provided {:dependencies [[com.datomic/datomic-free "0.9.5544"]]}}
 
   :plugins [[s3-wagon-private "1.2.0"]]
 
