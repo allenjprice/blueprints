@@ -178,6 +178,16 @@
         :ret (s/or :string string? :nothing nil?))
 
 
+(defn order
+  "The order that this payment is associated with, if any."
+  [payment]
+  (:order/_payments payment))
+
+(s/fdef order
+        :args (s/cat :payment p/entityd?)
+        :ret p/entityd?)
+
+
 ;; =============================================================================
 ;; Predicates
 ;; =============================================================================
