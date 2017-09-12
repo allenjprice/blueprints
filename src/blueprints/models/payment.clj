@@ -178,21 +178,6 @@
         :ret (s/or :string string? :nothing nil?))
 
 
-(defn order
-  "The order that this payment is associated with, if any."
-  [db payment]
-  (->> (d/q '[:find ?e .
-              :in $ ?py
-              :where
-              [?e :order/payments ?py]]
-            db (td/id payment))
-       (d/entity db)))
-
-(s/fdef order
-        :args (s/cat :db p/db? :payment p/entity?)
-        :ret (s/or :entity p/entityd? :nothing nil?))
-
-
 ;; =============================================================================
 ;; Predicates
 ;; =============================================================================
