@@ -488,8 +488,10 @@
         :ret (s/or :entity p/entityd? :nothing nil?))
 
 
-(defn payments
-  "All payments for `account`."
+(defn ^{:deprecated "1.11.0"} payments
+  "DEPRECATED: Use `payments2` instead.
+
+  All payments for `account`."
   [db account]
   (->> (d/q '[:find [?p ...]
               :in $ ?a
@@ -500,4 +502,79 @@
 
 (s/fdef payments
         :args (s/cat :db p/db? :account p/entity?)
+        :ret (s/* p/entityd?))
+
+
+(defn- date-key->where-clauses [key]
+  (case key
+    :paid-on '[[?p :payment/status :payment.status/paid ?tx]
+               [?tx :db/txInstant ?date]]
+    '[[?p :payment/account _ ?tx]
+      [?tx :db/txInstant ?date]]))
+
+
+(defn- payments-query
+  [db {:keys [account types from to statuses date-key]
+       :or   {date-key :created}}]
+  (let [init     '{:find  [[?p ...]]
+                   :in    [$]
+                   :args  []
+                   :where []}]
+    (cond-> init
+      true
+      (update :args conj db)
+
+      (some? account)
+      (-> (update :in conj '?a)
+          (update :args conj (td/id account))
+          (update :where conj '[?p :payment/account ?a]))
+
+      (not (empty? types))
+      (-> (update :in conj '[?type ...])
+          (update :args conj types)
+          (update :where conj '[?p :payment/for ?type]))
+
+      (not (empty? statuses))
+      (-> (update :in conj '[?status ...])
+          (update :args conj statuses)
+          (update :where conj '[?p :payment/status ?status]))
+
+      (or (some? from) (some? to))
+      (update :where #(apply conj % (date-key->where-clauses date-key)))
+
+      (some? from)
+      (-> (update :in conj '?from)
+          (update :args conj from)
+          (update :where conj '[(.after ^java.util.Date ?date ?from)]))
+
+      (some? to)
+      (-> (update :in conj '?to)
+          (update :args conj to)
+          (update :where conj '[(.before ^java.util.Date ?date ?to)]))
+
+      true (update :where #(if (empty? %) (conj % '[?p :payment/account _]) %)))))
+
+
+(defn payments2
+  "Query payments with options provided."
+  [db & {:keys [account types from to statuses date-key] :as opts}]
+  (->> (payments-query db opts)
+       (td/remap-query)
+       (d/query)
+       (map (partial d/entity db))))
+
+(s/def ::account p/entity?)
+(s/def ::types (s/+ ::for))
+(s/def ::from inst?)
+(s/def ::to inst?)
+(s/def ::statuses (s/+ ::status))
+(s/def ::date-key #{:created :paid-on})
+(s/fdef payments2
+        :args (s/cat :db p/db?
+                     :opts (s/keys* :opt-un [::account
+                                             ::types
+                                             ::from
+                                             ::to
+                                             ::statuses
+                                             ::date-key]))
         :ret (s/* p/entityd?))
