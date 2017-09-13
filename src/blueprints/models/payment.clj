@@ -505,17 +505,17 @@
         :ret (s/* p/entityd?))
 
 
-(defn- date-key->where-clauses [key]
+(defn- datekey->where-clauses [key]
   (case key
-    :paid-on '[[?p :payment/status :payment.status/paid ?tx]
-               [?tx :db/txInstant ?date]]
+    :paid '[[?p :payment/status :payment.status/paid ?tx]
+            [?tx :db/txInstant ?date]]
     '[[?p :payment/account _ ?tx]
       [?tx :db/txInstant ?date]]))
 
 
 (defn- payments-query
-  [db {:keys [account types from to statuses date-key]
-       :or   {date-key :created}}]
+  [db {:keys [account types from to statuses datekey]
+       :or   {datekey :created}}]
   (let [init     '{:find  [[?p ...]]
                    :in    [$]
                    :args  []
@@ -540,7 +540,7 @@
           (update :where conj '[?p :payment/status ?status]))
 
       (or (some? from) (some? to))
-      (update :where #(apply conj % (date-key->where-clauses date-key)))
+      (update :where #(apply conj % (datekey->where-clauses datekey)))
 
       (some? from)
       (-> (update :in conj '?from)
@@ -557,7 +557,7 @@
 
 (defn payments2
   "Query payments with options provided."
-  [db & {:keys [account types from to statuses date-key] :as opts}]
+  [db & {:keys [account types from to statuses datekey] :as opts}]
   (->> (payments-query db opts)
        (td/remap-query)
        (d/query)
@@ -568,7 +568,7 @@
 (s/def ::from inst?)
 (s/def ::to inst?)
 (s/def ::statuses (s/+ ::status))
-(s/def ::date-key #{:created :paid-on})
+(s/def ::datekey #{:created :paid})
 (s/fdef payments2
         :args (s/cat :db p/db?
                      :opts (s/keys* :opt-un [::account
@@ -576,5 +576,5 @@
                                              ::from
                                              ::to
                                              ::statuses
-                                             ::date-key]))
+                                             ::datekey]))
         :ret (s/* p/entityd?))

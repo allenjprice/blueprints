@@ -244,10 +244,11 @@
 (defn- orders-query
   [db {:keys [accounts billed services properties statuses datekey from to]
        :or   {datekey :created}}]
-  (let [init '{:find  [[?o ...]]
-               :in    [$]
-               :args  []
-               :where []}]
+  (let [update clojure.core/update
+        init   '{:find  [[?o ...]]
+                 :in    [$]
+                 :args  []
+                 :where []}]
     (cond-> init
       true
       (update :args conj db)
