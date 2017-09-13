@@ -125,9 +125,21 @@
         :ret (s/* integer?))
 
 
+(defn list-all
+  "List all services in a human-readable way."
+  [db]
+  (let [svcs (->> (d/q '[:find [?e ...]
+                         :where
+                         [?e :service/code _]]
+                       db)
+                  (map (partial d/entity db)))]
+    (println "CODE :: NAME :: DESCRIPTION")
+    (doseq [svc (sort-by :service/code svcs)]
+      (println (format "%s: '%s' (%s)" (code svc) (name svc) (desc svc))))))
+
+
 ;; =============================================================================
-;; Services
-;; =============================================================================
+;; Lookups
 
 
 (defn moving-assistance [db]

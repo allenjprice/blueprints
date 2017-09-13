@@ -10,6 +10,21 @@
 
 
 ;; =============================================================================
+;; Spec
+;; =============================================================================
+
+
+(s/def :order/status
+  #{:order.status/pending
+    :order.status/placed
+    :order.status/processing
+    :order.status/canceled
+    :order.status/charged})
+
+(s/def ::status :order/status)
+
+
+;; =============================================================================
 ;; Selectors
 ;; =============================================================================
 
@@ -150,6 +165,16 @@
         :ret boolean?)
 
 
+(defn pending?
+  "Is the order pending?"
+  [order]
+  (= (status order) :order.status/pending))
+
+(s/fdef pending?
+        :args (s/cat :order p/entity?)
+        :ret boolean?)
+
+
 (defn placed?
   "Has the order been placed?"
   [order]
@@ -160,14 +185,35 @@
         :ret boolean?)
 
 
-(defn pending?
-  "Is the order pending?"
+(defn processing?
+  "Is the order processing?"
   [order]
-  (= (status order) :order.status/pending))
+  (= (status order) :order.status/processing))
 
-(s/fdef pending?
+(s/fdef processing?
         :args (s/cat :order p/entity?)
         :ret boolean?)
+
+
+(defn canceled?
+  "Is the order canceled?"
+  [order]
+  (= (status order) :order.status/canceled))
+
+(s/fdef canceled?
+        :args (s/cat :order p/entity?)
+        :ret boolean?)
+
+
+(defn charged?
+  "Is the order charged?"
+  [order]
+  (= (status order) :order.status/charged))
+
+(s/fdef charged?
+        :args (s/cat :order p/entity?)
+        :ret boolean?)
+
 
 
 ;; =============================================================================
@@ -202,8 +248,10 @@
         :ret boolean?)
 
 
-(defn orders
-  "All of `account`'s orders."
+(defn ^{:deprecated "1.11.0"} orders
+  "DEPRECATED: use `orders2`.
+
+  All of `account`'s orders."
   [db account]
   (->> (d/q '[:find [?o ...]
               :in $ ?a
@@ -214,6 +262,108 @@
 
 (s/fdef orders
         :args (s/cat :db p/db? :account p/entity?)
+        :ret (s/* p/entityd?))
+
+
+(defn- datekey->where-clauses [key]
+  (case key
+    :charged '[[?o :order/status :order.status/charged ?tx]
+               [?tx :db/txInstant ?date]]
+    '[[?o :order/account _ ?tx]
+      [?tx :db/txInstant ?date]]))
+
+
+(defn- orders-query
+  [db {:keys [accounts billed services properties statuses datekey from to]
+       :or   {datekey :created}}]
+  (let [update clojure.core/update
+        init   '{:find  [[?o ...]]
+                 :in    [$]
+                 :args  []
+                 :where []}]
+    (cond-> init
+      true
+      (update :args conj db)
+
+      (not (empty? properties))
+      (-> (update :in conj '[?p ...])
+          (update :args conj (map td/id properties))
+          (update :where conj
+                  '[?o :order/account ?a]
+                  '[?a :account/licenses ?license]
+                  '[?license :member-license/unit ?unit]
+                  '[?license :member-license/status :member-license.status/active]
+                  '[?p :property/units ?unit]))
+
+      (not (empty? accounts))
+      (-> (update :in conj '[?a ...])
+          (update :args conj (map td/id accounts))
+          (update :where conj '[?o :order/account ?a]))
+
+      (not (empty? services))
+      (-> (update :in conj '[?s ...])
+          (update :args conj (map td/id services))
+          (update :where conj '[?o :order/service ?s]))
+
+      (not (empty? billed))
+      (-> (update :in conj '[?b ...])
+          (update :args conj billed)
+          (update :where conj
+                  '[?o :order/service ?s]
+                  '[?s :service/billed ?b]))
+
+      (not (empty? statuses))
+      (-> (update :in conj '[?status ...])
+          (update :args conj statuses)
+          (update :where conj '[?o :order/status ?status]))
+
+      ;;; dates
+
+      (or (some? from) (some? to))
+      (update :where #(apply conj % (datekey->where-clauses datekey)))
+
+      (some? from)
+      (-> (update :in conj '?from)
+          (update :args conj from)
+          (update :where conj '[(.after ^java.util.Date ?date ?from)]))
+
+      (some? to)
+      (-> (update :in conj '?to)
+          (update :args conj to)
+          (update :where conj '[(.before ^java.util.Date ?date ?to)]))
+
+      true
+      (update :where #(if (empty? %) (conj % '[?o :order/account _]) %)))))
+
+
+(defn orders2
+  "Query orders with `params`."
+  [db & {:as params}]
+  (->> (orders-query db params)
+       (td/remap-query)
+       (d/query)
+       (map (partial d/entity db))))
+
+(s/def ::entities (s/+ p/entity?))
+(s/def ::accounts ::entities)
+(s/def ::billed #{:service.billed/monthly
+                  :service.billed/once})
+(s/def ::services ::entities)
+(s/def ::properties ::entities)
+(s/def ::statuses (s/+ :order/status))
+(s/def ::datekey #{:created :charged})
+(s/def ::from inst?)
+(s/def ::to inst?)
+(s/fdef orders2
+        :args (s/cat :db p/db?
+                     :params (s/keys* :opt-un [::accounts
+                                               ::billed
+                                               ::services
+                                               ::properties
+                                               ::statuses
+                                               ::datekey
+                                               ::from
+                                               ::to]))
         :ret (s/* p/entityd?))
 
 
@@ -325,6 +475,20 @@
   [order]
   {:db/id        (td/id order)
    :order/status :order.status/placed})
+
+
+(defn is-processing
+  "The order is being processed."
+  [order]
+  {:db/id        (td/id order)
+   :order/status :order.status/processing})
+
+
+(defn is-canceled
+  "The order has been canceled."
+  [order]
+  {:db/id        (td/id order)
+   :order/status :order.status/canceled})
 
 
 (defn is-charged
