@@ -60,11 +60,16 @@
   [{:db/id    (d/tempid part)
     :db/ident :order.status/pending}
    {:db/id    (d/tempid part)
-    :db/ident :order.status/canceled}
-   {:db/id    (d/tempid part)
     :db/ident :order.status/placed}
    {:db/id    (d/tempid part)
+    :db/ident :order.status/canceled}
+   {:db/id    (d/tempid part)
     :db/ident :order.status/charged}])
+
+
+(defn- ^{:added "1.11.0"} add-processing-status [part]
+  [{:db/id    (d/tempid part)
+    :db/ident :order.status/processing}])
 
 
 (defn norms [part]
@@ -72,4 +77,7 @@
    {:txes [schema]}
 
    :schema.order/order-improvements-06292017
-   {:txes [order-improvements (add-order-statuses part)]}})
+   {:txes [order-improvements (add-order-statuses part)]}
+
+   :schema.order/add-processing-status-09132017
+   {:txes [(add-processing-status part)]}})

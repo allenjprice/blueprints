@@ -15,10 +15,11 @@
 
 
 (s/def :order/status
-  #{:order.status/canceled
-    :order.status/charged
-    :order.status/pending
-    :order.status/placed})
+  #{:order.status/pending
+    :order.status/placed
+    :order.status/processing
+    :order.status/canceled
+    :order.status/charged})
 
 (s/def ::status :order/status)
 
@@ -164,6 +165,16 @@
         :ret boolean?)
 
 
+(defn pending?
+  "Is the order pending?"
+  [order]
+  (= (status order) :order.status/pending))
+
+(s/fdef pending?
+        :args (s/cat :order p/entity?)
+        :ret boolean?)
+
+
 (defn placed?
   "Has the order been placed?"
   [order]
@@ -174,14 +185,35 @@
         :ret boolean?)
 
 
-(defn pending?
-  "Is the order pending?"
+(defn processing?
+  "Is the order processing?"
   [order]
-  (= (status order) :order.status/pending))
+  (= (status order) :order.status/processing))
 
-(s/fdef pending?
+(s/fdef processing?
         :args (s/cat :order p/entity?)
         :ret boolean?)
+
+
+(defn canceled?
+  "Is the order canceled?"
+  [order]
+  (= (status order) :order.status/canceled))
+
+(s/fdef canceled?
+        :args (s/cat :order p/entity?)
+        :ret boolean?)
+
+
+(defn charged?
+  "Is the order charged?"
+  [order]
+  (= (status order) :order.status/charged))
+
+(s/fdef charged?
+        :args (s/cat :order p/entity?)
+        :ret boolean?)
+
 
 
 ;; =============================================================================
@@ -443,6 +475,20 @@
   [order]
   {:db/id        (td/id order)
    :order/status :order.status/placed})
+
+
+(defn is-processing
+  "The order is being processed."
+  [order]
+  {:db/id        (td/id order)
+   :order/status :order.status/processing})
+
+
+(defn is-canceled
+  "The order has been canceled."
+  [order]
+  {:db/id        (td/id order)
+   :order/status :order.status/canceled})
 
 
 (defn is-charged
