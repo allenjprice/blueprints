@@ -34,6 +34,15 @@
   internal-name)
 
 
+(def ^{:added "1.11.0"} cover-image-url
+  "URL for the image representing this property in our UI."
+  :property/cover-image-url)
+
+(s/fdef cover-image-url
+        :args (s/cat :property p/entity?)
+        :ret string?)
+
+
 (def ^{:deprecated "1.10.0"} managed-account-id
   "DEPRECATED: Use `property/rent-connect-id` instead."
   :property/managed-account-id)
