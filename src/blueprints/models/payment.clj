@@ -489,7 +489,7 @@
 
 
 (defn ^{:deprecated "1.11.0"} payments
-  "DEPRECATED: Use `payments2` instead.
+  "DEPRECATED: Use `query` instead.
 
   All payments for `account`."
   [db account]
@@ -555,7 +555,7 @@
       true (update :where #(if (empty? %) (conj % '[?p :payment/account _]) %)))))
 
 
-(defn payments2
+(defn query
   "Query payments with options provided."
   [db & {:keys [account types from to statuses datekey] :as opts}]
   (->> (payments-query db opts)
@@ -569,7 +569,8 @@
 (s/def ::to inst?)
 (s/def ::statuses (s/+ ::status))
 (s/def ::datekey #{:created :paid})
-(s/fdef payments2
+
+(s/fdef query
         :args (s/cat :db p/db?
                      :opts (s/keys* :opt-un [::account
                                              ::types

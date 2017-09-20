@@ -3,7 +3,8 @@
   (:require [datomic.api :as d]
             [clojure.spec :as s]
             [toolbelt.predicates :as p]
-            [toolbelt.core :as tb]))
+            [toolbelt.core :as tb]
+            [toolbelt.datomic :as td]))
 
 
 ;; =============================================================================
@@ -136,6 +137,37 @@
     (println "CODE :: NAME :: DESCRIPTION")
     (doseq [svc (sort-by :service/code svcs)]
       (println (format "%s: '%s' (%s)" (code svc) (name svc) (desc svc))))))
+
+
+(defn- services-query
+  [db {:keys [q]}]
+  (let [init '{:find  [[?s ...]]
+               :in    [$]
+               :args  []
+               :where []}]
+    (cond-> init
+      true
+      (update :args conj db)
+
+      (some? q)
+      (-> (update :in conj '?q)
+          (update :args conj (str q "*"))
+          (update :where conj
+                  '(or [(fulltext $ :service/code ?q) [[?s]]]
+                       [(fulltext $ :service/name ?q) [[?s]]]
+                       [(fulltext $ :service/desc ?q) [[?s]]])))
+
+      true
+      (update :where #(if (empty? %) (conj % '[?s :service/code _]) %)))))
+
+
+(defn query
+  "Query services using `params`."
+  [db & {:as params}]
+  (->> (services-query db params)
+       (td/remap-query)
+       (d/query)
+       (map (partial d/entity db))))
 
 
 ;; =============================================================================

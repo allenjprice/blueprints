@@ -249,7 +249,7 @@
 
 
 (defn ^{:deprecated "1.11.0"} orders
-  "DEPRECATED: use `orders2`.
+  "DEPRECATED: use `query`.
 
   All of `account`'s orders."
   [db account]
@@ -336,7 +336,7 @@
       (update :where #(if (empty? %) (conj % '[?o :order/account _]) %)))))
 
 
-(defn orders2
+(defn query
   "Query orders with `params`."
   [db & {:as params}]
   (->> (orders-query db params)
@@ -354,7 +354,8 @@
 (s/def ::datekey #{:created :charged})
 (s/def ::from inst?)
 (s/def ::to inst?)
-(s/fdef orders2
+
+(s/fdef query
         :args (s/cat :db p/db?
                      :params (s/keys* :opt-un [::accounts
                                                ::billed

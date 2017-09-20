@@ -3,7 +3,8 @@
             [blueprints.models.approval :as approval]
             [clojure.spec :as s]
             [datomic.api :as d]
-            [toolbelt.predicates :as p]))
+            [toolbelt.predicates :as p]
+            [toolbelt.datomic :as td]))
 
 ;; =============================================================================
 ;; Spec
@@ -258,6 +259,61 @@
 (s/fdef by-customer-id
         :args (s/cat :db p/db? :customer-id string?)
         :ret (s/or :account p/entity? :nothing nil?))
+
+
+(defn- accounts-query
+  [db {:keys [q properties roles]}]
+  (let [init '{:find  [[?a ...]]
+               :in    [$]
+               :args  []
+               :where []}]
+    (cond-> init
+      true
+      (update :args conj db)
+
+      (not (empty? properties))
+      (-> (update :in conj '[?p ...])
+          (update :args conj (map td/id properties))
+          (update :where conj
+                  '[?a :account/licenses ?license]
+                  '[?license :member-license/unit ?unit]
+                  '[?license :member-license/status :member-license.status/active]
+                  '[?p :property/units ?unit]))
+
+      (not (empty? roles))
+      (-> (update :in conj '[?role ...])
+          (update :args conj roles)
+          (update :where conj '[?a :account/role ?role]))
+
+      (some? q)
+      (-> (update :in conj '?q)
+          (update :args conj (str q "*"))
+          (update :where conj
+                  '(or [(fulltext $ :account/email ?q) [[?a]]]
+                       [(fulltext $ :account/first-name ?q) [[?a]]]
+                       [(fulltext $ :account/middle-name ?q) [[?a]]]
+                       [(fulltext $ :account/last-name ?q) [[?a]]])))
+
+      true
+      (update :where #(if (empty? %) (conj % '[?a :account/email _]) %)))))
+
+
+(defn query
+  "Query accounts using `params`."
+  [db & {:as params}]
+  (->> (accounts-query db params)
+       (td/remap-query)
+       (d/query)
+       (map (partial d/entity db))))
+
+(s/def ::q string?)
+(s/def ::properties (s/+ p/entity?))
+(s/def ::roles (s/+ ::role))
+
+(s/fdef query
+        :args (s/cat :db p/db?
+                     :opts (s/keys* :opt-un [::q ::properties ::roles]))
+        :ret (s/* p/entityd?))
 
 
 ;; =============================================================================
