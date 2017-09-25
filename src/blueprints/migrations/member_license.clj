@@ -52,7 +52,7 @@
        :payment/pend    (:rent-payment/period-end rent-payment)
        :payment/paid-on (:rent-payment/paid-on rent-payment)}
       :payment/check (:db/id (:rent-payment/check rent-payment))
-      :stripe/charge-id (:db/id (:rent-payment/charge rent-payment))
+      :stripe/charge-id (:charge/stripe-id (:rent-payment/charge rent-payment))
       :stripe/invoice-id (:rent-payment/invoice-id rent-payment))
      {:db/id                        (:db/id license)
       :member-license/rent-payments id}
