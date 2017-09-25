@@ -40,23 +40,25 @@
                  :rent-payment.status/paid    :payment.status/paid
                  :payment.status/due)
         id     (d/tempid :db.part/starcity)]
-    [(tb/assoc-when
-      {:db/id           id
-       :payment/method  method
-       :payment/status  status
-       :payment/amount  (:rent-payment/amount rent-payment)
-       :payment/due     (:rent-payment/due-date rent-payment)
-       :payment/account (:db/id (member-license/account license))
-       :payment/for     :payment.for/rent
-       :payment/pstart  (:rent-payment/period-start rent-payment)
-       :payment/pend    (:rent-payment/period-end rent-payment)
-       :payment/paid-on (:rent-payment/paid-on rent-payment)}
-      :payment/check (:db/id (:rent-payment/check rent-payment))
-      :stripe/charge-id (:charge/stripe-id (:rent-payment/charge rent-payment))
-      :stripe/invoice-id (:rent-payment/invoice-id rent-payment))
-     {:db/id                        (:db/id license)
-      :member-license/rent-payments id}
-     [:db/retract (:db/id license) :member-license/rent-payments (:db/id rent-payment)]]))
+    (if (some? (:rent-payment/amount rent-payment))
+      [(tb/assoc-when
+        {:db/id           id
+         :payment/method  method
+         :payment/status  status
+         :payment/amount  (:rent-payment/amount rent-payment)
+         :payment/due     (:rent-payment/due-date rent-payment)
+         :payment/account (:db/id (member-license/account license))
+         :payment/for     :payment.for/rent
+         :payment/pstart  (:rent-payment/period-start rent-payment)
+         :payment/pend    (:rent-payment/period-end rent-payment)
+         :payment/paid-on (:rent-payment/paid-on rent-payment)}
+       :payment/check (:db/id (:rent-payment/check rent-payment))
+       :stripe/charge-id (:charge/stripe-id (:rent-payment/charge rent-payment))
+       :stripe/invoice-id (:rent-payment/invoice-id rent-payment))
+       {:db/id                        (:db/id license)
+        :member-license/rent-payments id}
+       [:db/retract (:db/id license) :member-license/rent-payments (:db/id rent-payment)]]
+      [])))
 
 
 (defn generic-payment-tx [license]
