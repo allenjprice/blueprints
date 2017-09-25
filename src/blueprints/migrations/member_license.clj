@@ -1,7 +1,7 @@
 (ns blueprints.migrations.member-license
   (:require [datomic.api :as d]
             [blueprints.models.member-license :as member-license]
-            [toolbelt.core :as tb]))
+            #_[toolbelt.core :as tb]))
 
 (defn- ^{:added "1.3.0"} use-member-license-status
   "Prior to 1.3.0, member licenses used a boolean flag to determine whether or
@@ -41,7 +41,7 @@
                  :payment.status/due)
         id     (d/tempid :db.part/starcity)]
     (if (some? (:rent-payment/amount rent-payment))
-      [(tb/assoc-when
+      [(toolbelt.core/assoc-when
         {:db/id           id
          :payment/method  method
          :payment/status  status
@@ -50,11 +50,11 @@
          :payment/account (:db/id (member-license/account license))
          :payment/for     :payment.for/rent
          :payment/pstart  (:rent-payment/period-start rent-payment)
-         :payment/pend    (:rent-payment/period-end rent-payment)
-         :payment/paid-on (:rent-payment/paid-on rent-payment)}
-       :payment/check (:db/id (:rent-payment/check rent-payment))
-       :stripe/charge-id (:charge/stripe-id (:rent-payment/charge rent-payment))
-       :stripe/invoice-id (:rent-payment/invoice-id rent-payment))
+         :payment/pend    (:rent-payment/period-end rent-payment)}
+        :payment/paid-on (:rent-payment/paid-on rent-payment)
+        :payment/check (:db/id (:rent-payment/check rent-payment))
+        :stripe/charge-id (:charge/stripe-id (:rent-payment/charge rent-payment))
+        :stripe/invoice-id (:rent-payment/invoice-id rent-payment))
        {:db/id                        (:db/id license)
         :member-license/rent-payments id}
        [:db/retract (:db/id license) :member-license/rent-payments (:db/id rent-payment)]]
