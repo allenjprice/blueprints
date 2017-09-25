@@ -26,6 +26,7 @@
   (let [tz    (property/time-zone property)
         start (date/beginning-of-day start tz)]
     (payment/create (prorated-amount start rate) account
+                    :for :payment.for/rent
                     :pstart start
                     :pend (date/end-of-month start tz)
                     :status :payment.status/due
