@@ -91,7 +91,11 @@
 
 (defn norms [conn part]
   (merge
-   {}
+   {:blueprints.seed/add-cover-image-urls-09262017
+    {:txes [[{:db/id                    [:property/internal-name "52gilbert"]
+              :property/cover-image-url "/assets/images/52gilbert.jpg"}
+             {:db/id                    [:property/internal-name "2072mission"]
+              :property/cover-image-url "/assets/images/2072mission.jpg"}]]}}
    (when-not (properties-present? conn)
      {:blueprints.seed/add-initial-properties
       {:txes [(add-initial-properties conn part)]}
