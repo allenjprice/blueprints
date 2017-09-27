@@ -1,4 +1,4 @@
-(ns blueprints.seed.catalogues
+(ns blueprints.seed.norms.catalogues
   (:require [datomic.api :as d]))
 
 (defn- by-code [db code]

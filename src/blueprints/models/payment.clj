@@ -263,6 +263,13 @@
         :ret boolean?)
 
 
+(defn overdue?
+  "Is `payment` overdue?"
+  [payment]
+  (when-let [due-date (due payment)]
+    (t/after? (t/now) (c/to-date-time due-date))))
+
+
 ;; =============================================================================
 ;; Transactions
 ;; =============================================================================

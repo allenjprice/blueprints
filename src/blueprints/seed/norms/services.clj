@@ -1,4 +1,4 @@
-(ns blueprints.seed.services
+(ns blueprints.seed.norms.services
   (:require [datomic.api :as d]))
 
 (defn- ^{:added "1.5.0"} add-initial-services [part]

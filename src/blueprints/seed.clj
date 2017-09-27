@@ -2,7 +2,7 @@
   "Certain feature releases require accompanying data in our database to work
   properly (seeding). This namespace provides a function `conform` that applies
   all unapplied seed operations."
-  (:require [blueprints.seed
+  (:require [blueprints.seed.norms
              [catalogues :as catalogues]
              [licenses :as licenses]
              [properties :as properties]

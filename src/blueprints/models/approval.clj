@@ -101,7 +101,7 @@
   - Mark the application as approved"
   [approver approvee unit license move-in]
   (let [tz      (-> unit unit/property property/time-zone)
-        move-in (date/beginning-of-day move-in tz)] ; for msg
+        move-in (date/beginning-of-day move-in tz)]
     [(create approver approvee unit license move-in)
      ;; Change role
      {:db/id (:db/id approvee) :account/role :account.role/onboarding}
