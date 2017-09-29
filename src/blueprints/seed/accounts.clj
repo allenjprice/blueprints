@@ -143,7 +143,13 @@
                      :application/status  :application.status/approved
                      :application/license license-id}]
     [(assoc account :account/application (:db/id application))
+     {:db/id           (utils/tempid)
+      :onboard/account (:db/id account)}
      application
+     {:db/id           (tempid)
+      :deposit/account (:db/id account)
+      :deposit/amount  2000.0
+      :deposit/due     (utils/weeks-from-now 4)}
      (approval account approver-id unit-id license-id)]))
 
 
