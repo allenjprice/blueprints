@@ -61,7 +61,7 @@
         :ret (s/or :nothing nil? :deposit p/entity?))
 
 
-(defn rent-payment
+(defn ^{:deprecated "1.12.0"} rent-payment
   "Produce the rent payment that references this `check`, if any."
   [check]
   (:rent-payment/_check check))
