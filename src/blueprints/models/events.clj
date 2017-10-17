@@ -1,5 +1,6 @@
 (ns blueprints.models.events
-  (:require [blueprints.models.event :as event]
+  (:require [blueprints.models.account :as account]
+            [blueprints.models.event :as event]
             [blueprints.models.note :as note]
             [clojure.spec :as s]
             [toolbelt.core :as tb]
@@ -163,12 +164,14 @@
 
 
 (defn process-order
-  "Process an `order`."
-  [order]
-  (event/job :order/process {:params {:order-id (td/id order)}}))
+  "Indicate that `account` has submitted `order` to be processed."
+  [account order]
+  (event/job :order/process {:params {:order-id   (td/id order)
+                                      :account-id (td/id account)}}))
 
 (s/fdef process-order
-        :args (s/cat :order p/entity?)
+        :args (s/cat :account p/entity?
+                     :order p/entity?)
         :ret map?)
 
 
