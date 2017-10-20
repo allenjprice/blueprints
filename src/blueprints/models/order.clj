@@ -176,14 +176,14 @@
         :ret string?)
 
 
-;; (defn placed-on
-;;   "The date at which this order was placed."
-;;   [order]
-;;   (:order/placed-on order))
+(defn billed-on
+  "The date at which this order was billed."
+  [order]
+  (:order/billed-on order))
 
-;; (s/fdef placed
-;;         :args (s/cat :order p/entity?)
-;;         :ret (s/or :nothing nil? :date inst?))
+(s/fdef billed-on
+        :args (s/cat :order p/entity?)
+        :ret (s/or :nothing nil? :date inst?))
 
 
 (defn fulfilled-on

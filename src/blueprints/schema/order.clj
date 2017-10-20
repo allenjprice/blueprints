@@ -83,6 +83,9 @@
      order
      (s/fields
 
+      [billed-on :instant :indexed
+       "The date at which this order was billed."]
+
       [fulfilled-on :instant :indexed
        "The date at which this order was fulfilled."]
 
