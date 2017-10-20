@@ -49,12 +49,21 @@
 
 
 (def price
-  "The price fo this service."
+  "The price of this service."
   :service/price)
 
 (s/fdef price
         :args (s/cat :service p/entity?)
         :ret (s/or :nothing nil? :price float?))
+
+
+(def cost
+  "The cost of this service."
+  :service/cost)
+
+(s/fdef cost
+        :args (s/cat :service p/entity?)
+        :ret (s/or :nothing nil? :cost float?))
 
 
 (defn rental

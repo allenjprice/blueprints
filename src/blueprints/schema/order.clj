@@ -82,17 +82,12 @@
    [(s/schema
      order
      (s/fields
-      ;; [placed-on :instant :indexed
-      ;;  "The date at which this order was placed."]
 
       [fulfilled-on :instant :indexed
        "The date at which this order was fulfilled."]
 
       [projected-fulfillment :instant :indexed
        "The date at which this order is projected to be fulfilled."]
-
-      ;; [billed-on :instant :indexed
-      ;;  "The date at which this order was billed."]
 
       [cost :float :indexed
        "The cost of this order--used in absence of service cost or to override service cost."]))]))

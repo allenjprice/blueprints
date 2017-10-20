@@ -63,13 +63,36 @@
   "The price of this `order`, taking into consideration possible variants and
   the price of the service."
   [order]
-  (or (:order/price order)
+  (or (price order)
       (-> order :order/variant :svc-variant/price)
       (service/price (:order/service order))))
 
 (s/fdef computed-price
         :args (s/cat :order p/entity?)
         :ret (s/or :nothing nil? :price float?))
+
+
+(defn cost
+  "The cost of this order in dollars."
+  [order]
+  (:order/cost order))
+
+(s/fdef cost
+        :args (s/cat :order p/entity?)
+        :ret (s/or :nothing nil? :cost float?))
+
+
+(defn computed-cost
+  "The cost of this `order`, taking into consideration possible variants and
+  the cost of the service."
+  [order]
+  (or (cost order)
+      (-> order :order/variant :svc-variant/cost)
+      (service/cost (:order/service order))))
+
+(s/fdef computed-cost
+        :args (s/cat :order p/entity?)
+        :ret (s/or :nothing nil? :cost float?))
 
 
 (defn quantity
@@ -181,16 +204,6 @@
 (s/fdef projected-fulfillment
         :args (s/cat :order p/entity?)
         :ret (s/or :nothing nil? :date inst?))
-
-
-(defn cost
-  "The cost of this order in dollars."
-  [order]
-  (:order/cost order))
-
-(s/fdef cost
-        :args (s/cat :order p/entity?)
-        :ret (s/or :nothing nil? :cost float?))
 
 
 ;; =============================================================================
