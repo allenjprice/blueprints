@@ -42,12 +42,31 @@
       [name :string :indexed "Name of this variant."]
       [price :float :indexed "Price override of the base service."]))]))
 
+
 (defn- billing-types [part]
   [{:db/id    (d/tempid part)
     :db/ident :service.billed/once}
    {:db/id    (d/tempid part)
     :db/ident :service.billed/monthly}])
 
+
+(def ^{:added "1.13.0"} add-cost
+  (s/generate-schema
+   [(s/schema
+     service
+     (s/fields
+      [cost :float :indexed
+       "The cost of this service."]))
+
+    (s/schema
+     svc-variant
+     (s/fields
+      [cost :float :indexed "Cost override of the base service."]))]))
+
+
 (defn norms [part]
   {:schema.services/add-schema-04132017
-   {:txes [schema (billing-types part)]}})
+   {:txes [schema (billing-types part)]}
+
+   :schema.service/add-cost-10202017
+   {:txes [add-cost]}})

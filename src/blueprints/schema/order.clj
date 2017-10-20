@@ -72,6 +72,30 @@
     :db/ident :order.status/processing}])
 
 
+(defn- ^{:added "1.13.0"} add-fulfilled-status [part]
+  [{:db/id    (d/tempid part)
+    :db/ident :order.status/fulfilled}])
+
+
+(def ^{:added "1.13.0"} additions-10022017
+  (s/generate-schema
+   [(s/schema
+     order
+     (s/fields
+
+      [billed-on :instant :indexed
+       "The date at which this order was billed."]
+
+      [fulfilled-on :instant :indexed
+       "The date at which this order was fulfilled."]
+
+      [projected-fulfillment :instant :indexed
+       "The date at which this order is projected to be fulfilled."]
+
+      [cost :float :indexed
+       "The cost of this order--used in absence of service cost or to override service cost."]))]))
+
+
 (defn norms [part]
   {:schema.order/add-schema-04132017
    {:txes [schema]}
@@ -80,4 +104,8 @@
    {:txes [order-improvements (add-order-statuses part)]}
 
    :schema.order/add-processing-status-09132017
-   {:txes [(add-processing-status part)]}})
+   {:txes [(add-processing-status part)]}
+
+   :schema.order/additions-10022017
+   {:txes [(add-fulfilled-status part)
+           additions-10022017]}})

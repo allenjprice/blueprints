@@ -17,9 +17,10 @@
 (s/def :order/status
   #{:order.status/pending
     :order.status/placed
+    :order.status/fulfilled
     :order.status/processing
-    :order.status/canceled
-    :order.status/charged})
+    :order.status/charged
+    :order.status/canceled})
 
 (s/def ::status :order/status)
 
@@ -38,6 +39,16 @@
         :ret p/entity?)
 
 
+;; (defn billed-on
+;;   "The date at which this order was billed."
+;;   [order]
+;;   (:order/billed-on order))
+
+;; (s/fdef billed-on
+;;         :args (s/cat :order p/entity?)
+;;         :ret (s/or :nothing nil? :billed inst?))
+
+
 (defn price
   "The price of this `order`."
   [order]
@@ -52,13 +63,36 @@
   "The price of this `order`, taking into consideration possible variants and
   the price of the service."
   [order]
-  (or (:order/price order)
+  (or (price order)
       (-> order :order/variant :svc-variant/price)
       (service/price (:order/service order))))
 
 (s/fdef computed-price
         :args (s/cat :order p/entity?)
         :ret (s/or :nothing nil? :price float?))
+
+
+(defn cost
+  "The cost of this order in dollars."
+  [order]
+  (:order/cost order))
+
+(s/fdef cost
+        :args (s/cat :order p/entity?)
+        :ret (s/or :nothing nil? :cost float?))
+
+
+(defn computed-cost
+  "The cost of this `order`, taking into consideration possible variants and
+  the cost of the service."
+  [order]
+  (or (cost order)
+      (-> order :order/variant :svc-variant/cost)
+      (service/cost (:order/service order))))
+
+(s/fdef computed-cost
+        :args (s/cat :order p/entity?)
+        :ret (s/or :nothing nil? :cost float?))
 
 
 (defn quantity
@@ -89,12 +123,11 @@
         :ret (s/or :nothing nil? :variant p/entity?))
 
 
-;; TODO: Rethink this
-(def ordered-at
-  "Instant at which the order was placed."
+(def ^{:deprecated "1.13.0"} ordered-on
+  "Instant at which the order was created."
   :order/ordered)
 
-(s/fdef ordered-at
+(s/fdef ordered-on
         :args (s/cat :order p/entity?)
         :ret (s/or :inst inst? :nothing nil?))
 
@@ -143,17 +176,47 @@
         :ret string?)
 
 
+(defn billed-on
+  "The date at which this order was billed."
+  [order]
+  (:order/billed-on order))
+
+(s/fdef billed-on
+        :args (s/cat :order p/entity?)
+        :ret (s/or :nothing nil? :date inst?))
+
+
+(defn fulfilled-on
+  "The date at which this order was fulfilled."
+  [order]
+  (:order/fulfilled-on order))
+
+(s/fdef fulfilled
+        :args (s/cat :order p/entity?)
+        :ret (s/or :nothing nil? :date inst?))
+
+
+(defn projected-fulfillment
+  "The date at which this order will be fulfilled."
+  [order]
+  (:order/projected-fulfillment order))
+
+(s/fdef projected-fulfillment
+        :args (s/cat :order p/entity?)
+        :ret (s/or :nothing nil? :date inst?))
+
+
 ;; =============================================================================
 ;; Predicates
 ;; =============================================================================
 
 
-(defn ordered?
+(defn ^{:deprecated "1.13.0"} ordered?
   "An order is considered /ordered/ when it has both an order placement time
   AND a subscription or non-failed charge."
   [order]
   (boolean
-   (and (some? (ordered-at order))
+   (and (some? (ordered-on order))
         ;; TODO: Is this function needed any longer? If so, change the below
         ;; code to inspect payments
         (or (:stripe/subs-id order)
@@ -179,6 +242,17 @@
   "Has the order been placed?"
   [order]
   (= (status order) :order.status/placed))
+
+(s/fdef placed?
+        :args (s/cat :order p/entity?)
+        :ret boolean?)
+
+
+
+(defn fulfilled?
+  "Has the order been fulfilled?"
+  [order]
+  (= (status order) :order.status/fulfilled))
 
 (s/fdef placed?
         :args (s/cat :order p/entity?)
@@ -267,8 +341,8 @@
 
 (defn- datekey->where-clauses [key]
   (case key
-    :charged '[[?o :order/status :order.status/charged ?tx]
-               [?tx :db/txInstant ?date]]
+    :billed    '[[?o :order/billed-on ?date]]
+    :fulfilled '[[?o :order/fulfilled-on ?date]]
     '[[?o :order/account _ ?tx]
       [?tx :db/txInstant ?date]]))
 
@@ -351,7 +425,7 @@
 (s/def ::services ::entities)
 (s/def ::properties ::entities)
 (s/def ::statuses (s/+ :order/status))
-(s/def ::datekey #{:created :charged})
+(s/def ::datekey #{:created :billed :fulfilled})
 (s/def ::from inst?)
 (s/def ::to inst?)
 
@@ -478,6 +552,14 @@
    :order/status :order.status/placed})
 
 
+(defn is-fulfilled
+  "The order is fulfilled."
+  [order fulfilled-on]
+  {:db/id              (td/id order)
+   :order/status       :order.status/fulfilled
+   :order/fulfilled-on fulfilled-on})
+
+
 (defn is-processing
   "The order is being processed."
   [order]
@@ -485,18 +567,18 @@
    :order/status :order.status/processing})
 
 
-(defn is-canceled
-  "The order has been canceled."
-  [order]
-  {:db/id        (td/id order)
-   :order/status :order.status/canceled})
-
-
 (defn is-charged
   "The order has been charged."
   [order]
   {:db/id        (td/id order)
    :order/status :order.status/charged})
+
+
+(defn is-canceled
+  "The order has been canceled."
+  [order]
+  {:db/id        (td/id order)
+   :order/status :order.status/canceled})
 
 
 ;; =============================================================================

@@ -46,6 +46,11 @@
        "ID of a Stripe source."]))]))
 
 
+(def ^{:added "1.13.0"} remove-unique-plan-constraint
+  [[:db/retract :stripe/plan-id :db/unique :db.unique/identity]
+   [:db/add :db.part/db :db.alter/attribute :stripe/plan-id]])
+
+
 (defn norms [part]
   {:schema.stripe/add-schema-04132017
    {:txes [schema]}
@@ -58,4 +63,7 @@
    {:txes [schema-improvements]}
 
    :schema.stripe/add-source-id-08182017
-   {:txes [add-source-id]}})
+   {:txes [add-source-id]}
+
+   :schema.stripe/remove-unique-plan-constraint-10182017
+   {:txes [remove-unique-plan-constraint]}})

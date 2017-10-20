@@ -130,6 +130,16 @@
         :ret string?)
 
 
+(defn short-name
+  "Name of person sans middle name."
+  [account]
+  (format "%s %s" (first-name account) (last-name account)))
+
+(s/fdef short-name
+        :args (s/cat :account p/entity?)
+        :ret string?)
+
+
 (defn ^{:deprecated "1.6.0"} stripe-customer
   "Retrieve the `stripe-customer` that belongs to this account. Produces the
   customer that is on the Stripe master account, NOT the managed one -- the

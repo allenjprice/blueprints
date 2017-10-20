@@ -25,6 +25,7 @@
              [security-deposit :as sd]
              [service :as service]
              [session :as session]
+             [source :as source]
              [stripe :as stripe]
              [stripe-customer :as sc]
              [stripe-event :as se]
@@ -63,6 +64,7 @@
                         sd/norms
                         service/norms
                         session/norms
+                        source/norms
                         stripe/norms
                         sc/norms
                         se/norms
