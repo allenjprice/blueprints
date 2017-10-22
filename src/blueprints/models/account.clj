@@ -4,7 +4,8 @@
             [clojure.spec :as s]
             [datomic.api :as d]
             [toolbelt.predicates :as p]
-            [toolbelt.datomic :as td]))
+            [toolbelt.datomic :as td]
+            [clojure.string :as string]))
 
 ;; =============================================================================
 ;; Spec
@@ -295,7 +296,7 @@
           (update :args conj roles)
           (update :where conj '[?a :account/role ?role]))
 
-      (some? q)
+      (and (some? q) (not (string/blank? q)))
       (-> (update :in conj '?q)
           (update :args conj (str q "*"))
           (update :where conj
