@@ -19,6 +19,7 @@
     :order.status/placed
     :order.status/fulfilled
     :order.status/processing
+    :order.status/failed
     :order.status/charged
     :order.status/canceled})
 
@@ -30,23 +31,14 @@
 ;; =============================================================================
 
 
-(def account
+(defn account
   "The account that placed this order."
-  :order/account)
+  [order]
+  (:order/account order))
 
 (s/fdef account
         :args (s/cat :order p/entity?)
         :ret p/entity?)
-
-
-;; (defn billed-on
-;;   "The date at which this order was billed."
-;;   [order]
-;;   (:order/billed-on order))
-
-;; (s/fdef billed-on
-;;         :args (s/cat :order p/entity?)
-;;         :ret (s/or :nothing nil? :billed inst?))
 
 
 (defn price
@@ -59,11 +51,23 @@
         :ret (s/or :nothing nil? :price float?))
 
 
-(defn computed-price
-  "The price of this `order`, taking into consideration possible variants and
-  the price of the service."
+(defn line-items
+  "Any line items associated with this order."
   [order]
-  (or (price order)
+  (:order/line-items order))
+
+(s/fdef line-items
+        :args (s/cat :order p/entity?)
+        :ret (s/or :nothing nil? :lines (s/+ p/entityd?)))
+
+
+(defn computed-price
+  "The price of this `order`, taking into consideration possible variants, line
+  items and the price of the service."
+  [order]
+  (or (when-some [ls (line-items order)]
+        (->> ls (map :line-item/price) (apply +)))
+      (price order)
       (-> order :order/variant :svc-variant/price)
       (service/price (:order/service order))))
 
@@ -83,10 +87,12 @@
 
 
 (defn computed-cost
-  "The cost of this `order`, taking into consideration possible variants and
-  the cost of the service."
+  "The cost of this `order`, taking into consideration possible variants, line
+  items and the cost of the service."
   [order]
   (or (cost order)
+      (when-some [ls (line-items order)]
+        (->> ls (map (fnil :line-item/cost 0)) (apply +)))
       (-> order :order/variant :svc-variant/cost)
       (service/cost (:order/service order))))
 
@@ -105,57 +111,60 @@
         :ret (s/or :nothing nil? :quantity pos-int?))
 
 
-(def desc
-  "The description of the order."
-  :order/desc)
+(defn request
+  "Accompanying text with the order request, provided by user."
+  [order]
+  (:order/request order))
 
-(s/fdef desc
+(s/fdef request
         :args (s/cat :order p/entity?)
-        :ret (s/or :nothing nil? :desc string?))
+        :ret (s/or :nothing nil? :request string?))
 
 
-(def variant
+(defn summary
+  "Summary of the order provided by Starcity."
+  [order]
+  (:order/summary order))
+
+(s/fdef summary
+        :args (s/cat :order p/entity?)
+        :ret (s/or :nothing nil? :summary string?))
+
+
+(defn variant
   "The variant of the service chosen with this order."
-  :order/variant)
+  [order]
+  (:order/variant order))
 
-(s/fdef desc
+(s/fdef variant
         :args (s/cat :order p/entity?)
         :ret (s/or :nothing nil? :variant p/entity?))
 
 
-(def ^{:deprecated "1.13.0"} ordered-on
-  "Instant at which the order was created."
-  :order/ordered)
-
-(s/fdef ordered-on
-        :args (s/cat :order p/entity?)
-        :ret (s/or :inst inst? :nothing nil?))
-
-
-(def status
+(defn status
   "The status of this order."
-  :order/status)
+  [order]
+  (:order/status order))
 
 (s/fdef status
         :args (s/cat :order p/entity?)
-        :ret #{:order.status/pending
-               :order.status/canceled
-               :order.status/placed
-               :order.status/charged})
+        :ret :order/status)
 
 
-(def service
+(defn service
   "The service that this order is for."
-  :order/service)
+  [order]
+  (:order/service order))
 
 (s/fdef service
         :args (s/cat :order p/entity?)
         :ret p/entity?)
 
 
-(def payments
-  "This order's payments."
-  :order/payments)
+(defn payments
+  "Payments made towards `order`."
+  [order]
+  (:order/payments order))
 
 (s/fdef payments
         :args (s/cat :order p/entity?)
@@ -211,23 +220,6 @@
 ;; =============================================================================
 
 
-(defn ^{:deprecated "1.13.0"} ordered?
-  "An order is considered /ordered/ when it has both an order placement time
-  AND a subscription or non-failed charge."
-  [order]
-  (boolean
-   (and (some? (ordered-on order))
-        ;; TODO: Is this function needed any longer? If so, change the below
-        ;; code to inspect payments
-        (or (:stripe/subs-id order)
-            (when-let [c (:stripe/charge order)]
-              (not= (:charge/status c) :charge.status/failed))))))
-
-(s/fdef ordered?
-        :args (s/cat :order p/entity?)
-        :ret boolean?)
-
-
 (defn pending?
   "Is the order pending?"
   [order]
@@ -269,12 +261,12 @@
         :ret boolean?)
 
 
-(defn canceled?
-  "Is the order canceled?"
+(defn failed?
+  "Has the order failed to charge?"
   [order]
-  (= (status order) :order.status/canceled))
+  (= (status order) :order.status/failed))
 
-(s/fdef canceled?
+(s/fdef failed?
         :args (s/cat :order p/entity?)
         :ret boolean?)
 
@@ -288,6 +280,15 @@
         :args (s/cat :order p/entity?)
         :ret boolean?)
 
+
+(defn canceled?
+  "Is the order canceled?"
+  [order]
+  (= (status order) :order.status/canceled))
+
+(s/fdef canceled?
+        :args (s/cat :order p/entity?)
+        :ret boolean?)
 
 
 ;; =============================================================================
@@ -320,23 +321,6 @@
 (s/fdef exists?
         :args (s/cat :db p/db? :account p/entity? :service p/entity?)
         :ret boolean?)
-
-
-(defn ^{:deprecated "1.11.0"} orders
-  "DEPRECATED: use `query`.
-
-  All of `account`'s orders."
-  [db account]
-  (->> (d/q '[:find [?o ...]
-              :in $ ?a
-              :where
-              [?o :order/account ?a]]
-            db (td/id account))
-       (map (partial d/entity db))))
-
-(s/fdef orders
-        :args (s/cat :db p/db? :account p/entity?)
-        :ret (s/* p/entityd?))
 
 
 (defn- datekey->where-clauses [key]
@@ -478,29 +462,43 @@
 ;; =============================================================================
 
 
+(s/def :line-item/desc string?)
+(s/def :line-item/price (s/and pos? float?))
+(s/def :line-item/cost float?)
+(s/def ::line
+  (s/keys :req [:line-item/desc :line-item/price] :opt [:line-item/cost]))
+
 (s/def ::quantity (s/and pos? number?))
-(s/def ::desc string?)
+(s/def ::request string?)
+(s/def ::summary string?)
 (s/def ::variant integer?)
 (s/def ::price (s/and pos? float?))
-(s/def ::opts (s/keys :opt-un [::quantity ::desc ::variant ::price ::status]))
+(s/def ::cost (s/and pos? float?))
+(s/def ::lines (s/+ ::line))
+(s/def ::opts
+  (s/keys :opt-un [::quantity ::desc ::request ::cost ::summary ::variant ::status ::price ::lines]))
 
 
 (defn create
   "Create a new order."
   ([account service]
    (create account service {}))
-  ([account service {:keys [quantity desc variant status price]
-                     :or   {status :order.status/pending}}]
+  ([account service {:keys [quantity desc request cost summary variant status price lines]
+                     :or   {status :order.status/pending}
+                     :as   opts}]
    (tb/assoc-when
     {:db/id         (d/tempid :db.part/starcity)
      :order/uuid    (d/squuid)
      :order/service (td/id service)
      :order/account (td/id account)
      :order/status  status}
-    :order/price price
+    :order/price (when-let [p price] (float price))
+    :order/cost (when-let [c cost] (float cost))
     :order/variant variant
     :order/quantity (when-let [q quantity] (float q))
-    :order/desc desc)))
+    :order/lines lines
+    :order/summary summary
+    :order/request (or request desc))))
 
 (s/fdef create
         :args (s/cat :account p/entity?
@@ -511,13 +509,18 @@
 
 
 (defn update
-  [order {:keys [quantity desc variant status]}]
+  "Update `order` with `opts.`"
+  [order {:keys [quantity desc request cost summary variant status price lines] :as opts}]
   (tb/assoc-when
    {:db/id (td/id order)}
    :order/status status
-   :order/quantity quantity
-   :order/desc desc
-   :order/variant variant))
+   :order/quantity (when-let [q quantity] (float q))
+   :order/request (or request desc)
+   :order/variant variant
+   :order/summary summary
+   :order/price (when-let [q quantity] (float q))
+   :order/cost (when-let [c cost] (float cost))
+   :order/lines lines))
 
 (s/fdef update
         :args (s/cat :order p/entity?
@@ -580,13 +583,46 @@
   {:db/id        (td/id order)
    :order/status :order.status/canceled})
 
+(defn is-failed
+  "The order has faile to process."
+  [order]
+  {:db/id        (td/id order)
+   :order/status :order.status/failed})
+
+
+(defn line-item
+  "Create an order line-item."
+  [desc price & [cost]]
+  (tb/assoc-when
+   {:line-item/desc  desc
+    :line-item/price price}
+   :line-item/cost (when-some [c cost] (float c))))
+
+(s/fdef line-item
+        :args (s/cat :desc string?
+                     :price (s/and number? pos?)
+                     :cost (s/? number?))
+        :ret map?)
+
 
 ;; =============================================================================
-;; Clientize
+;; Deprecated
 ;; =============================================================================
 
 
-(defn clientize
+(def ^{:deprecated "1.13.0"} ordered-on
+  "Instant at which the order was created."
+  :order/ordered)
+
+(s/fdef ordered-on
+        :args (s/cat :order p/entity?)
+        :ret (s/or :inst inst? :nothing nil?))
+
+
+(def ^{:deprecated "1.14.0"} desc request)
+
+
+(defn ^{:deprecated "1.14.0"} clientize
   [order]
   (let [service (:order/service order)
         desc    (if (string/blank? (desc order)) (service/desc service) (desc order))]
@@ -597,3 +633,37 @@
      :rental   (service/rental service)
      :quantity (quantity order)
      :billed   (-> service :service/billed clojure.core/name keyword)}))
+
+
+(defn ^{:deprecated "1.13.0"} ordered?
+  "An order is considered /ordered/ when it has both an order placement time
+  AND a subscription or non-failed charge."
+  [order]
+  (boolean
+   (and (some? (ordered-on order))
+        ;; TODO: Is this function needed any longer? If so, change the below
+        ;; code to inspect payments
+        (or (:stripe/subs-id order)
+            (when-let [c (:stripe/charge order)]
+              (not= (:charge/status c) :charge.status/failed))))))
+
+(s/fdef ordered?
+        :args (s/cat :order p/entity?)
+        :ret boolean?)
+
+
+(defn ^{:deprecated "1.11.0"} orders
+  "DEPRECATED: use `query`.
+
+  All of `account`'s orders."
+  [db account]
+  (->> (d/q '[:find [?o ...]
+              :in $ ?a
+              :where
+              [?o :order/account ?a]]
+            db (td/id account))
+       (map (partial d/entity db))))
+
+(s/fdef orders
+        :args (s/cat :db p/db? :account p/entity?)
+        :ret (s/* p/entityd?))

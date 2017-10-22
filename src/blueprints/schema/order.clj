@@ -96,6 +96,42 @@
        "The cost of this order--used in absence of service cost or to override service cost."]))]))
 
 
+(def ^{:added "1.14.0"} rename-desc-attr
+  [{:db/id               :order/desc
+    :db/ident            :order/request
+    :db/doc              "Accompanying text with the order request, provided by user."
+    :db.alter/_attribute :db.part/db}])
+
+
+(def ^{:added "1.14.0"} add-summary-and-line-items
+  (s/generate-schema
+   [(s/schema
+     order
+     (s/fields
+      [summary :string :fulltext
+       "Summary of the order provided by Starcity."]
+
+      [lines :ref :many :indexed :component
+       "Line-items attached to this order."]))
+
+    (s/schema
+     line-item
+     (s/fields
+      [desc :string :fulltext
+       "Description of the line-item."]
+
+      [cost :float :indexed
+       "Cost of this line-item."]
+
+      [price :float :indexed
+       "Price of this line-item."]))]))
+
+
+(defn- ^{:added "1.14.0"} add-failed-status [part]
+  [{:db/id    (d/tempid part)
+    :db/ident :order.status/failed}])
+
+
 (defn norms [part]
   {:schema.order/add-schema-04132017
    {:txes [schema]}
@@ -108,4 +144,8 @@
 
    :schema.order/additions-10022017
    {:txes [(add-fulfilled-status part)
-           additions-10022017]}})
+           additions-10022017]}
+
+   :schema.order/additions-10222017
+   {:txes [rename-desc-attr (add-failed-status part) add-summary-and-line-items]
+    :requires [:schema.order/add-schema-04132017]}})

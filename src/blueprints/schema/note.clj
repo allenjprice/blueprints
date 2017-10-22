@@ -25,7 +25,8 @@
       [tags :ref :many :index
        "Tags used to categorize this note."]))
 
-    ;; A note can be treated as a ticket by giving it a status and other optional attributes.
+    ;; a note can be treated as a ticket by giving it a status and other
+    ;; optional attributes
     (s/schema
      ticket
      (s/fields
@@ -35,12 +36,45 @@
       [assigned-to :ref :index
        "The account that this ticket is assigned to."]))]))
 
+
 (defn- ^{:added "1.4.0"} ticket-statuses [part]
   [{:db/id    (d/tempid part)
     :db/ident :ticket.status/open}
    {:db/id    (d/tempid part)
     :db/ident :ticket.status/closed}])
 
+
+(def ^{:added "1.14.0" :private true} index-attributes
+  [{:db/id               :note/author
+    :db/index            true
+    :db.alter/_attribute :db.part/db}
+   {:db/id               :note/children
+    :db/index            true
+    :db.alter/_attribute :db.part/db}
+   {:db/id               :note/tags
+    :db/index            true
+    :db.alter/_attribute :db.part/db}
+   {:db/id               :ticket/status
+    :db/index            true
+    :db.alter/_attribute :db.part/db}
+   {:db/id               :ticket/assigned-to
+    :db/index            true
+    :db.alter/_attribute :db.part/db}])
+
+
+(def ^{:added "1.14.0" :private true} add-ref
+  (s/generate-schema
+   [(s/schema
+     note
+     (s/fields
+      [ref :ref :indexed
+       "Reference to another entity--assumed to be the topic of this note."]))]))
+
+
 (defn norms [part]
   {:schema.note/add-schema-02242017
-   {:txes [schema (ticket-statuses part)]}})
+   {:txes [schema (ticket-statuses part)]}
+
+   :schema.note/index-attrs-and-add-ref-10222017
+   {:txes     [index-attributes add-ref]
+    :requires [:schema.note/add-schema-02242017]}})
