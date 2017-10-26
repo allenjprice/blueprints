@@ -54,7 +54,7 @@
 (defn line-items
   "Any line items associated with this order."
   [order]
-  (:order/line-items order))
+  (:order/lines order))
 
 (s/fdef line-items
         :args (s/cat :order p/entity?)
@@ -86,13 +86,17 @@
         :ret (s/or :nothing nil? :cost float?))
 
 
+(defn line-item-cost [order]
+  (->> order line-items (map (fnil :line-item/cost 0)) (apply +)))
+
+
 (defn computed-cost
   "The cost of this `order`, taking into consideration possible variants, line
   items and the cost of the service."
   [order]
-  (or (cost order)
-      (when-some [ls (line-items order)]
-        (->> ls (map (fnil :line-item/cost 0)) (apply +)))
+  (or (let [lc (line-item-cost order)]
+        (when-not (zero? lc) lc))
+      (cost order)
       (-> order :order/variant :svc-variant/cost)
       (service/cost (:order/service order))))
 
