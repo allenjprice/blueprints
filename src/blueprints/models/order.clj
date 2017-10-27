@@ -87,7 +87,7 @@
 
 
 (defn line-item-cost [order]
-  (->> order line-items (map (fnil :line-item/cost 0)) (apply +)))
+  (->> order line-items (map #(:line-item/cost % 0)) (apply +)))
 
 
 (defn computed-cost
@@ -181,8 +181,8 @@
   [order]
   (let [service (service order)]
     (if-let [vn (-> order variant :svc-variant/name)]
-     (str (service/name service) " - " (string/capitalize vn))
-     (service/name service))))0
+      (str (service/name service) " - " (string/capitalize vn))
+      (service/name service))))0
 
 (s/fdef computed-name
         :args (s/cat :order p/entity?)
@@ -479,7 +479,7 @@
 (s/def ::price (s/and pos? float?))
 (s/def ::cost (s/and pos? float?))
 (s/def ::lines (s/+ ::line))
-(s/def ::opts
+(s/def ::create-opts
   (s/keys :opt-un [::quantity ::desc ::request ::cost ::summary ::variant ::status ::price ::lines]))
 
 
@@ -508,28 +508,49 @@
         :args (s/cat :account p/entity?
 
                      :service p/entity?
-                     :opts    (s/? ::opts))
+                     :opts    (s/? ::create-opts))
         :ret map?)
+
+
+(defn- update-or-retract
+  [params entity params<->attrs]
+  (reduce
+   (fn [acc [param attr]]
+     (let [pv (get params param)
+           ev (get entity attr)]
+       (->> (cond
+              (and (some? ev) (contains? params param) (nil? pv))
+              [:db/retract (:db/id entity) attr ev]
+
+              (and (some? pv) (not= ev pv))
+              [:db/add (:db/id entity) attr pv])
+            (tb/conj-when acc))))
+   []
+   params<->attrs))
 
 
 (defn update
   "Update `order` with `opts.`"
-  [order {:keys [quantity desc request cost summary variant status price lines] :as opts}]
-  (tb/assoc-when
-   {:db/id (td/id order)}
-   :order/status status
-   :order/quantity (when-let [q quantity] (float q))
-   :order/request (or request desc)
-   :order/variant variant
-   :order/summary summary
-   :order/price (when-let [p price] (float p))
-   :order/cost (when-let [c cost] (float cost))
-   :order/lines lines))
+  [order {:keys [status lines variant] :as opts}]
+  (let [m (tb/assoc-when
+           {}
+           :order/status status
+           :order/variant variant
+           :order/lines lines)]
+    (-> opts
+        (tb/update-in-some [:cost] float)
+        (tb/update-in-some [:price] float)
+        (update-or-retract order {:cost     :order/cost
+                                  :price    :order/price
+                                  :request  :order/request
+                                  :summary  :order/summary
+                                  :quantity :order/quantity})
+        (tb/conj-when (when-not (empty? m) (assoc m :db/id (td/id order)))))))
 
 (s/fdef update
         :args (s/cat :order p/entity?
-                     :opts  ::opts)
-        :ret map?)
+                     :opts  map?)
+        :ret vector?)
 
 
 (defn remove-existing
