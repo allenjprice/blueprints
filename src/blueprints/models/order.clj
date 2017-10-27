@@ -522,7 +522,7 @@
    :order/request (or request desc)
    :order/variant variant
    :order/summary summary
-   :order/price (when-let [q quantity] (float q))
+   :order/price (when-let [p price] (float p))
    :order/cost (when-let [c cost] (float cost))
    :order/lines lines))
 
