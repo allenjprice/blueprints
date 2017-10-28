@@ -23,8 +23,10 @@
   [entity & attrs]
   (reduce
    (fn [acc attr]
-     (->> (date/to-utc-corrected-date (get entity attr) tz)
-          (assoc acc attr)))
+     (if-let [v (get entity attr)]
+       (->> (date/to-utc-corrected-date v tz)
+            (assoc acc attr))
+       acc))
    {:db/id (:db/id entity)}
    attrs))
 
