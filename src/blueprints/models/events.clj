@@ -2,6 +2,7 @@
   (:require [blueprints.models.account :as account]
             [blueprints.models.event :as event]
             [blueprints.models.note :as note]
+            [blueprints.models.payment :as payment]
             [clojure.spec :as s]
             [toolbelt.core :as tb]
             [clojure.string :as string]
@@ -117,6 +118,19 @@
         :ret map?)
 
 
+
+(defn alert-unpaid-deposits
+  "Send alerts to indicate that `deposits` are unpaid as of as-of time `t`."
+  [deposits t]
+  (event/job :deposits/alert-unpaid
+             {:params {:deposit-ids (map td/id deposits)
+                       :as-of       t}}))
+
+(s/fdef alert-unpaid-deposits
+        :args (s/cat :payments (s/+ p/entity?) :date inst?)
+        :ret map?)
+
+
 ;; =============================================================================
 ;; Newsletter
 ;; =============================================================================
@@ -199,6 +213,18 @@
 
 (s/fdef rent-payment-made
         :args (s/cat :account p/entity? :payment p/entity?)
+        :ret map?)
+
+
+(defn alert-all-unpaid-rent
+  "Send alerts to indicate that rent `payments` are unpaid as of as-of time `t`."
+  [payments t]
+  (event/job :rent-payments/alert-unpaid
+             {:params {:payment-ids (map td/id payments)
+                       :as-of       t}}))
+
+(s/fdef alert-all-unpaid-rent
+        :args (s/cat :payments (s/+ p/entity?) :date inst?)
         :ret map?)
 
 
