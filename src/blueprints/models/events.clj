@@ -118,7 +118,6 @@
         :ret map?)
 
 
-
 (defn alert-unpaid-deposits
   "Send alerts to indicate that `deposits` are unpaid as of as-of time `t`."
   [deposits t]
@@ -127,7 +126,18 @@
                        :as-of       t}}))
 
 (s/fdef alert-unpaid-deposits
-        :args (s/cat :payments (s/+ p/entity?) :date inst?)
+        :args (s/cat :deposits (s/+ p/entity?) :t inst?)
+        :ret map?)
+
+
+(defn alert-deposit-due
+  "Send alerts to indicate that `deposit` is due soon relative to time `t`."
+  [deposit t]
+  (event/notify :deposit/due {:params {:deposit-id (td/id deposit)
+                                       :as-of      t}}))
+
+(s/fdef alert-deposit-due
+        :args (s/cat :deposit p/entity? :t inst?)
         :ret map?)
 
 
@@ -189,6 +199,24 @@
         :ret map?)
 
 
+
+;; =============================================================================
+;; Payments
+;; =============================================================================
+
+
+(defn alert-payment-due
+  "Send alerts to indicate that `payment` is due soon relative to time `t`."
+  [payment t]
+  (event/notify :payment/due {:params {:payment-id (td/id payment)
+                                       :as-of      t}}))
+
+(s/fdef alert-payment-due
+        :args (s/cat :payment p/entity? :t inst?)
+        :ret map?)
+
+
+
 ;; =============================================================================
 ;; Rent
 ;; =============================================================================
@@ -225,6 +253,21 @@
 
 (s/fdef alert-all-unpaid-rent
         :args (s/cat :payments (s/+ p/entity?) :date inst?)
+        :ret map?)
+
+
+;; =============================================================================
+;; Scheduler
+;; =============================================================================
+
+
+(defn process-daily-tasks
+  "Event that triggers daily tasks."
+  [t]
+  (event/job :scheduler/daily {:params {:as-of t}}))
+
+(s/fdef process-daily-tasks
+        :args (s/cat :t inst?)
         :ret map?)
 
 
