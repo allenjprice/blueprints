@@ -7,7 +7,8 @@
             [clojure.spec :as s]
             [datomic.api :as d]
             [toolbelt.date :as date]
-            [toolbelt.predicates :as p]))
+            [toolbelt.predicates :as p]
+            [toolbelt.datomic :as td]))
 
 ;; =============================================================================
 ;; Spec
@@ -190,14 +191,32 @@
                   :where
                   [?a :account/license ?e]
                   [?e :member-license/status :member-license.status/active]]
-                db (:db/id account))]
+                db (td/id account))]
     (cond
       (> (count ls) 1) (throw (ex-info "Invalid state: account has multiple active member licenses."
-                                       {:account (:db/id account)}))
+                                       {:account (td/id account)}))
       (empty? ls)      nil
       :otherwise       (d/entity db (first ls)))))
 
 (s/fdef active
+        :args (s/cat :db p/db?
+                     :account p/entity?)
+        :ret p/entity?)
+
+
+(defn by-account
+  "Retrieve the most recent member license for `account`."
+  [db account]
+  (->> (d/q '[:find [?l ...]
+              :in $ ?a
+              :where
+              [?a :account/license ?l]]
+            db (td/id account))
+       (map (partial d/entity db))
+       (sort-by starts)
+       last))
+
+(s/fdef by-account
         :args (s/cat :db p/db?
                      :account p/entity?)
         :ret p/entity?)
