@@ -300,8 +300,7 @@
   (let [method (cond
                  (and (some? invoice-id) (nil? method)) :payment.method/stripe-invoice
                  (and (some? charge-id) (nil? method))  :payment.method/stripe-charge
-                 :otherwise                             method)
-        status (if (some? paid-on) :payment.status/paid status)]
+                 :otherwise                             method)]
     (toolbelt.core/assoc-when
      {:db/id           (d/tempid :db.part/starcity)
       :payment/id      uuid
