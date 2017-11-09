@@ -199,6 +199,50 @@
         :ret map?)
 
 
+(defn order-placed
+  "Indicates that `order` has been placed by `account`. Can optionally specify
+  whether or not to notify the order owner."
+  [account order & [notify]]
+  (event/job :order/placed {:params {:order-id   (td/id order)
+                                     :account-id (td/id account)
+                                     :notify     (boolean notify)}}))
+
+(s/fdef order-placed
+        :args (s/cat :account p/entity?
+                     :order p/entity?
+                     :notify (s/? boolean?))
+        :ret map?)
+
+
+(defn order-fulfilled
+  "Indicates that `order` has been fulfilled by `account`. Can optionally specify
+  whether or not to notify the order owner."
+  [account order & [notify]]
+  (event/job :order/fulfilled {:params {:order-id   (td/id order)
+                                        :account-id (td/id account)
+                                        :notify     (boolean notify)}}))
+
+(s/fdef order-fulfilled
+        :args (s/cat :account p/entity?
+                     :order p/entity?
+                     :notify (s/? boolean?))
+        :ret map?)
+
+
+(defn order-canceled
+  "Indicates that `order` has been canceled by `account`. Can optionally specify
+  whether or not to notify the order owner."
+  [account order & [notify]]
+  (event/job :order/canceled {:params {:order-id   (td/id order)
+                                       :account-id (td/id account)
+                                       :notify     (boolean notify)}}))
+
+(s/fdef order-canceled
+        :args (s/cat :account p/entity?
+                     :order p/entity?
+                     :notify (s/? boolean?))
+        :ret map?)
+
 
 ;; =============================================================================
 ;; Payments
