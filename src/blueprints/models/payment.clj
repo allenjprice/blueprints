@@ -514,8 +514,7 @@
 
 (defn- datekey->where-clauses [key]
   (case key
-    :paid '[[?p :payment/status :payment.status/paid ?tx]
-            [?tx :db/txInstant ?date]]
+    :paid '[[?p :payment/paid-on ?date]]
     '[[?p :payment/account _ ?tx]
       [?tx :db/txInstant ?date]]))
 
