@@ -64,7 +64,7 @@
 
 (s/fdef method
         :args (s/cat :payment p/entity?)
-        :ret (s/or :method ::method :nothing nil?))
+        :ret (s/or :method ::method :nil nil?))
 
 
 (def amount
@@ -91,7 +91,7 @@
 
 (s/fdef due
         :args (s/cat :payment p/entity?)
-        :ret (s/or :inst inst? :nothing nil?))
+        :ret (s/or :inst inst? :nil nil?))
 
 
 (def period-start
@@ -100,7 +100,7 @@
 
 (s/fdef period-start
         :args (s/cat :payment p/entity?)
-        :ret (s/or :inst inst? :nothing nil?))
+        :ret (s/or :inst inst? :nil nil?))
 
 
 (def period-end
@@ -109,7 +109,7 @@
 
 (s/fdef period-end
         :args (s/cat :payment p/entity?)
-        :ret (s/or :inst inst? :nothing nil?))
+        :ret (s/or :inst inst? :nil nil?))
 
 
 (def paid-on
@@ -118,7 +118,7 @@
 
 (s/fdef paid-on
         :args (s/cat :payment p/entity?)
-        :ret (s/or :inst inst? :nothing nil?))
+        :ret (s/or :inst inst? :nil nil?))
 
 
 (def account
@@ -127,7 +127,7 @@
 
 (s/fdef account
         :args (s/cat :payment p/entity?)
-        :ret (s/or :entity p/entity? :nothing nil?))
+        :ret (s/or :entity p/entity? :nil nil?))
 
 
 (defn- infer-payment-for [payment]
@@ -146,7 +146,7 @@
 
 (s/fdef payment-for
         :args (s/cat :payment p/entity?)
-        :ret (s/or :for ::for :nothing nil?))
+        :ret (s/or :for ::for :nil nil?))
 
 
 (defn payment-for2
@@ -156,9 +156,19 @@
     (or (:payment/for payment)
         (infer-payment-for payment))))
 
-(s/fdef payment-for
+(s/fdef payment-for2
+        :args (s/cat :db p/db? :payment p/entity?)
+        :ret (s/or :for ::for :nil nil?))
+
+
+(defn property
+  "The property that this payment is affiliated with."
+  [payment]
+  (:payment/property payment))
+
+(s/fdef property
         :args (s/cat :payment p/entity?)
-        :ret (s/or :for ::for :nothing nil?))
+        :ret (s/or :entity p/entityd? :nil nil?))
 
 
 (defn charge-id
@@ -168,7 +178,7 @@
 
 (s/fdef charge-id
         :args (s/cat :payment p/entity?)
-        :ret (s/or :string string? :nothing nil?))
+        :ret (s/or :string string? :nil nil?))
 
 
 (defn invoice-id
@@ -178,7 +188,7 @@
 
 (s/fdef invoice-id
         :args (s/cat :payment p/entity?)
-        :ret (s/or :string string? :nothing nil?))
+        :ret (s/or :string string? :nil nil?))
 
 
 (defn source-id
@@ -188,7 +198,7 @@
 
 (s/fdef source-id
         :args (s/cat :payment p/entity?)
-        :ret (s/or :string string? :nothing nil?))
+        :ret (s/or :string string? :nil nil?))
 
 
 ;; =============================================================================
@@ -282,12 +292,13 @@
 (s/def ::pend inst?)
 (s/def ::paid-on inst?)
 (s/def ::source-id string?)
+(s/def ::property p/entity?)
 
 
 (defn create
   "Create a new payment."
   [amount account & {:keys [uuid due for status method charge-id invoice-id
-                            pstart pend paid-on source-id]
+                            property pstart pend paid-on source-id]
                      :or   {uuid   (d/squuid)
                             status :payment.status/pending}}]
   (when (= method :payment.method/stripe-charge)
@@ -313,6 +324,7 @@
      :payment/method method
      :payment/due due
      :payment/for for
+     :payment/property (when-some [p property] (td/id p))
      :payment/pstart pstart
      :payment/pend pend
      :payment/paid-on paid-on)))
@@ -327,6 +339,7 @@
           :opt [:payment/method
                 :payment/due
                 :payment/for
+                :payment/property
                 :payment/pstart
                 :payment/pend
                 :payment/paid-on
@@ -340,6 +353,7 @@
                                              ::due
                                              ::for
                                              ::status
+                                             ::property
                                              ::pstart
                                              ::pend
                                              ::charge-id
@@ -480,7 +494,7 @@
 
 (s/fdef by-charge-id
         :args (s/cat :db p/db? :charge-id string?)
-        :ret (s/or :entity p/entityd? :nothing nil?))
+        :ret (s/or :entity p/entityd? :nil nil?))
 
 
 (defn by-invoice-id
@@ -491,7 +505,7 @@
 
 (s/fdef by-invoice-id
         :args (s/cat :db p/db? :invoice-id string?)
-        :ret (s/or :entity p/entityd? :nothing nil?))
+        :ret (s/or :entity p/entityd? :nil nil?))
 
 
 (defn ^{:deprecated "1.11.0"} payments

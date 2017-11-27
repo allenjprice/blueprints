@@ -97,6 +97,15 @@
        "The end date of the period that this payment corresponds to."]))]))
 
 
+(def ^{:added "1.17.0"} add-property
+  (s/generate-schema
+   [(s/schema
+     payment
+     (s/fields
+      [property :ref :indexed
+       "The property that this payment is affiliated with."]))]))
+
+
 (defn norms [part]
   {:schema.payment/add-schema-06292017
    {:txes [schema (methods part) (statuses part) (fors part)]}
@@ -105,4 +114,7 @@
    {:txes [add-check-ref]}
 
    :schema.payment/improvements-08162017
-   {:txes [(add-refunded-status part) add-date-fields (add-other-method part)]}})
+   {:txes [(add-refunded-status part) add-date-fields (add-other-method part)]}
+
+   :schema.payment/add-property-11262017
+   {:txes [add-property]}})

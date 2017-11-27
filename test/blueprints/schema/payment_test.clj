@@ -49,4 +49,8 @@
   (test-attr a :payment/check
     (is (dbt/value-type a :ref))
     (is (dbt/indexed a))
-    (is (dbt/component a))))
+    (is (dbt/component a)))
+
+  (test-attr a :payment/property
+    (is (dbt/value-type a :ref))
+    (is (dbt/indexed a))))
