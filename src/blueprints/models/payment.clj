@@ -452,11 +452,13 @@
 (defn autopay
   "Create an autopay payment given the `member-license`."
   [member-license amount invoice-id period-start]
-  (let [tz   (member-license/time-zone member-license)
-        pend (date/end-of-month period-start tz)
-        due  (date/end-of-day (default-due-date period-start) tz)]
+  (let [tz       (member-license/time-zone member-license)
+        property (member-license/property member-license)
+        pend     (date/end-of-month period-start tz)
+        due      (date/end-of-day (default-due-date period-start) tz)]
     (create (float amount) (member-license/account member-license)
             :for :payment.for/rent
+            :property property
             :pstart (date/beginning-of-day period-start tz)
             :pend pend
             :paid-on period-start
