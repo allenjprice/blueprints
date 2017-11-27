@@ -149,3 +149,9 @@
 (s/fdef autopay
         :args (s/cat :db p/db? :account p/entity?)
         :ret (s/or :entity p/entityd? :nothing nil?))
+
+
+;; because we now also create customers on the connected account for order
+;; subscriptions.
+(def ^{:added "1.17.0"} connected
+  autopay)
