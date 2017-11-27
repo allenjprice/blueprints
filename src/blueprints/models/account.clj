@@ -186,6 +186,24 @@
         :ret (s/or :nothing nil? :contact p/entityd?))
 
 
+(defn current-property
+  "Produce the property associated with `account` in `db`."
+  [db account]
+  (->> (d/q '[:find ?p .
+              :in $ ?a
+              :where
+              [?a :account/licenses ?l]
+              [?l :member-license/unit ?u]
+              [?l :member-license/status :member-license.status/active]
+              [?p :property/units ?u]]
+            db (td/id account))
+       (d/entity db)))
+
+(s/fdef current-property
+        :args (s/cat :db p/db? :account p/entity?)
+        :ret (s/or :nil nil? :entity p/entityd?))
+
+
 ;; =============================================================================
 ;; Predicates
 ;; =============================================================================
