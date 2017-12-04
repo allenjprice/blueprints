@@ -11,7 +11,7 @@
 ;; =============================================================================
 
 
-(def id
+(def ^{:deprecated "1.17.0"} id
   "The id of the Stripe customer."
   :stripe-customer/customer-id)
 
@@ -20,7 +20,7 @@
         :ret string?)
 
 
-(def account
+(def ^{:deprecated "1.17.0"} account
   "The account that this customer belongs to."
   :stripe-customer/account)
 
@@ -29,7 +29,7 @@
         :ret p/entity?)
 
 
-(def bank-token
+(def ^{:deprecated "1.17.0"} bank-token
   "The customer's bank account token, if any."
   :stripe-customer/bank-account-token)
 
@@ -38,7 +38,7 @@
         :ret (s/? string?))
 
 
-(def managing-property
+(def ^{:deprecated "1.17.0"} managing-property
   "The property that this Stripe customer belongs to, if any."
   :stripe-customer/managed)
 
@@ -52,7 +52,7 @@
 ;; =============================================================================
 
 
-(defn has-verified-bank-account?
+(defn ^{:deprecated "1.17.0"} has-verified-bank-account?
   [customer]
   (some? (bank-token customer)))
 
@@ -66,7 +66,7 @@
 ;; =============================================================================
 
 
-(defn create
+(defn ^{:deprecated "1.17.0"} create
   "Create a new Stripe customer."
   [customer-id account & {:keys [bank-token managing-property]}]
   (tb/assoc-when
@@ -90,7 +90,7 @@
                            :stripe-customer/managed]))
 
 
-(defn add-bank-token
+(defn ^{:deprecated "1.17.0"} add-bank-token
   "Add `bank-token` to the `customer` entity."
   [customer bank-token]
   {:db/id                              (td/id customer)
@@ -106,7 +106,7 @@
 ;; =============================================================================
 
 
-(defn by-account
+(defn ^{:deprecated "1.17.0"} by-account
   "Retrieve the `stripe-customer` that belongs to this account. Produces the
   customer that is on the Stripe master account, NOT the managed one -- the
   customer on the managed account will be used *only* for autopay."
@@ -124,7 +124,7 @@
         :ret (s/or :entity p/entityd? :nothing nil?))
 
 
-(defn by-customer-id
+(defn ^{:deprecated "1.17.0"} by-customer-id
   "Look up a Stripe customer by `customer-id` (Stripe key)."
   [db customer-id]
   (d/entity db [:stripe-customer/customer-id customer-id]))
@@ -134,7 +134,7 @@
         :ret (s/or :entity p/entityd? :nothing nil?))
 
 
-(defn autopay
+(defn ^{:deprecated "1.17.0"} autopay
   "Retrieve the customer that lives on the connected account for autopay
   payments--the inverse of `by-account`."
   [db account]
@@ -153,5 +153,5 @@
 
 ;; because we now also create customers on the connected account for order
 ;; subscriptions.
-(def ^{:added "1.17.0"} connected
+(def ^{:added "1.17.0" :deprecated "1.17.0"} connect
   autopay)
