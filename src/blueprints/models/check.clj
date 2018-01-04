@@ -94,8 +94,8 @@
 (s/def :check/received-on inst?)
 (s/def :check/bank string?)
 (s/def ::check
-  (s/keys :req [:check/name :check/amount :check/date :check/number :check/status]
-          :opt [:check/received-on :check/bank :db/id]))
+  (s/keys :req [:check/name :check/amount :check/date :check/received-on]
+          :opt [:check/number :check/status :check/bank :db/id]))
 
 
 ;; =============================================================================
@@ -116,7 +116,7 @@
 ;; =============================================================================
 
 
-(defn create
+(defn ^{:deprecated "1.17.0"} create
   "Produce the tx-data required to create a `check` entity."
   [name amount date number & {:keys [status received-on bank]}]
   (tb/assoc-when
@@ -135,6 +135,29 @@
                      :date :check/date
                      :number :check/number
                      :opts (s/keys* :opt-un [:check/status :check/received-on :check/bank]))
+        :ret check?)
+
+
+
+(defn ^{:added "1.17.0"} create2
+  "Produce the tx-data required to create a `check` entity."
+  [name amount date received-on & {:keys [status number bank]}]
+  (tb/assoc-when
+   {:db/id             (d/tempid :db.part/starcity)
+    :check/name        name
+    :check/amount      amount
+    :check/date        date
+    :check/received-on received-on}
+   :check/number number
+   :check/status status
+   :check/bank bank))
+
+(s/fdef create2
+        :args (s/cat :name :check/name
+                     :amount :check/amount
+                     :date :check/date
+                     :received-on :check/received-on
+                     :opts (s/keys* :opt-un [:check/status :check/number :check/bank]))
         :ret check?)
 
 
