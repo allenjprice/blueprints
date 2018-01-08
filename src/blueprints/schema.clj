@@ -29,6 +29,7 @@
             [blueprints.schema.stripe-customer :as sc]
             [blueprints.schema.stripe-event :as se]
             [blueprints.schema.suggestion :as suggestion]
+            [blueprints.schema.sync :as sync]
             [blueprints.schema.tag :as tag]
             [io.rkn.conformity :as c]))
 
@@ -68,6 +69,7 @@
                         sc/norms
                         se/norms
                         suggestion/norms
+                        sync/norms
                         tag/norms]
                        (apply juxt))]
     (apply merge (gen-norms part))))

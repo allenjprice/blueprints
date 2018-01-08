@@ -49,6 +49,18 @@
 (def status :application/status)
 
 
+(defn last-modified-at
+  [db application]
+  (let [app-inst (td/updated-at db application)
+        cf-inst  (td/updated-at db (community-fitness application))
+        app-ms   (inst-ms app-inst)
+        cf-ms    (inst-ms cf-inst)]
+    (get
+     {app-ms app-inst
+      cf-ms  cf-inst}
+    (max app-ms cf-ms))))
+
+
 ;; =============================================================================
 ;; Predicates
 ;; =============================================================================
