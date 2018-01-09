@@ -51,6 +51,15 @@
    [:db/add :db.part/db :db.alter/attribute :stripe/plan-id]])
 
 
+(def ^{:added "1.18.0"} add-payout-id
+  (s/generate-schema
+   [(s/schema
+     stripe
+     (s/fields
+      [payout-id :string :indexed
+       "ID of a Stripe payout."]))]))
+
+
 (defn norms [part]
   {:schema.stripe/add-schema-04132017
    {:txes [schema]}
@@ -66,4 +75,7 @@
    {:txes [add-source-id]}
 
    :schema.stripe/remove-unique-plan-constraint-10182017
-   {:txes [remove-unique-plan-constraint]}})
+   {:txes [remove-unique-plan-constraint]}
+
+   :schema.stripe/add-payout-id-01082018
+   {:txes [add-payout-id]}})

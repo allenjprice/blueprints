@@ -20,4 +20,8 @@
 
   (test-attr a :stripe/source-id
     (is (value-type a :string))
+    (is (indexed a)))
+
+  (test-attr a :stripe/payout-id
+    (is (value-type a :string))
     (is (indexed a))))
