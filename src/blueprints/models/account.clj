@@ -316,7 +316,10 @@
 
       (and (some? q) (not (string/blank? q)))
       (-> (update :in conj '?q)
-          (update :args conj (str q "*"))
+          (update :args (fn [args]
+                          (if (= (last q) \space)
+                            (conj args (string/trim q))
+                            (conj args (str q "*")))))
           (update :where conj
                   '(or [(fulltext $ :account/email ?q) [[?a]]]
                        [(fulltext $ :account/first-name ?q) [[?a]]]
