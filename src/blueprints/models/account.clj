@@ -306,7 +306,7 @@
                        [(fulltext $ :account/last-name ?q) [[?a]]])))
 
       true
-      (update :where #(if (empty? %) (conj % '[?a :account/email _]) %)))))
+      (update :where #(conj % '[?a :account/role _])))))
 
 
 (defn query
