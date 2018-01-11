@@ -25,18 +25,20 @@
 ;; =============================================================================
 
 
-(def email
+(defn email
   "This account's email."
-  :account/email)
+  [account]
+  (:account/email account))
 
 (s/fdef email
         :args (s/cat :account p/entity?)
         :ret string?)
 
 
-(def phone-number
+(defn phone-number
   "This account's phone number."
-  :account/phone-number)
+  [account]
+  (:account/phone-number account))
 
 (s/fdef phone-number
         :args (s/cat :account p/entity?)
