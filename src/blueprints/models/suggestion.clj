@@ -1,11 +1,9 @@
 (ns blueprints.models.suggestion
-  (:require [clojure.spec :as s]
-            [clojure.spec.test :as stest]
-            [toolbelt.predicates :as p]
+  (:require [clojure.spec.alpha :as s]
+            [clojure.string :as string]
             [datomic.api :as d]
             [toolbelt.core :as tb]
-            [toolbelt.datomic :as td]
-            [clojure.string :as string]))
+            [toolbelt.datomic :as td]))
 
 
 ;; =============================================================================
@@ -19,7 +17,7 @@
   (:suggestion/city suggestion))
 
 (s/fdef city
-        :args (s/cat :suggestion p/entity?)
+        :args (s/cat :suggestion td/entity?)
         :ret (s/or :nothing nil?
                    :string string?))
 
@@ -30,9 +28,9 @@
   (:suggestion/account suggestion))
 
 (s/fdef account
-        :args (s/cat :suggestion p/entity?)
+        :args (s/cat :suggestion td/entity?)
         :ret (s/or :nothing nil?
-                   :entity p/entityd?))
+                   :entity td/entityd?))
 
 
 ;; =============================================================================
@@ -50,7 +48,7 @@
 
 (s/fdef create
         :args (s/cat :city string?
-                     :account (s/? p/entity?))
+                     :account (s/? td/entity?))
         :ret map?)
 
 
@@ -64,7 +62,7 @@
 
 (s/fdef create-many
         :args (s/cat :cities (s/spec (s/+ string?))
-                     :account (s/? p/entity?))
+                     :account (s/? td/entity?))
         :ret vector?)
 
 
@@ -83,16 +81,16 @@
        (map (partial d/entity db))))
 
 (s/fdef by-city
-        :args (s/cat :db p/db? :city string?)
-        :ret (s/* p/entityd?))
+        :args (s/cat :db td/db? :city string?)
+        :ret (s/* td/entityd?))
 
 
 ;; (defn by-account
 ;;   [db account])
 
 ;; (s/fdef by-account
-;;         :args (s/cat :db p/db? :account p/entity?)
-;;         :ret (s/* p/entityd?))
+;;         :args (s/cat :db td/db? :account td/entity?)
+;;         :ret (s/* td/entityd?))
 
 
 (defn counts
@@ -109,5 +107,5 @@
         {})))
 
 (s/fdef counts
-        :args (s/cat :db p/db?)
+        :args (s/cat :db td/db?)
         :ret (s/map-of string? pos-int?))

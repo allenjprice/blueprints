@@ -1,8 +1,8 @@
 (ns blueprints.models.unit
-  (:require [clojure.spec :as s]
+  (:require [clojure.spec.alpha :as s]
             [datomic.api :as d]
             [toolbelt.core :as tb]
-            [toolbelt.predicates :as p]))
+            [toolbelt.datomic :as td]))
 
 ;; =============================================================================
 ;; Selectors
@@ -15,7 +15,7 @@
   (:unit/name unit))
 
 (s/fdef code
-        :args (s/cat :unit p/entity?)
+        :args (s/cat :unit td/entity?)
         :ret string?)
 
 
@@ -25,8 +25,8 @@
   (:property/_units unit))
 
 (s/fdef property
-        :args (s/cat :unit p/entity?)
-        :ret p/entityd?)
+        :args (s/cat :unit td/entity?)
+        :ret td/entityd?)
 
 
 (defn rate
@@ -44,7 +44,7 @@
         :license-price/price)))
 
 (s/fdef rate
-        :args (s/cat :unit p/entity? :license p/entity?)
+        :args (s/cat :unit td/entity? :license td/entity?)
         :ret float?)
 
 
@@ -72,7 +72,7 @@
         db (:db/id unit) date)))
 
 (s/fdef available?
-        :args (s/cat :db p/db? :unit p/entity? :date inst?)
+        :args (s/cat :db td/db? :unit td/entity? :date inst?)
         :ret boolean?)
 
 
@@ -93,7 +93,7 @@
       not))
 
 (s/fdef occupied?
-        :args (s/cat :db p/db? :unit p/entity?)
+        :args (s/cat :db td/db? :unit td/entity?)
         :ret boolean?)
 
 
@@ -115,8 +115,8 @@
        (d/entity db)))
 
 (s/fdef occupied-by
-        :args (s/cat :conn p/db? :unit p/entity?)
-        :ret p/entity?)
+        :args (s/cat :conn td/db? :unit td/entity?)
+        :ret td/entity?)
 
 
 (defn by-name
@@ -125,5 +125,5 @@
   (d/entity db [:unit/name unit-name]))
 
 (s/fdef by-name
-        :args (s/cat :db p/db? :name string?)
-        :ret p/entity?)
+        :args (s/cat :db td/db? :name string?)
+        :ret td/entity?)

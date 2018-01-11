@@ -1,11 +1,10 @@
 (ns blueprints.models.order
   (:refer-clojure :exclude [update])
   (:require [blueprints.models.service :as service]
-            [clojure.spec :as s]
-            [toolbelt.predicates :as p]
+            [clojure.spec.alpha :as s]
+            [clojure.string :as string]
             [datomic.api :as d]
             [toolbelt.core :as tb]
-            [clojure.string :as string]
             [toolbelt.datomic :as td]))
 
 
@@ -37,8 +36,8 @@
   (:order/account order))
 
 (s/fdef account
-        :args (s/cat :order p/entity?)
-        :ret p/entity?)
+        :args (s/cat :order td/entity?)
+        :ret td/entity?)
 
 
 (defn price
@@ -47,7 +46,7 @@
   (:order/price order))
 
 (s/fdef price
-        :args (s/cat :order p/entity?)
+        :args (s/cat :order td/entity?)
         :ret (s/or :nothing nil? :price float?))
 
 
@@ -57,8 +56,8 @@
   (:order/lines order))
 
 (s/fdef line-items
-        :args (s/cat :order p/entity?)
-        :ret (s/or :nothing nil? :lines (s/+ p/entityd?)))
+        :args (s/cat :order td/entity?)
+        :ret (s/or :nothing nil? :lines (s/+ td/entityd?)))
 
 
 (defn computed-price
@@ -72,7 +71,7 @@
       (service/price (:order/service order))))
 
 (s/fdef computed-price
-        :args (s/cat :order p/entity?)
+        :args (s/cat :order td/entity?)
         :ret (s/or :nothing nil? :price float?))
 
 
@@ -82,7 +81,7 @@
   (:order/cost order))
 
 (s/fdef cost
-        :args (s/cat :order p/entity?)
+        :args (s/cat :order td/entity?)
         :ret (s/or :nothing nil? :cost float?))
 
 
@@ -101,7 +100,7 @@
       (service/cost (:order/service order))))
 
 (s/fdef computed-cost
-        :args (s/cat :order p/entity?)
+        :args (s/cat :order td/entity?)
         :ret (s/or :nothing nil? :cost float?))
 
 
@@ -111,7 +110,7 @@
   (:order/quantity order))
 
 (s/fdef quantity
-        :args (s/cat :order p/entity?)
+        :args (s/cat :order td/entity?)
         :ret (s/or :nothing nil? :quantity pos-int?))
 
 
@@ -121,7 +120,7 @@
   (:order/request order))
 
 (s/fdef request
-        :args (s/cat :order p/entity?)
+        :args (s/cat :order td/entity?)
         :ret (s/or :nothing nil? :request string?))
 
 
@@ -131,7 +130,7 @@
   (:order/summary order))
 
 (s/fdef summary
-        :args (s/cat :order p/entity?)
+        :args (s/cat :order td/entity?)
         :ret (s/or :nothing nil? :summary string?))
 
 
@@ -141,8 +140,8 @@
   (:order/variant order))
 
 (s/fdef variant
-        :args (s/cat :order p/entity?)
-        :ret (s/or :nothing nil? :variant p/entity?))
+        :args (s/cat :order td/entity?)
+        :ret (s/or :nothing nil? :variant td/entity?))
 
 
 (defn status
@@ -151,7 +150,7 @@
   (:order/status order))
 
 (s/fdef status
-        :args (s/cat :order p/entity?)
+        :args (s/cat :order td/entity?)
         :ret :order/status)
 
 
@@ -161,8 +160,8 @@
   (:order/service order))
 
 (s/fdef service
-        :args (s/cat :order p/entity?)
-        :ret p/entity?)
+        :args (s/cat :order td/entity?)
+        :ret td/entity?)
 
 
 (defn payments
@@ -171,8 +170,8 @@
   (:order/payments order))
 
 (s/fdef payments
-        :args (s/cat :order p/entity?)
-        :ret (s/* p/entity?))
+        :args (s/cat :order td/entity?)
+        :ret (s/* td/entity?))
 
 
 (defn computed-name
@@ -185,7 +184,7 @@
       (service/name service))))0
 
 (s/fdef computed-name
-        :args (s/cat :order p/entity?)
+        :args (s/cat :order td/entity?)
         :ret string?)
 
 
@@ -195,7 +194,7 @@
   (:order/billed-on order))
 
 (s/fdef billed-on
-        :args (s/cat :order p/entity?)
+        :args (s/cat :order td/entity?)
         :ret (s/or :nothing nil? :date inst?))
 
 
@@ -205,7 +204,7 @@
   (:order/fulfilled-on order))
 
 (s/fdef fulfilled
-        :args (s/cat :order p/entity?)
+        :args (s/cat :order td/entity?)
         :ret (s/or :nothing nil? :date inst?))
 
 
@@ -215,7 +214,7 @@
   (:order/projected-fulfillment order))
 
 (s/fdef projected-fulfillment
-        :args (s/cat :order p/entity?)
+        :args (s/cat :order td/entity?)
         :ret (s/or :nothing nil? :date inst?))
 
 
@@ -230,7 +229,7 @@
   (= (status order) :order.status/pending))
 
 (s/fdef pending?
-        :args (s/cat :order p/entity?)
+        :args (s/cat :order td/entity?)
         :ret boolean?)
 
 
@@ -240,7 +239,7 @@
   (= (status order) :order.status/placed))
 
 (s/fdef placed?
-        :args (s/cat :order p/entity?)
+        :args (s/cat :order td/entity?)
         :ret boolean?)
 
 
@@ -251,7 +250,7 @@
   (= (status order) :order.status/fulfilled))
 
 (s/fdef placed?
-        :args (s/cat :order p/entity?)
+        :args (s/cat :order td/entity?)
         :ret boolean?)
 
 
@@ -261,7 +260,7 @@
   (= (status order) :order.status/processing))
 
 (s/fdef processing?
-        :args (s/cat :order p/entity?)
+        :args (s/cat :order td/entity?)
         :ret boolean?)
 
 
@@ -271,7 +270,7 @@
   (= (status order) :order.status/failed))
 
 (s/fdef failed?
-        :args (s/cat :order p/entity?)
+        :args (s/cat :order td/entity?)
         :ret boolean?)
 
 
@@ -281,7 +280,7 @@
   (= (status order) :order.status/charged))
 
 (s/fdef charged?
-        :args (s/cat :order p/entity?)
+        :args (s/cat :order td/entity?)
         :ret boolean?)
 
 
@@ -291,7 +290,7 @@
   (= (status order) :order.status/canceled))
 
 (s/fdef canceled?
-        :args (s/cat :order p/entity?)
+        :args (s/cat :order td/entity?)
         :ret boolean?)
 
 
@@ -312,18 +311,18 @@
        (d/entity db)))
 
 (s/fdef by-account
-        :args (s/cat :db p/db?
-                     :account p/entity?
-                     :service p/entity?)
-        :ret (s/or :entity p/entity? :nothing nil?))
+        :args (s/cat :db td/db?
+                     :account td/entity?
+                     :service td/entity?)
+        :ret (s/or :entity td/entity? :nothing nil?))
 
 
 (def exists?
   "Does `account` have an order for `service`?"
-  (comp p/entity? by-account))
+  (comp td/entity? by-account))
 
 (s/fdef exists?
-        :args (s/cat :db p/db? :account p/entity? :service p/entity?)
+        :args (s/cat :db td/db? :account td/entity? :service td/entity?)
         :ret boolean?)
 
 
@@ -406,7 +405,7 @@
        (d/query)
        (map (partial d/entity db))))
 
-(s/def ::entities (s/+ p/entity?))
+(s/def ::entities (s/+ td/entity?))
 (s/def ::accounts ::entities)
 (s/def ::billed #{:service.billed/monthly
                   :service.billed/once})
@@ -418,7 +417,7 @@
 (s/def ::to inst?)
 
 (s/fdef query
-        :args (s/cat :db p/db?
+        :args (s/cat :db td/db?
                      :params (s/keys* :opt-un [::accounts
                                                ::billed
                                                ::services
@@ -427,7 +426,7 @@
                                                ::datekey
                                                ::from
                                                ::to]))
-        :ret (s/* p/entityd?))
+        :ret (s/* td/entityd?))
 
 
 (defn by-payment
@@ -441,8 +440,8 @@
        (d/entity db)))
 
 (s/fdef by-payment
-        :args (s/cat :db p/db? :payment p/entity?)
-        :ret (s/or :entity p/entityd? :nothing nil?))
+        :args (s/cat :db td/db? :payment td/entity?)
+        :ret (s/or :entity td/entityd? :nothing nil?))
 
 
 (defn by-subscription-id
@@ -457,8 +456,8 @@
        (d/entity db)))
 
 (s/fdef by-subscription-id
-        :args (s/cat :db p/db? :sub-id string?)
-        :ret (s/or :entity p/entityd? :nothing nil?))
+        :args (s/cat :db td/db? :sub-id string?)
+        :ret (s/or :entity td/entityd? :nothing nil?))
 
 
 ;; =============================================================================
@@ -505,9 +504,9 @@
     :order/request (or request desc))))
 
 (s/fdef create
-        :args (s/cat :account p/entity?
+        :args (s/cat :account td/entity?
 
-                     :service p/entity?
+                     :service td/entity?
                      :opts    (s/? ::create-opts))
         :ret map?)
 
@@ -548,7 +547,7 @@
         (tb/conj-when (when-not (empty? m) (assoc m :db/id (td/id order)))))))
 
 (s/fdef update
-        :args (s/cat :order p/entity?
+        :args (s/cat :order td/entity?
                      :opts  map?)
         :ret vector?)
 
@@ -559,7 +558,7 @@
     [:db/retractEntity (td/id order)]))
 
 (s/fdef remove-existing
-        :args (s/cat :db p/db? :account p/entity? :service p/entity?))
+        :args (s/cat :db td/db? :account td/entity? :service td/entity?))
 
 
 (defn add-payment
@@ -569,7 +568,7 @@
    :order/payments (td/id payment)})
 
 (s/fdef add-charge
-        :args (s/cat :order p/entity? :charge p/entity?)
+        :args (s/cat :order td/entity? :charge td/entity?)
         :ret (s/keys :req [:db/id :order/status :stripe/charge]))
 
 
@@ -640,7 +639,7 @@
   :order/ordered)
 
 (s/fdef ordered-on
-        :args (s/cat :order p/entity?)
+        :args (s/cat :order td/entity?)
         :ret (s/or :inst inst? :nothing nil?))
 
 
@@ -673,7 +672,7 @@
               (not= (:charge/status c) :charge.status/failed))))))
 
 (s/fdef ordered?
-        :args (s/cat :order p/entity?)
+        :args (s/cat :order td/entity?)
         :ret boolean?)
 
 
@@ -690,5 +689,5 @@
        (map (partial d/entity db))))
 
 (s/fdef orders
-        :args (s/cat :db p/db? :account p/entity?)
-        :ret (s/* p/entityd?))
+        :args (s/cat :db td/db? :account td/entity?)
+        :ret (s/* td/entityd?))

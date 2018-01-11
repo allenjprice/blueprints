@@ -1,9 +1,9 @@
 (ns blueprints.models.referral
   (:refer-clojure :exclude [apply])
-  (:require [clojure.spec :as s]
+  (:require [clojure.spec.alpha :as s]
             [datomic.api :as d]
             [toolbelt.core :as tb]
-            [toolbelt.predicates :as p]))
+            [toolbelt.datomic :as td]))
 
 
 ;; =============================================================================
@@ -59,7 +59,7 @@
 (s/fdef create
         :args (s/cat :from ::from
                      :source string?
-                     :account (s/? p/entity?)))
+                     :account (s/? td/entity?)))
 
 
 (defn tour
@@ -70,8 +70,8 @@
 
 (s/fdef tour
         :args (s/cat :source string?
-                     :property p/entity?
-                     :account (s/? p/entity?))
+                     :property td/entity?
+                     :account (s/? td/entity?))
         :ret ::referral)
 
 
@@ -82,5 +82,5 @@
 
 (s/fdef tour
         :args (s/cat :source string?
-                     :account p/entity?)
+                     :account td/entity?)
         :ret ::referral)

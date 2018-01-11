@@ -1,8 +1,8 @@
 (ns blueprints.models.catalogue
-  (:require [toolbelt.predicates :as p]
-            [clojure.spec :as s]
+  (:require [clojure.spec.alpha :as s]
             [datomic.api :as d]
-            [toolbelt.core :as tb]))
+            [toolbelt.core :as tb]
+            [toolbelt.datomic :as td]))
 
 
 ;; =============================================================================
@@ -28,10 +28,10 @@
         (d/entity db))))
 
 (s/fdef by-code
-        :args (s/cat :db p/db?
+        :args (s/cat :db td/db?
                      :code keyword?
-                     :property (s/? p/entity?))
-        :ret p/entity?)
+                     :property (s/? td/entity?))
+        :ret td/entity?)
 
 
 (defn storage

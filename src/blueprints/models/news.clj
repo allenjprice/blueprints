@@ -1,9 +1,8 @@
 (ns blueprints.models.news
-  (:require [clojure.spec :as s]
+  (:require [clojure.spec.alpha :as s]
             [datomic.api :as d]
             [toolbelt.core :as tb]
-            [toolbelt.datomic :as td]
-            [toolbelt.predicates :as p]))
+            [toolbelt.datomic :as td]))
 
 
 ;; =============================================================================
@@ -11,7 +10,7 @@
 ;; =============================================================================
 
 
-(s/def ::avatar p/entity?)
+(s/def ::avatar td/entity?)
 (s/def ::action keyword?)
 (s/def ::title string?)
 
@@ -30,7 +29,7 @@
    :news/action action))
 
 (s/fdef create
-        :args (s/cat :account p/entity?
+        :args (s/cat :account td/entity?
                      :content string?
                      :opts (s/keys* :opt-un [::avatar ::action ::title]))
         :ret (s/keys :req [:news/account :news/content :news/dismissed :news/created-at]
@@ -44,7 +43,7 @@
    :news/dismissed true})
 
 (s/fdef dismiss
-        :args (s/cat :news p/entity?)
+        :args (s/cat :news td/entity?)
         :ret map?)
 
 
@@ -82,5 +81,5 @@
        (d/entity db)))
 
 (s/fdef by-action
-        :args (s/cat :db p/db? :account p/entity? :action keyword?)
-        :ret (s/or :entity p/entityd? :nothing nil?))
+        :args (s/cat :db td/db? :account td/entity? :action keyword?)
+        :ret (s/or :entity td/entityd? :nothing nil?))

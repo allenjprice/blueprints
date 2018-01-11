@@ -1,10 +1,8 @@
 (ns blueprints.models.charge
   (:refer-clojure :exclude [type])
-  (:require [clojure.spec :as s]
+  (:require [clojure.spec.alpha :as s]
             [datomic.api :as d]
-            [toolbelt
-             [core :as tb]
-             [predicates :as p]]
+            [toolbelt.core :as tb]
             [toolbelt.datomic :as td]))
 
 
@@ -34,14 +32,14 @@
   :charge/account)
 
 (s/fdef account
-        :args (s/cat :charge p/entity?)
-        :ret p/entity?)
+        :args (s/cat :charge td/entity?)
+        :ret td/entity?)
 
 (def status
   :charge/status)
 
 (s/fdef status
-        :args (s/cat :charge p/entity?)
+        :args (s/cat :charge td/entity?)
         :ret ::status)
 
 
@@ -49,7 +47,7 @@
   :charge/amount)
 
 (s/fdef amount
-        :args (s/cat :charge p/entity?)
+        :args (s/cat :charge td/entity?)
         :ret float?)
 
 (def id
@@ -57,7 +55,7 @@
   :charge/stripe-id)
 
 (s/fdef id
-        :args (s/cat :charge p/entity?)
+        :args (s/cat :charge td/entity?)
         :ret string?)
 
 
@@ -66,7 +64,7 @@
   :stripe/invoice-id)
 
 (s/fdef invoice-id
-        :args (s/cat :charge p/entity?)
+        :args (s/cat :charge td/entity?)
         :ret (s/or :id string? :nothing nil?))
 
 
@@ -82,7 +80,7 @@
     :otherwise                              :unknown))
 
 (s/fdef type
-        :args (s/cat :db p/db? :charge p/entity?)
+        :args (s/cat :db td/db? :charge td/entity?)
         :ret ::type)
 
 
@@ -95,7 +93,7 @@
   (= (:charge/status charge) status))
 
 (s/fdef status?
-        :args (s/cat :status ::status :charge p/entity?)
+        :args (s/cat :status ::status :charge td/entity?)
         :ret boolean?)
 
 
@@ -118,7 +116,7 @@
         db (td/id charge))))
 
 (s/fdef is-rent-ach-charge?
-        :args (s/cat :db p/db? :charge p/entity?)
+        :args (s/cat :db td/db? :charge td/entity?)
         :ret boolean?)
 
 
@@ -133,7 +131,7 @@
         db (td/id charge))))
 
 (s/fdef is-security-deposit-charge?
-        :args (s/cat :db p/db? :charge p/entity?)
+        :args (s/cat :db td/db? :charge td/entity?)
         :ret boolean?)
 
 
@@ -152,7 +150,7 @@
         db (td/id charge))))
 
 (s/fdef is-service-charge?
-        :args (s/cat :db p/db? :charge p/entity?)
+        :args (s/cat :db td/db? :charge td/entity?)
         :ret boolean?)
 
 
@@ -177,7 +175,7 @@
 (s/def ::purpose string?)
 (s/def ::invoice-id string?)
 (s/fdef create
-        :args (s/cat :account p/entity?
+        :args (s/cat :account td/entity?
                      :stripe-id string?
                      :amount float?
                      :opts (s/keys* :opt-un [::purpose ::status ::invoice-id]))
@@ -216,8 +214,8 @@
   (d/entity db [:charge/stripe-id charge-id]))
 
 (s/fdef lookup
-        :args (s/cat :db p/db? :charge-id string?)
-        :ret (s/or :entity p/entity? :nothing nil?))
+        :args (s/cat :db td/db? :charge-id string?)
+        :ret (s/or :entity td/entity? :nothing nil?))
 
 
 (def by-id
@@ -238,5 +236,5 @@
 
 
 (s/fdef by-invoice-id
-        :args (s/cat :db p/db? :invoice-id string?)
-        :ret (s/or :entity p/entity? :nothing nil?))
+        :args (s/cat :db td/db? :invoice-id string?)
+        :ret (s/or :entity td/entity? :nothing nil?))

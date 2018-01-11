@@ -4,10 +4,9 @@
             [blueprints.models.unit :as unit]
             [clj-time.coerce :as c]
             [clj-time.core :as t]
-            [clojure.spec :as s]
+            [clojure.spec.alpha :as s]
             [datomic.api :as d]
             [toolbelt.date :as date]
-            [toolbelt.predicates :as p]
             [toolbelt.datomic :as td]))
 
 ;; =============================================================================
@@ -33,7 +32,7 @@
   (:member-license/rate license))
 
 (s/fdef rate
-        :args (s/cat :license p/entity?)
+        :args (s/cat :license td/entity?)
         :ret (s/and float? pos?))
 
 
@@ -43,8 +42,8 @@
   (:member-license/rent-payments license))
 
 (s/fdef payments
-        :args (s/cat :license p/entity?)
-        :ret (s/* p/entityd?))
+        :args (s/cat :license td/entity?)
+        :ret (s/* td/entityd?))
 
 
 (defn commencement
@@ -53,7 +52,7 @@
   (:member-license/commencement license))
 
 (s/fdef commencement
-        :args (s/cat :license p/entity?)
+        :args (s/cat :license td/entity?)
         :ret inst?)
 
 (def starts
@@ -67,7 +66,7 @@
   (-> license :member-license/license :license/term))
 
 (s/fdef term
-        :args (s/cat :license p/entity?)
+        :args (s/cat :license td/entity?)
         :ret pos-int?)
 
 
@@ -77,7 +76,7 @@
   (:member-license/ends license))
 
 (s/fdef ends
-        :args (s/cat :license p/entity?)
+        :args (s/cat :license td/entity?)
         :ret inst?)
 
 
@@ -87,8 +86,8 @@
   (:member-license/unit license))
 
 (s/fdef unit
-        :args (s/cat :license p/entity?)
-        :ret p/entityd?)
+        :args (s/cat :license td/entity?)
+        :ret td/entityd?)
 
 
 (defn customer
@@ -97,8 +96,8 @@
   (:member-license/customer license))
 
 (s/fdef customer
-        :args (s/cat :license p/entity?)
-        :ret (s/or :customer p/entityd? :nothing nil?))
+        :args (s/cat :license td/entity?)
+        :ret (s/or :customer td/entityd? :nothing nil?))
 
 
 (defn subscription-id
@@ -107,7 +106,7 @@
   (:member-license/subscription-id license))
 
 (s/fdef subscription-id
-        :args (s/cat :license p/entity?)
+        :args (s/cat :license td/entity?)
         :ret (s/or :id string? :nothing nil?))
 
 
@@ -117,7 +116,7 @@
   (:member-license/plan-id license))
 
 (s/fdef plan-id
-        :args (s/cat :license p/entity?)
+        :args (s/cat :license td/entity?)
         :ret (s/or :id string? :nothing nil?))
 
 
@@ -127,8 +126,8 @@
   (:account/_license license))
 
 (s/fdef account
-        :args (s/cat :license p/entity?)
-        :ret p/entityd?)
+        :args (s/cat :license td/entity?)
+        :ret td/entityd?)
 
 
 (defn status
@@ -137,7 +136,7 @@
   (:member-license/status license))
 
 (s/fdef status
-        :args (s/cat :license p/entity?)
+        :args (s/cat :license td/entity?)
         :ret ::status)
 
 
@@ -168,8 +167,8 @@
   (-> license unit unit/property))
 
 (s/fdef property
-        :args (s/cat :license p/entity?)
-        :ret p/entityd?)
+        :args (s/cat :license td/entity?)
+        :ret td/entityd?)
 
 
 (def time-zone
@@ -199,9 +198,9 @@
       :otherwise       (d/entity db (first ls)))))
 
 (s/fdef active
-        :args (s/cat :db p/db?
-                     :account p/entity?)
-        :ret p/entity?)
+        :args (s/cat :db td/db?
+                     :account td/entity?)
+        :ret td/entity?)
 
 
 (defn by-account
@@ -217,9 +216,9 @@
        last))
 
 (s/fdef by-account
-        :args (s/cat :db p/db?
-                     :account p/entity?)
-        :ret p/entity?)
+        :args (s/cat :db td/db?
+                     :account td/entity?)
+        :ret td/entity?)
 
 
 (defn by-subscription-id
@@ -307,8 +306,8 @@
     (d/entity db p)))
 
 (s/fdef payment-within
-        :args (s/cat :db p/db? :member-license p/entity? :within inst?)
-        :ret (s/or :nothing nil? :payment p/entity?))
+        :args (s/cat :db td/db? :member-license td/entity? :within inst?)
+        :ret (s/or :nothing nil? :payment td/entity?))
 
 
 (defn current-payment
@@ -332,7 +331,7 @@
         (subscription-id member-license))))
 
 (s/fdef autopay-on?
-        :args (s/cat :member-license p/entity?)
+        :args (s/cat :member-license td/entity?)
         :ret boolean?)
 
 
@@ -387,8 +386,8 @@
      :member-license/ends         ends}))
 
 (s/fdef create
-        :args (s/cat :license p/entity?
-                     :unit p/entity?
+        :args (s/cat :license td/entity?
+                     :unit td/entity?
                      :starts? inst?
                      :rate float?
                      :status :member-license/status)

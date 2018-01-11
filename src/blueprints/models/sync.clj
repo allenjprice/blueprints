@@ -1,9 +1,8 @@
 (ns blueprints.models.sync
   (:refer-clojure :exclude [ref])
-  (:require [clojure.spec :as s]
+  (:require [clojure.spec.alpha :as s]
             [datomic.api :as d]
-            [toolbelt.datomic :as td]
-            [toolbelt.predicates :as p]))
+            [toolbelt.datomic :as td]))
 
 ;; ==============================================================================
 ;; selectors ====================================================================
@@ -16,8 +15,8 @@
   (:sync/ref sync))
 
 (s/fdef ref
-        :args (s/cat :sync p/entity?)
-        :ret p/entityd?)
+        :args (s/cat :sync td/entity?)
+        :ret td/entityd?)
 
 
 (defn ext-id
@@ -26,7 +25,7 @@
   (:sync/ext-id sync))
 
 (s/fdef id
-        :args (s/cat :sync p/entity?)
+        :args (s/cat :sync td/entity?)
         :ret string?)
 
 
@@ -36,7 +35,7 @@
   (:sync/last-synced sync))
 
 (s/fdef last-synced
-        :args (s/cat :sync p/entity?)
+        :args (s/cat :sync td/entity?)
         :ret inst?)
 
 
@@ -46,7 +45,7 @@
   (:sync/service sync))
 
 (s/fdef service
-        :args (s/cat :sync p/entity?)
+        :args (s/cat :sync td/entity?)
         :ret keyword?)
 
 
@@ -65,7 +64,7 @@
    :sync/last-synced (java.util.Date.)})
 
 (s/fdef create
-        :args (s/cat :ref p/entity?
+        :args (s/cat :ref td/entity?
                      :ext-id string?
                      :service keyword?)
         :ret map?)
@@ -78,7 +77,7 @@
    :sync/last-synced (java.util.Date.)})
 
 (s/fdef synced-now
-        :args (s/cat :sync p/entity?)
+        :args (s/cat :sync td/entity?)
         :ret map?)
 
 
@@ -93,8 +92,8 @@
   (d/entity db [:sync/ext-id external-id]))
 
 (s/fdef by-external-id
-        :args (s/cat :db p/db? :external-id string?)
-        :ret (s/or :nothing nil? :entity p/entityd?))
+        :args (s/cat :db td/db? :external-id string?)
+        :ret (s/or :nothing nil? :entity td/entityd?))
 
 
 (defn by-entity
@@ -108,5 +107,5 @@
        (d/entity db)))
 
 (s/fdef by-entity
-        :args (s/cat :db p/db? :entity p/entity?)
-        :ret (s/or :nothing nil? :entity p/entityd?))
+        :args (s/cat :db td/db? :entity td/entity?)
+        :ret (s/or :nothing nil? :entity td/entityd?))

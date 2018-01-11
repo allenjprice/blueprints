@@ -5,9 +5,9 @@
   The onboarding flow is where prospective members pay their security deposit,
   possibly sign up for premium services, and provide other preliminary
   information required to join the community."
-  (:require [datomic.api :as d]
-            [clojure.spec :as s]
-            [toolbelt.predicates :as p]))
+  (:require [clojure.spec.alpha :as s]
+            [datomic.api :as d]
+            [toolbelt.datomic :as td]))
 
 
 ;; =============================================================================
@@ -15,7 +15,7 @@
 ;; =============================================================================
 
 
-(s/def ::sel-args (s/cat :onboard p/entity?))
+(s/def ::sel-args (s/cat :onboard td/entity?))
 
 
 ;; =============================================================================
@@ -29,7 +29,7 @@
 
 (s/fdef account
         :args ::sel-args
-        :ret p/entity?)
+        :ret td/entity?)
 
 
 (def move-in
@@ -108,7 +108,7 @@
    :onboard/account (:db/id account)})
 
 (s/fdef create
-        :args (s/cat :account p/entity?)
+        :args (s/cat :account td/entity?)
         :ret map?)
 
 
@@ -118,7 +118,7 @@
    :onboard/seen [k]})
 
 (s/fdef add-seen
-        :args (s/cat :onboard p/entity? :k keyword?)
+        :args (s/cat :onboard td/entity? :k keyword?)
         :ret map?)
 
 
@@ -127,7 +127,7 @@
   [:db/retract (:db/id onboard) :onboard/seen k])
 
 (s/fdef add-seen
-        :args (s/cat :onboard p/entity? :k keyword?)
+        :args (s/cat :onboard td/entity? :k keyword?)
         :ret vector?)
 
 
@@ -141,5 +141,5 @@
   (comp first :onboard/_account))
 
 (s/fdef by-account
-        :args (s/cat :account p/entity?)
-        :ret p/entity?)
+        :args (s/cat :account td/entity?)
+        :ret td/entity?)

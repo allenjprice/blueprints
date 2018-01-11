@@ -1,8 +1,7 @@
 (ns blueprints.models.application
-  (:require [clojure.spec :as s]
+  (:require [blueprints.models.event :as event]
+            [clojure.spec.alpha :as s]
             [datomic.api :as d]
-            [blueprints.models.event :as event]
-            [toolbelt.predicates :as p]
             [toolbelt.datomic :as td]))
 
 
@@ -72,7 +71,7 @@
   (= :application.status/in-progress (status app)))
 
 (s/fdef in-progress?
-        :args (s/cat :application p/entity?)
+        :args (s/cat :application td/entity?)
         :ret boolean?)
 
 
@@ -82,7 +81,7 @@
   (= :application.status/submitted (status app)))
 
 (s/fdef submitted?
-        :args (s/cat :application p/entity?)
+        :args (s/cat :application td/entity?)
         :ret boolean?)
 
 
@@ -92,7 +91,7 @@
   (= :application.status/approved (status app)))
 
 (s/fdef approved?
-        :args (s/cat :application p/entity?)
+        :args (s/cat :application td/entity?)
         :ret boolean?)
 
 
@@ -102,7 +101,7 @@
   (= :application.status/rejected (status app)))
 
 (s/fdef rejected?
-        :args (s/cat :application p/entity?)
+        :args (s/cat :application td/entity?)
         :ret boolean?)
 
 
@@ -121,7 +120,7 @@
    :application/status new-status})
 
 (s/fdef change-status
-        :args (s/cat :application p/entity?
+        :args (s/cat :application td/entity?
                      :status ::status)
         :ret map?)
 
@@ -133,7 +132,7 @@
    (event/job :application/submit {:params {:application-id (td/id application)}})])
 
 (s/fdef submit
-        :args (s/cat :application p/entity?)
+        :args (s/cat :application td/entity?)
         :ret vector?)
 
 
@@ -153,8 +152,8 @@
        (d/entity db)))
 
 (s/fdef by-account
-        :args (s/cat :db p/db? :account p/entity?)
-        :ret (s/or :nothing nil? :entity p/entity?))
+        :args (s/cat :db td/db? :account td/entity?)
+        :ret (s/or :nothing nil? :entity td/entity?))
 
 
 ;; =============================================================================
@@ -176,7 +175,7 @@
       0))
 
 (s/fdef total-created
-        :args (s/cat :db p/db?
+        :args (s/cat :db td/db?
                      :period-start inst?
                      :period-end inst?)
         :ret integer?)

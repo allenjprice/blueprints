@@ -3,11 +3,10 @@
             [blueprints.models.event :as event]
             [blueprints.models.note :as note]
             [blueprints.models.payment :as payment]
-            [clojure.spec :as s]
-            [toolbelt.core :as tb]
+            [clojure.spec.alpha :as s]
             [clojure.string :as string]
-            [toolbelt.datomic :as td]
-            [toolbelt.predicates :as p]))
+            [toolbelt.core :as tb]
+            [toolbelt.datomic :as td]))
 
 
 ;; =============================================================================
@@ -21,7 +20,7 @@
   (event/job :account/reset-password {:params {:account-id (td/id account)}}))
 
 (s/fdef reset-password
-        :args (s/cat :account p/entity?)
+        :args (s/cat :account td/entity?)
         :ret map?)
 
 
@@ -64,7 +63,7 @@
   (event/job :account/promoted {:params {:account-id (td/id account)}}))
 
 (s/fdef account-promoted
-        :args (s/cat :account p/entity?)
+        :args (s/cat :account td/entity?)
         :ret map?)
 
 
@@ -74,7 +73,7 @@
   (event/job :account/approved {:params {:account-id (td/id account)}}))
 
 (s/fdef account-approved
-        :args (s/cat :account p/entity?)
+        :args (s/cat :account td/entity?)
         :ret map?)
 
 
@@ -89,7 +88,7 @@
                                              :charge     charge-id}}))
 
 (s/fdef deposit-payment-made
-        :args (s/cat :account p/entity? :charge-id string?)
+        :args (s/cat :account td/entity? :charge-id string?)
         :ret map?)
 
 
@@ -99,7 +98,7 @@
                                                        :charge     charge-id}}))
 
 (s/fdef remainder-deposit-payment-made
-        :args (s/cat :account p/entity? :charge-id string?)
+        :args (s/cat :account td/entity? :charge-id string?)
         :ret map?)
 
 
@@ -112,7 +111,7 @@
                                        :reasons reasons)}))
 
 (s/fdef initiate-refund
-        :args (s/cat :deposit p/entity?
+        :args (s/cat :deposit td/entity?
                      :amount number?
                      :reasons (s/or :nothing nil? :string string?))
         :ret map?)
@@ -126,7 +125,7 @@
                        :as-of       t}}))
 
 (s/fdef alert-unpaid-deposits
-        :args (s/cat :deposits (s/+ p/entity?) :t inst?)
+        :args (s/cat :deposits (s/+ td/entity?) :t inst?)
         :ret map?)
 
 
@@ -137,7 +136,7 @@
                                        :as-of      t}}))
 
 (s/fdef alert-deposit-due
-        :args (s/cat :deposit p/entity? :t inst?)
+        :args (s/cat :deposit td/entity? :t inst?)
         :ret map?)
 
 
@@ -167,7 +166,7 @@
   (event/job :note/created {:params {:uuid (note/uuid note)}}))
 
 (s/fdef note-created
-        :args (s/cat :note p/entity?)
+        :args (s/cat :note td/entity?)
         :ret map?)
 
 
@@ -178,7 +177,7 @@
                                              :note-id      (td/id note)}}))
 
 (s/fdef added-note-comment
-        :args (s/cat :note p/entity? :comment p/entity?)
+        :args (s/cat :note td/entity? :comment td/entity?)
         :ret map?)
 
 
@@ -194,8 +193,8 @@
                                       :account-id (td/id account)}}))
 
 (s/fdef process-order
-        :args (s/cat :account p/entity?
-                     :order p/entity?)
+        :args (s/cat :account td/entity?
+                     :order td/entity?)
         :ret map?)
 
 
@@ -208,8 +207,8 @@
                                      :notify     (boolean notify)}}))
 
 (s/fdef order-placed
-        :args (s/cat :account p/entity?
-                     :order p/entity?
+        :args (s/cat :account td/entity?
+                     :order td/entity?
                      :notify (s/? boolean?))
         :ret map?)
 
@@ -223,8 +222,8 @@
                                         :notify     (boolean notify)}}))
 
 (s/fdef order-fulfilled
-        :args (s/cat :account p/entity?
-                     :order p/entity?
+        :args (s/cat :account td/entity?
+                     :order td/entity?
                      :notify (s/? boolean?))
         :ret map?)
 
@@ -238,8 +237,8 @@
                                        :notify     (boolean notify)}}))
 
 (s/fdef order-canceled
-        :args (s/cat :account p/entity?
-                     :order p/entity?
+        :args (s/cat :account td/entity?
+                     :order td/entity?
                      :notify (s/? boolean?))
         :ret map?)
 
@@ -256,7 +255,7 @@
                                        :as-of      t}}))
 
 (s/fdef alert-payment-due
-        :args (s/cat :payment p/entity? :t inst?)
+        :args (s/cat :payment td/entity? :t inst?)
         :ret map?)
 
 
@@ -284,7 +283,7 @@
                                                  :payment-id (td/id payment)}}))
 
 (s/fdef rent-payment-made
-        :args (s/cat :account p/entity? :payment p/entity?)
+        :args (s/cat :account td/entity? :payment td/entity?)
         :ret map?)
 
 
@@ -296,7 +295,7 @@
                        :as-of       t}}))
 
 (s/fdef alert-all-unpaid-rent
-        :args (s/cat :payments (s/+ p/entity?) :date inst?)
+        :args (s/cat :payments (s/+ td/entity?) :date inst?)
         :ret map?)
 
 
@@ -326,7 +325,7 @@
   (event/job :session/revoke {:params {:account-id (td/id account)}}))
 
 (s/fdef revoke-session
-        :args (s/cat :account p/entity?)
+        :args (s/cat :account td/entity?)
         :ret map?)
 
 
@@ -376,5 +375,5 @@
 (s/fdef delete-source
         :args (s/cat :customer string?
                      :source-id string?
-                     :triggered-by (s/? p/entity?))
+                     :triggered-by (s/? td/entity?))
         :ret map?)

@@ -1,6 +1,5 @@
 (ns blueprints.models.source
-  (:require [clojure.spec :as s]
-            [toolbelt.predicates :as p]
+  (:require [clojure.spec.alpha :as s]
             [datomic.api :as d]
             [toolbelt.datomic :as td]))
 
@@ -14,8 +13,8 @@
   (:source/account source))
 
 (s/fdef account
-        :args (s/cat :source p/entity?)
-        :ret (s/or :nothing nil? :entity p/entityd?))
+        :args (s/cat :source td/entity?)
+        :ret (s/or :nothing nil? :entity td/entityd?))
 
 
 ;; =============================================================================
@@ -30,7 +29,7 @@
    :source/account (td/id account)})
 
 (s/fdef create
-        :args (s/cat :account p/entity?)
+        :args (s/cat :account td/entity?)
         :ret map?)
 
 

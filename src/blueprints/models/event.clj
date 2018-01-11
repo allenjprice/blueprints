@@ -1,11 +1,9 @@
 (ns blueprints.models.event
   (:refer-clojure :exclude [key])
-  (:require [clojure.spec :as s]
+  (:require [clojure.spec.alpha :as s]
             [datomic.api :as d]
-            [toolbelt
-             [core :as tb]
-             [datomic :as td]
-             [predicates :as p]]))
+            [toolbelt.core :as tb]
+            [toolbelt.datomic :as td]))
 
 ;; =============================================================================
 ;; Status
@@ -29,7 +27,7 @@
   :event/key)
 
 (s/fdef key
-        :args (s/cat :event p/entity?)
+        :args (s/cat :event td/entity?)
         :ret keyword?)
 
 
@@ -38,7 +36,7 @@
   :event/uuid)
 
 (s/fdef uuid
-        :args (s/cat :event p/entity?)
+        :args (s/cat :event td/entity?)
         :ret uuid?)
 
 
@@ -49,7 +47,7 @@
     (read-string ps)))
 
 (s/fdef params
-        :args (s/cat :event p/entity?)
+        :args (s/cat :event td/entity?)
         :ret (s/or :params map? :nothing nil?))
 
 
@@ -58,7 +56,7 @@
   :event/topic)
 
 (s/fdef topic
-        :args (s/cat :event p/entity?)
+        :args (s/cat :event td/entity?)
         :ret (s/or :topic keyword? :nothing nil?))
 
 
@@ -67,8 +65,8 @@
   :event/triggered-by)
 
 (s/fdef triggered-by
-        :args (s/cat :event p/entity?)
-        :ret (s/or :event p/entity? :nothing nil?))
+        :args (s/cat :event td/entity?)
+        :ret (s/or :event td/entity? :nothing nil?))
 
 
 (defn metadata
@@ -78,7 +76,7 @@
     (read-string x)))
 
 (s/fdef metadata
-        :args (s/cat :event p/entity?)
+        :args (s/cat :event td/entity?)
         :ret (s/or :params map? :nothing nil?))
 
 
@@ -94,7 +92,7 @@
       (= :job (topic event))))
 
 (s/fdef job?
-        :args (s/cat :event p/entity?)
+        :args (s/cat :event td/entity?)
         :ret boolean?)
 
 
@@ -104,7 +102,7 @@
   (= :report (topic event)))
 
 (s/fdef report?
-        :args (s/cat :event p/entity?)
+        :args (s/cat :event td/entity?)
         :ret boolean?)
 
 
@@ -114,7 +112,7 @@
   (= :notify (topic event)))
 
 (s/fdef notify?
-        :args (s/cat :event p/entity?)
+        :args (s/cat :event td/entity?)
         :ret boolean?)
 
 
@@ -124,7 +122,7 @@
   (= :stripe (topic event)))
 
 (s/fdef stripe?
-        :args (s/cat :event p/entity?)
+        :args (s/cat :event td/entity?)
         :ret boolean?)
 
 
@@ -155,7 +153,7 @@
 (s/def ::params map?)
 (s/def ::meta map?)
 (s/def ::topic keyword?)
-(s/def ::triggered-by p/entity?)
+(s/def ::triggered-by td/entity?)
 
 (s/fdef create
         :args (s/cat :key keyword?
@@ -214,5 +212,5 @@
        (map (partial d/entity db))))
 
 (s/fdef by-status
-        :args (s/cat :db p/db? :status ::status)
-        :ret (s/* p/entity?))
+        :args (s/cat :db td/db? :status ::status)
+        :ret (s/* td/entity?))

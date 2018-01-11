@@ -3,12 +3,11 @@
   (:require [blueprints.models.charge :as charge]
             [blueprints.models.check :as check]
             [blueprints.models.payment :as payment]
-            [clojure.spec :as s]
+            [blueprints.schema.stripe-customer :as sc]
+            [clojure.spec.alpha :as s]
             [datomic.api :as d]
             [toolbelt.core :as tb]
-            [toolbelt.datomic :as td]
-            [toolbelt.predicates :as p]
-            [blueprints.schema.stripe-customer :as sc]))
+            [toolbelt.datomic :as td]))
 
 
 ;; =============================================================================
@@ -37,7 +36,7 @@
   (get deposit :security-deposit/amount-received 0))
 
 (s/fdef amount-received
-        :args (s/cat :deposit p/entity?)
+        :args (s/cat :deposit td/entity?)
         :ret integer?)
 
 (def ^{:deprecated "1.10.0"} received amount-received)
@@ -49,7 +48,7 @@
   (get deposit :security-deposit/amount-required 0))
 
 (s/fdef amount-required
-        :args (s/cat :deposit p/entity?)
+        :args (s/cat :deposit td/entity?)
         :ret integer?)
 
 
@@ -62,7 +61,7 @@
   (:deposit/amount deposit))
 
 (s/fdef amount
-        :args (s/cat :deposit p/entity?)
+        :args (s/cat :deposit td/entity?)
         :ret float?)
 
 
@@ -71,7 +70,7 @@
   :deposit/due)
 
 (s/fdef due-by
-        :args (s/cat :deposit p/entity?)
+        :args (s/cat :deposit td/entity?)
         :ret inst?)
 
 
@@ -83,8 +82,8 @@
   :deposit/account)
 
 (s/fdef account
-        :args (s/cat :deposit p/entity?)
-        :ret p/entity?)
+        :args (s/cat :deposit td/entity?)
+        :ret td/entity?)
 
 
 (def ^{:deprecated "1.10.0"} checks
@@ -92,8 +91,8 @@
   :security-deposit/checks)
 
 (s/fdef checks
-        :args (s/cat :deposit p/entity?)
-        :ret (s/* p/entity?))
+        :args (s/cat :deposit td/entity?)
+        :ret (s/* td/entity?))
 
 
 (def ^{:deprecated "1.10.0"} charges
@@ -101,8 +100,8 @@
   :security-deposit/charges)
 
 (s/fdef charges
-        :args (s/cat :deposit p/entity?)
-        :ret (s/* p/entity?))
+        :args (s/cat :deposit td/entity?)
+        :ret (s/* td/entity?))
 
 
 (defn ^{:added "1.10.0"} payments
@@ -110,8 +109,8 @@
   (:deposit/payments deposit))
 
 (s/fdef payments
-        :args (s/cat :deposit p/entity?)
-        :ret (s/* p/entity?))
+        :args (s/cat :deposit td/entity?)
+        :ret (s/* td/entity?))
 
 
 (def method
@@ -119,7 +118,7 @@
   :deposit/method)
 
 (s/fdef method
-        :args (s/cat :deposit p/entity?)
+        :args (s/cat :deposit td/entity?)
         :ret :deposit/method)
 
 
@@ -129,7 +128,7 @@
   (:deposit/type deposit))
 
 (s/fdef type
-        :args (s/cat :deposit p/entity?)
+        :args (s/cat :deposit td/entity?)
         :ret :deposit/type)
 
 
@@ -145,7 +144,7 @@
     (- (amount deposit) paid)))
 
 (s/fdef amount-remaining
-        :args (s/cat :deposit p/entity?)
+        :args (s/cat :deposit td/entity?)
         :ret integer?)
 
 
@@ -158,7 +157,7 @@
    (payments deposit)))
 
 (s/fdef amount-paid
-        :args (s/cat :deposit p/entity?)
+        :args (s/cat :deposit td/entity?)
         :ret integer?)
 
 
@@ -171,7 +170,7 @@
    (payments deposit)))
 
 (s/fdef amount-pending
-        :args (s/cat :deposit p/entity?)
+        :args (s/cat :deposit td/entity?)
         :ret integer?)
 
 
@@ -182,7 +181,7 @@
   (:deposit/refund-status deposit))
 
 (s/fdef refund-status
-        :args (s/cat :deposit p/entity?)
+        :args (s/cat :deposit td/entity?)
         :ret (s/or :nothing nil?
                    :status #{:deposit.refund-status/initiated
                              :deposit.refund-status/successful
@@ -201,7 +200,7 @@
   (= (amount-remaining deposit) (amount deposit)))
 
 (s/fdef is-unpaid?
-        :args (s/cat :deposit p/entity?)
+        :args (s/cat :deposit td/entity?)
         :ret boolean?)
 
 
@@ -217,7 +216,7 @@
   (<= (amount-remaining deposit) 0))
 
 (s/fdef paid-in-full?
-        :args (s/cat :deposit p/entity?)
+        :args (s/cat :deposit td/entity?)
         :ret boolean?)
 
 
@@ -228,7 +227,7 @@
        (is-paid? deposit)))
 
 (s/fdef partially-paid?
-        :args (s/cat :deposit p/entity?)
+        :args (s/cat :deposit td/entity?)
         :ret boolean?)
 
 
@@ -243,7 +242,7 @@
          (= (amount deposit) charge-total))))
 
 (s/fdef is-refundable?
-        :args (s/cat :deposit p/entity?)
+        :args (s/cat :deposit td/entity?)
         :ret boolean?)
 
 
@@ -318,8 +317,8 @@
      :security-deposit/amount-received (new-amount-received deposit params)}))
 
 (s/fdef update-check
-        :args (s/cat :security-deposit p/entity?
-                     :check p/entity?
+        :args (s/cat :security-deposit td/entity?
+                     :check td/entity?
                      :updated-check check/updated?)
         :ret (s/keys :req [:db/id :security-deposit/amount-received]))
 
@@ -335,7 +334,7 @@
      :security-deposit/amount-received amount-received}))
 
 (s/fdef add-check
-        :args (s/cat :security-deposit p/entity?
+        :args (s/cat :security-deposit td/entity?
                      :check check/check?)
         :ret (s/keys :req [:db/id
                            :security-deposit/checks
@@ -351,8 +350,8 @@
      :security-deposit/amount-received (new-amount-received security-deposit params)}))
 
 (s/fdef update-check
-        :args (s/cat :security-deposit p/entity?
-                     :check p/entity?
+        :args (s/cat :security-deposit td/entity?
+                     :check td/entity?
                      :updated-check check/updated?)
         :ret (s/keys :req [:db/id :security-deposit/amount-received]))
 
@@ -371,7 +370,7 @@
      :security-deposit/amount-received new-amount)))
 
 (s/fdef add-charge
-        :args (s/cat :deposit p/entity? :charge p/entity?)
+        :args (s/cat :deposit td/entity? :charge td/entity?)
         :ret (s/keys :req [:db/id
                            :security-deposit/charges
                            :security-deposit/amount-received]))
@@ -384,7 +383,7 @@
    :deposit/payments (td/id payment)})
 
 (s/fdef add-payment
-        :args (s/cat :deposit p/entity? :payment p/entity?)
+        :args (s/cat :deposit td/entity? :payment td/entity?)
         :ret (s/keys :req [:db/id :deposit/payments]))
 
 
@@ -399,7 +398,7 @@
    :deposit/amount  (float amount)})
 
 (s/fdef create
-        :args (s/cat :account p/entity?
+        :args (s/cat :account td/entity?
                      :amount number?)
         :ret (s/keys :req [:db/id :deposit/account :deposit/amount]))
 
@@ -414,8 +413,8 @@
   (comp first :deposit/_account))
 
 (s/fdef by-account
-        :args (s/cat :account p/entityd?)
-        :ret p/entityd?)
+        :args (s/cat :account td/entityd?)
+        :ret td/entityd?)
 
 
 (def ^{:deprecated "1.10.0"} by-charge
@@ -423,8 +422,8 @@
   :security-deposit/_charges)
 
 (s/fdef by-charge
-        :args (s/cat :charge p/entity?)
-        :ret p/entity?)
+        :args (s/cat :charge td/entity?)
+        :ret td/entity?)
 
 
 (defn by-payment
@@ -433,8 +432,8 @@
   (:deposit/_payments payment))
 
 (s/fdef by-payment
-        :args (s/cat :payment p/entityd?)
-        :ret (s/or :entity p/entityd? :nothing nil?))
+        :args (s/cat :payment td/entityd?)
+        :ret (s/or :entity td/entityd? :nothing nil?))
 
 
 (defn by-charge-id
@@ -449,5 +448,5 @@
        (d/entity db)))
 
 (s/fdef by-charge-id
-        :args (s/cat :db p/db? :charge-id string?)
-        :ret (s/or :entity p/entity? :nothing nil?))
+        :args (s/cat :db td/db? :charge-id string?)
+        :ret (s/or :entity td/entity? :nothing nil?))

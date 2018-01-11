@@ -4,10 +4,10 @@
             [blueprints.models.property :as property]
             [blueprints.models.security-deposit :as deposit]
             [blueprints.models.unit :as unit]
-            [clojure.spec :as s]
+            [clojure.spec.alpha :as s]
             [datomic.api :as d]
             [toolbelt.date :as date]
-            [toolbelt.predicates :as p]))
+            [toolbelt.datomic :as td]))
 
 ;; =============================================================================
 ;; Selectors
@@ -19,8 +19,8 @@
   :approval/approver)
 
 (s/fdef approver
-        :args (s/cat :approval p/entity?)
-        :ret p/entity?)
+        :args (s/cat :approval td/entity?)
+        :ret td/entity?)
 
 
 (def move-in
@@ -28,7 +28,7 @@
   :approval/move-in)
 
 (s/fdef move-in
-        :args (s/cat :approval p/entity?)
+        :args (s/cat :approval td/entity?)
         :ret inst?)
 
 
@@ -37,8 +37,8 @@
   :approval/unit)
 
 (s/fdef unit
-        :args (s/cat :approval p/entity?)
-        :ret p/entity?)
+        :args (s/cat :approval td/entity?)
+        :ret td/entity?)
 
 
 (def license
@@ -46,8 +46,8 @@
   :approval/license)
 
 (s/fdef license
-        :args (s/cat :approval p/entity?)
-        :ret p/entity?)
+        :args (s/cat :approval td/entity?)
+        :ret td/entity?)
 
 
 (def property
@@ -55,8 +55,8 @@
   (comp unit/property unit))
 
 (s/fdef property
-        :args (s/cat :approval p/entity?)
-        :ret p/entity?)
+        :args (s/cat :approval td/entity?)
+        :ret td/entity?)
 
 
 ;; =============================================================================
@@ -77,10 +77,10 @@
      :approval/status   :approval.status/pending}))
 
 (s/fdef create
-        :args (s/cat :approver p/entity?
-                     :approvee p/entity?
-                     :unit p/entity?
-                     :license p/entity?
+        :args (s/cat :approver td/entity?
+                     :approvee td/entity?
+                     :unit td/entity?
+                     :license td/entity?
                      :move-in inst?)
         :ret (s/keys :req [:db/id
                            :approval/account
@@ -111,10 +111,10 @@
                                 :application.status/approved)]))
 
 (s/fdef approve
-        :args (s/cat :approver p/entity?
-                     :approvee p/entity?
-                     :unit p/entity?
-                     :license p/entity?
+        :args (s/cat :approver td/entity?
+                     :approvee td/entity?
+                     :unit td/entity?
+                     :license td/entity?
                      :move-in inst?)
         :ret (s/and vector? (s/+ map?)))
 
@@ -129,5 +129,5 @@
   (comp first :approval/_account))
 
 (s/fdef by-account
-        :args (s/cat :account p/entity?)
-        :ret p/entity?)
+        :args (s/cat :account td/entity?)
+        :ret td/entity?)

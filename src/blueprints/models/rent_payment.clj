@@ -2,7 +2,7 @@
   (:require [clj-time
              [coerce :as c]
              [core :as t]]
-            [clojure.spec :as s]
+            [clojure.spec.alpha :as s]
             [datomic.api :as d]
             [blueprints.models
              [check :as check]
@@ -10,7 +10,7 @@
             [toolbelt
              [core :as tb]
              [date :as date]
-             [predicates :as p]]))
+             [datomic :as td]]))
 
 
 ;; =============================================================================
@@ -65,15 +65,15 @@
   :member-license/_rent-payments)
 
 (s/fdef member-license
-        :args (s/cat :payment p/entity?)
-        :ret p/entity?)
+        :args (s/cat :payment td/entity?)
+        :ret td/entity?)
 
 
 (def amount
   :rent-payment/amount)
 
 (s/fdef amount
-        :args (s/cat :payment p/entity?)
+        :args (s/cat :payment td/entity?)
         :ret float?)
 
 
@@ -81,7 +81,7 @@
   :rent-payment/period-start)
 
 (s/fdef period-start
-        :args (s/cat :payment p/entity?)
+        :args (s/cat :payment td/entity?)
         :ret inst?)
 
 
@@ -89,7 +89,7 @@
   :rent-payment/period-end)
 
 (s/fdef period-end
-        :args (s/cat :payment p/entity?)
+        :args (s/cat :payment td/entity?)
         :ret inst?)
 
 
@@ -97,7 +97,7 @@
   :rent-payment/status)
 
 (s/fdef status
-        :args (s/cat :payment p/entity?)
+        :args (s/cat :payment td/entity?)
         :ret ::status)
 
 
@@ -105,7 +105,7 @@
   :rent-payment/paid-on)
 
 (s/fdef paid-on
-        :args (s/cat :payment p/entity?)
+        :args (s/cat :payment td/entity?)
         :ret inst?)
 
 
@@ -113,7 +113,7 @@
   :rent-payment/due-date)
 
 (s/fdef due-date
-        :args (s/cat :payment p/entity?)
+        :args (s/cat :payment td/entity?)
         :ret inst?)
 
 
@@ -122,7 +122,7 @@
   :rent-payment/invoice-id)
 
 (s/fdef invoice
-        :args (s/cat :payment p/entity?)
+        :args (s/cat :payment td/entity?)
         :ret (s/or :id string? :nothing nil?))
 
 
@@ -131,7 +131,7 @@
   :rent-payment/method)
 
 (s/fdef method
-        :args (s/cat :payment p/entity?)
+        :args (s/cat :payment td/entity?)
         :ret ::method)
 
 
@@ -140,8 +140,8 @@
   :rent-payment/charge)
 
 (s/fdef charge
-        :args (s/cat :payment p/entity?)
-        :ret (s/or :nothing nil? :charge p/entity?))
+        :args (s/cat :payment td/entity?)
+        :ret (s/or :nothing nil? :charge td/entity?))
 
 
 (defn failures
@@ -150,7 +150,7 @@
   (get payment :rent-payment/autopay-failures 0))
 
 (s/fdef failures
-        :args (s/cat :payment p/entity?)
+        :args (s/cat :payment td/entity?)
         :ret integer?)
 
 
@@ -168,7 +168,7 @@
   (#{:rent-payment.status/due} (status payment)))
 
 (s/fdef unpaid?
-        :args (s/cat :payment p/entity?)
+        :args (s/cat :payment td/entity?)
         :ret boolean?)
 
 
@@ -178,7 +178,7 @@
   (#{:rent-payment.status/paid} (status payment)))
 
 (s/fdef paid?
-        :args (s/cat :payment p/entity?)
+        :args (s/cat :payment td/entity?)
         :ret boolean?)
 
 
@@ -189,7 +189,7 @@
     (and (unpaid? payment) (t/after? (t/now) due))))
 
 (s/fdef past-due?
-        :args (s/cat :payment p/entity?)
+        :args (s/cat :payment td/entity?)
         :ret boolean?)
 
 
@@ -282,7 +282,7 @@
             :due-date due-date)))
 
 (s/fdef autopay-payment
-        :args (s/cat :member-license p/entity?
+        :args (s/cat :member-license td/entity?
                      :invoice-id string?
                      :period-start inst?)
         :ret map?)
@@ -312,7 +312,7 @@
      :rent-payment/paid-on paid-on)))
 
 (s/fdef add-check
-        :args (s/cat :payment p/entity? :check check/check?)
+        :args (s/cat :payment td/entity? :check check/check?)
         :ret (s/keys :req [:db/id
                            :rent-payment/check
                            :rent-payment/status
@@ -350,8 +350,8 @@
        (remove nil?)))
 
 (s/fdef update-check
-        :args (s/cat :payment p/entity?
-                     :check p/entity?
+        :args (s/cat :payment td/entity?
+                     :check td/entity?
                      :updated-check check/updated?)
         :ret sequential?)
 
@@ -367,8 +367,8 @@
   (d/entity db [:rent-payment/invoice-id invoice-id]))
 
 (s/fdef by-invoice-id
-        :args (s/cat :db p/db? :invoice-id string?)
-        :ret p/entity?)
+        :args (s/cat :db td/db? :invoice-id string?)
+        :ret td/entity?)
 
 
 (defn by-charge
@@ -382,5 +382,5 @@
        (d/entity db)))
 
 (s/fdef by-charge
-        :args (s/cat :db p/db? :charge p/entity?)
-        :ret p/entity?)
+        :args (s/cat :db td/db? :charge td/entity?)
+        :ret td/entity?)

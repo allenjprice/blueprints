@@ -2,9 +2,9 @@
   (:refer-clojure :exclude [name])
   (:require [blueprints.models.unit :as unit]
             [clj-time.core :as t]
-            [clojure.spec :as s]
+            [clojure.spec.alpha :as s]
             [datomic.api :as d]
-            [toolbelt.predicates :as p]))
+            [toolbelt.datomic :as td]))
 
 ;; =============================================================================
 ;; Selectors
@@ -16,7 +16,7 @@
   :property/name)
 
 (s/fdef name
-        :args (s/cat :property p/entity?)
+        :args (s/cat :property td/entity?)
         :ret string?)
 
 
@@ -25,7 +25,7 @@
   :property/code)
 
 (s/fdef internal-name
-        :args (s/cat :property p/entity?)
+        :args (s/cat :property td/entity?)
         :ret string?)
 
 
@@ -39,7 +39,7 @@
   :property/cover-image-url)
 
 (s/fdef cover-image-url
-        :args (s/cat :property p/entity?)
+        :args (s/cat :property td/entity?)
         :ret string?)
 
 
@@ -53,7 +53,7 @@
   :property/rent-connect-id)
 
 (s/fdef rent-connect-id
-        :args (s/cat :property p/entity?)
+        :args (s/cat :property td/entity?)
         :ret string?)
 
 
@@ -62,7 +62,7 @@
   :property/deposit-connect-id)
 
 (s/fdef deposit-connect-id
-        :args (s/cat :property p/entity?)
+        :args (s/cat :property td/entity?)
         :ret string?)
 
 
@@ -71,7 +71,7 @@
   :property/ops-fee)
 
 (s/fdef ops-fee
-        :args (s/cat :property p/entity?)
+        :args (s/cat :property td/entity?)
         :ret float?)
 
 
@@ -80,8 +80,8 @@
   :property/units)
 
 (s/fdef units
-        :args (s/cat :property p/entity?)
-        :ret (s/+ p/entityd?))
+        :args (s/cat :property td/entity?)
+        :ret (s/+ td/entityd?))
 
 
 ;; TODO: Actually store this in the DB.
@@ -96,7 +96,7 @@
   :property/available-on)
 
 (s/fdef available-on
-        :args (s/cat :property p/entity?)
+        :args (s/cat :property td/entity?)
         :ret inst?)
 
 
@@ -105,7 +105,7 @@
   :property/tours)
 
 (s/fdef accepting-tours?
-        :args (s/cat :property p/entity?)
+        :args (s/cat :property td/entity?)
         :ret boolean?)
 
 
@@ -127,8 +127,8 @@
   (d/entity db [:property/internal-name internal-name]))
 
 (s/fdef by-internal-name
-        :args (s/cat :db p/db? :internal-name string?)
-        :ret p/entity?)
+        :args (s/cat :db td/db? :internal-name string?)
+        :ret td/entity?)
 
 
 (def by-code
@@ -147,8 +147,8 @@
   (filter (partial unit/occupied? db) (units property)))
 
 (s/fdef occupied-units
-        :args (s/cat :db p/db? :property p/entity?)
-        :ret (s/* p/entity?))
+        :args (s/cat :db td/db? :property td/entity?)
+        :ret (s/* td/entity?))
 
 
 (defn available-units
@@ -160,8 +160,8 @@
   (remove (partial unit/occupied? db) (units property)))
 
 (s/fdef available-units
-        :args (s/cat :db p/db? :property p/entity?)
-        :ret (s/* p/entity?))
+        :args (s/cat :db td/db? :property td/entity?)
+        :ret (s/* td/entity?))
 
 
 (defn total-rent
@@ -180,7 +180,7 @@
        (reduce + 0)))
 
 (s/fdef total-rent
-        :args (s/cat :db p/db? :property p/entity?)
+        :args (s/cat :db td/db? :property td/entity?)
         :ret number?)
 
 

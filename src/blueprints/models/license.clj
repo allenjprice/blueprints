@@ -1,7 +1,7 @@
 (ns blueprints.models.license
-  (:require [datomic.api :as d]
-            [clojure.spec :as s]
-            [toolbelt.predicates :as p]))
+  (:require [clojure.spec.alpha :as s]
+            [datomic.api :as d]
+            [toolbelt.datomic :as td]))
 
 ;; =============================================================================
 ;; Selectors
@@ -14,7 +14,7 @@
   (:license/term license))
 
 (s/fdef term
-        :args (s/cat :license p/entity?)
+        :args (s/cat :license td/entity?)
         :ret integer?)
 
 
@@ -35,8 +35,8 @@
        (map (partial d/entity db))))
 
 (s/fdef available
-        :args (s/cat :db p/db?)
-        :ret (s/* p/entity?))
+        :args (s/cat :db td/db?)
+        :ret (s/* td/entity?))
 
 
 (defn by-term
@@ -50,5 +50,5 @@
        (d/entity db)))
 
 (s/fdef by-term
-        :args (s/cat :db p/db? :term integer?)
-        :ret p/entity?)
+        :args (s/cat :db td/db? :term integer?)
+        :ret td/entity?)

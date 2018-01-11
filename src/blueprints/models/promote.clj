@@ -8,10 +8,10 @@
             [blueprints.models.unit :as unit]
             [clj-time.coerce :as c]
             [clj-time.core :as t]
-            [clojure.spec :as s]
+            [clojure.spec.alpha :as s]
             [toolbelt.core :as tb]
             [toolbelt.date :as date]
-            [toolbelt.predicates :as p]))
+            [toolbelt.datomic :as td]))
 
 
 (defn- prorated-amount [commencement rate]
@@ -75,5 +75,5 @@
      (security-deposit-due-date account approval)]))
 
 (s/fdef promote
-        :args (s/cat :account p/entity?)
+        :args (s/cat :account td/entity?)
         :ret vector?)

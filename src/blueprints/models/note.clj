@@ -1,12 +1,10 @@
 (ns blueprints.models.note
   (:refer-clojure :exclude [update])
-  (:require [clojure.spec :as s]
-            [toolbelt.predicates :as p]
+  (:require [blueprints.models.account :as account]
+            [clojure.spec.alpha :as s]
             [datomic.api :as d]
-            [toolbelt
-             [core :as tb]
-             [datomic :as td]]
-            [blueprints.models.account :as account]))
+            [toolbelt.core :as tb]
+            [toolbelt.datomic :as td]))
 
 
 ;; =============================================================================
@@ -14,14 +12,14 @@
 ;; =============================================================================
 
 
-(s/def :note/author (s/or :id integer? :entity p/entity?))           ; for return values
+(s/def :note/author (s/or :id integer? :entity td/entity?))           ; for return values
 (s/def :note/subject string?)
 (s/def :note/content string?)
-(s/def :note/children (s/* p/entity?))
-(s/def :note/tags (s/* p/entity?))
+(s/def :note/children (s/* td/entity?))
+(s/def :note/tags (s/* td/entity?))
 
 (s/def :ticket/status #{:ticket.status/open :ticket.status/closed})
-(s/def :ticket/assigned-to (s/or :id integer? :entity p/entity?))    ; for return values
+(s/def :ticket/assigned-to (s/or :id integer? :entity td/entity?))    ; for return values
 
 
 ;; =============================================================================
@@ -34,7 +32,7 @@
   :note/uuid)
 
 (s/fdef uuid
-        :args (s/cat :note p/entity?)
+        :args (s/cat :note td/entity?)
         :ret uuid?)
 
 
@@ -43,8 +41,8 @@
   :note/author)
 
 (s/fdef author
-        :args (s/cat :note p/entity?)
-        :ret p/entity?)
+        :args (s/cat :note td/entity?)
+        :ret td/entity?)
 
 
 (def subject
@@ -52,7 +50,7 @@
   :note/subject)
 
 (s/fdef subject
-        :args (s/cat :note p/entity?)
+        :args (s/cat :note td/entity?)
         :ret :note/subject)
 
 
@@ -61,7 +59,7 @@
   :note/content)
 
 (s/fdef content
-        :args (s/cat :note p/entity?)
+        :args (s/cat :note td/entity?)
         :ret :note/content)
 
 
@@ -70,7 +68,7 @@
   :note/children)
 
 (s/fdef children
-        :args (s/cat :note p/entity?)
+        :args (s/cat :note td/entity?)
         :ret :note/children)
 
 
@@ -79,7 +77,7 @@
   :note/tags)
 
 (s/fdef tags
-        :args (s/cat :note p/entity?)
+        :args (s/cat :note td/entity?)
         :ret :note/tags)
 
 
@@ -88,7 +86,7 @@
   :ticket/status)
 
 (s/fdef status
-        :args (s/cat :note p/entity?)
+        :args (s/cat :note td/entity?)
         :ret (s/or :nothing nil? :status :ticket/status))
 
 
@@ -97,8 +95,8 @@
   :ticket/assigned-to)
 
 (s/fdef assigned-to
-        :args (s/cat :note p/entity?)
-        :ret (s/or :nothing nil? :account p/entity?))
+        :args (s/cat :note td/entity?)
+        :ret (s/or :nothing nil? :account td/entity?))
 
 
 (def account
@@ -106,8 +104,8 @@
   :account/_notes)
 
 (s/fdef account
-        :args (s/cat :note p/entity?)
-        :ret (s/or :nothing nil? :account p/entity?))
+        :args (s/cat :note td/entity?)
+        :ret (s/or :nothing nil? :account td/entity?))
 
 
 (def parent
@@ -115,8 +113,8 @@
   :note/_children)
 
 (s/fdef parent
-        :args (s/cat :note p/entity?)
-        :ret (s/or :nothing nil? :note p/entity?))
+        :args (s/cat :note td/entity?)
+        :ret (s/or :nothing nil? :note td/entity?))
 
 
 ;; =============================================================================
@@ -130,7 +128,7 @@
 
 
 (s/fdef ticket?
-        :args (s/cat :note p/entity?)
+        :args (s/cat :note td/entity?)
         :ret boolean?)
 
 
@@ -143,8 +141,8 @@
   (d/entity db [:note/uuid uuid]))
 
 (s/fdef by-uuid
-        :args (s/cat :db p/db? :uuid uuid?)
-        :ret (s/or :nothing nil? :entity p/entity?))
+        :args (s/cat :db td/db? :uuid uuid?)
+        :ret (s/or :nothing nil? :entity td/entity?))
 
 
 ;; =============================================================================
@@ -168,8 +166,8 @@
      :ticket/status status
      :ticket/assigned-to (:db/id assigned-to))))
 
-(s/def ::author p/entity?)
-(s/def ::assigned-to p/entity?)
+(s/def ::author td/entity?)
+(s/def ::assigned-to td/entity?)
 (s/fdef create
         :args (s/cat :subject :note/subject
                      :content :note/content
@@ -186,7 +184,7 @@
    :note/content content))
 
 (s/fdef update
-        :args (s/cat :note p/entity?
+        :args (s/cat :note td/entity?
                      :opts (s/keys* :opt-un [:note/subject
                                              :note/content]))
         :ret map?)
@@ -203,7 +201,7 @@
    :ticket/assigned-to (:db/id account)})
 
 (s/fdef assign-to
-        :args (s/cat :note p/entity? :account p/entity?)
+        :args (s/cat :note td/entity? :account td/entity?)
         :ret map?)
 
 
@@ -228,7 +226,7 @@
   [:db/add (:db/id note) :note/tags (:db/id tag)])
 
 (s/fdef add-tag
-        :args (s/cat :note p/entity? :tag p/entity?)
+        :args (s/cat :note td/entity? :tag td/entity?)
         :ret vector?)
 
 
@@ -238,7 +236,7 @@
   [:db/retract (:db/id note) :note/tags (:db/id tag)])
 
 (s/fdef remove-tag
-        :args (s/cat :note p/entity? :tag p/entity?)
+        :args (s/cat :note td/entity? :tag td/entity?)
         :ret vector?)
 
 
@@ -254,7 +252,7 @@
    :note/uuid    (d/squuid)})
 
 (s/fdef comment
-        :args (s/cat :author p/entity? :content string?)
+        :args (s/cat :author td/entity? :content string?)
         :ret map?)
 
 
@@ -266,7 +264,7 @@
    :note/children comment})
 
 (s/fdef add-comment
-        :args (s/cat :note p/entity?
+        :args (s/cat :note td/entity?
                      :comment (s/keys :req [:note/content :note/author]))
         :ret map?)
 
@@ -314,7 +312,7 @@
                 :note/referenced-by (referenced-by note))))))
 
 (s/fdef clientize
-        :args (s/cat :db p/db?
-                     :note p/entity?
+        :args (s/cat :db td/db?
+                     :note td/entity?
                      :created-at (s/? inst?))
         :ret map?)

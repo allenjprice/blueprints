@@ -1,9 +1,8 @@
 (ns blueprints.models.account
   (:require [blueprints.models.application :as application]
             [blueprints.models.approval :as approval]
-            [clojure.spec :as s]
+            [clojure.spec.alpha :as s]
             [datomic.api :as d]
-            [toolbelt.predicates :as p]
             [toolbelt.datomic :as td]
             [clojure.string :as string]))
 
@@ -30,7 +29,7 @@
   :account/email)
 
 (s/fdef email
-        :args (s/cat :account p/entity?)
+        :args (s/cat :account td/entity?)
         :ret string?)
 
 
@@ -39,7 +38,7 @@
   :account/phone-number)
 
 (s/fdef phone-number
-        :args (s/cat :account p/entity?)
+        :args (s/cat :account td/entity?)
         :ret (s/or :phone string? :nothing nil?))
 
 
@@ -47,7 +46,7 @@
   :account/first-name)
 
 (s/fdef first-name
-        :args (s/cat :account p/entity?)
+        :args (s/cat :account td/entity?)
         :ret (s/or :phone string? :nothing nil?))
 
 
@@ -55,7 +54,7 @@
   :account/middle-name)
 
 (s/fdef middle-name
-        :args (s/cat :account p/entity?)
+        :args (s/cat :account td/entity?)
         :ret (s/or :middle-name string? :nothing nil?))
 
 
@@ -63,7 +62,7 @@
   :account/last-name)
 
 (s/fdef last-name
-        :args (s/cat :account p/entity?)
+        :args (s/cat :account td/entity?)
         :ret (s/or :last-name string? :nothing nil?))
 
 
@@ -72,7 +71,7 @@
   :account/dob)
 
 (s/fdef dob
-        :args (s/cat :account p/entity?)
+        :args (s/cat :account td/entity?)
         :ret (s/or :dob inst? :nothing nil?))
 
 
@@ -80,7 +79,7 @@
   :account/activation-hash)
 
 (s/fdef activation-hash
-        :args (s/cat :account p/entity?)
+        :args (s/cat :account td/entity?)
         :ret (s/or :hash string? :nothing nil?))
 
 
@@ -89,8 +88,8 @@
   :account/member-application)
 
 (s/fdef member-application
-        :args (s/cat :account p/entity?)
-        :ret (s/or :application p/entity? :nothing nil?))
+        :args (s/cat :account td/entity?)
+        :ret (s/or :application td/entity? :nothing nil?))
 
 
 (def role
@@ -98,7 +97,7 @@
   :account/role)
 
 (s/fdef role
-        :args (s/cat :account p/entity?)
+        :args (s/cat :account td/entity?)
         :ret ::role)
 
 
@@ -107,8 +106,8 @@
   (comp first :deposit/_account))
 
 (s/fdef security-deposit
-        :args (s/cat :account p/entity?)
-        :ret (s/or :deposit p/entity? :nothing nil?))
+        :args (s/cat :account td/entity?)
+        :ret (s/or :deposit td/entity? :nothing nil?))
 
 
 (defn full-name
@@ -127,7 +126,7 @@
     (format "%s %s" first-name last-name)))
 
 (s/fdef full-name
-        :args (s/cat :account p/entity?)
+        :args (s/cat :account td/entity?)
         :ret string?)
 
 
@@ -137,7 +136,7 @@
   (format "%s %s" (first-name account) (last-name account)))
 
 (s/fdef short-name
-        :args (s/cat :account p/entity?)
+        :args (s/cat :account td/entity?)
         :ret string?)
 
 
@@ -163,8 +162,8 @@
   (-> account :approval/_account first))
 
 (s/fdef approval
-        :args (s/cat :account p/entity?)
-        :ret (s/or :approval p/entity? :nothing nil?))
+        :args (s/cat :account td/entity?)
+        :ret (s/or :approval td/entity? :nothing nil?))
 
 
 (def slack-handle
@@ -172,7 +171,7 @@
   :account/slack-handle)
 
 (s/fdef slack-handle
-        :args (s/cat :account p/entity?)
+        :args (s/cat :account td/entity?)
         :ret (s/or :nothing nil? :handle string?))
 
 
@@ -182,8 +181,8 @@
   (:account/emergency-contact account))
 
 (s/fdef emergency-contact
-        :args (s/cat :account p/entity?)
-        :ret (s/or :nothing nil? :contact p/entityd?))
+        :args (s/cat :account td/entity?)
+        :ret (s/or :nothing nil? :contact td/entityd?))
 
 
 ;; =============================================================================
@@ -197,7 +196,7 @@
   (boolean (d/entity db [:account/email email])))
 
 (s/fdef exists?
-        :args (s/cat :db p/db? :email string?)
+        :args (s/cat :db td/db? :email string?)
         :ret boolean?)
 
 
@@ -206,7 +205,7 @@
   (comp not empty? :stripe-customer/_account))
 
 (s/fdef bank-linked?
-        :args (s/cat :account p/entity?)
+        :args (s/cat :account td/entity?)
         :ret boolean?)
 
 
@@ -214,7 +213,7 @@
   (= role (:account/role account)))
 
 (s/fdef is-role?
-        :args (s/cat :role ::role :account p/entity?)
+        :args (s/cat :role ::role :account td/entity?)
         :ret boolean?)
 
 
@@ -242,7 +241,7 @@
     (and (application/submitted? application) (applicant? account))))
 
 (s/fdef can-approve?
-        :args (s/cat :account p/entity?)
+        :args (s/cat :account td/entity?)
         :ret boolean?)
 
 
@@ -257,8 +256,8 @@
   (d/entity db [:account/email email]))
 
 (s/fdef by-email
-        :args (s/cat :db p/db? :email string?)
-        :ret (s/or :account p/entity? :nothing nil?))
+        :args (s/cat :db td/db? :email string?)
+        :ret (s/or :account td/entity? :nothing nil?))
 
 
 (defn by-customer-id
@@ -268,8 +267,8 @@
    (d/entity db [:stripe-customer/customer-id customer-id])))
 
 (s/fdef by-customer-id
-        :args (s/cat :db p/db? :customer-id string?)
-        :ret (s/or :account p/entity? :nothing nil?))
+        :args (s/cat :db td/db? :customer-id string?)
+        :ret (s/or :account td/entity? :nothing nil?))
 
 
 (defn- accounts-query
@@ -321,13 +320,13 @@
        (map (partial d/entity db))))
 
 (s/def ::q string?)
-(s/def ::properties (s/+ p/entity?))
+(s/def ::properties (s/+ td/entity?))
 (s/def ::roles (s/+ ::role))
 
 (s/fdef query
-        :args (s/cat :db p/db?
+        :args (s/cat :db td/db?
                      :opts (s/keys* :opt-un [::q ::properties ::roles]))
-        :ret (s/* p/entityd?))
+        :ret (s/* td/entityd?))
 
 
 ;; =============================================================================
@@ -355,7 +354,7 @@
    :account/role role})
 
 (s/fdef change-role
-        :args (s/cat :account p/entity? :role ::role)
+        :args (s/cat :account td/entity? :role ::role)
         :ret (s/keys :req [:db/id :account/role]))
 
 
@@ -378,7 +377,7 @@
       0))
 
 (s/fdef total-created
-        :args (s/cat :db p/db?
+        :args (s/cat :db td/db?
                      :period-start inst?
                      :period-end inst?)
         :ret integer?)
@@ -397,5 +396,5 @@
    :account/email (email account)})
 
 (s/fdef clientize
-        :args (s/cat :account p/entity?)
+        :args (s/cat :account td/entity?)
         :ret (s/keys :req [:db/id :account/name :account/email]))

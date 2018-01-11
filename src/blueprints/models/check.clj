@@ -1,10 +1,9 @@
 (ns blueprints.models.check
   (:refer-clojure :exclude [update])
-  (:require [clojure.spec :as s]
+  (:require [clojure.spec.alpha :as s]
             [datomic.api :as d]
-            [toolbelt
-             [core :as tb]
-             [predicates :as p]]))
+            [toolbelt.core :as tb]
+            [toolbelt.datomic :as td]))
 
 
 ;; =============================================================================
@@ -29,7 +28,7 @@
   :check/amount)
 
 (s/fdef amount
-        :args (s/cat :check p/entity?)
+        :args (s/cat :check td/entity?)
         :ret float?)
 
 
@@ -38,7 +37,7 @@
   :check/status)
 
 (s/fdef status
-        :args (s/cat :check p/entity?)
+        :args (s/cat :check td/entity?)
         :ret statuses)
 
 
@@ -47,7 +46,7 @@
   :check/received-on)
 
 (s/fdef received-on
-        :args (s/cat :check p/entity?)
+        :args (s/cat :check td/entity?)
         :ret inst?)
 
 
@@ -57,8 +56,8 @@
   (:security-deposit/_checks check))
 
 (s/fdef security-deposit
-        :args (s/cat :check p/entity?)
-        :ret (s/or :nothing nil? :deposit p/entity?))
+        :args (s/cat :check td/entity?)
+        :ret (s/or :nothing nil? :deposit td/entity?))
 
 
 (defn ^{:deprecated "1.12.0"} rent-payment
@@ -67,8 +66,8 @@
   (:rent-payment/_check check))
 
 (s/fdef rent-payment
-        :args (s/cat :check p/entityd?)
-        :ret (s/or :nothing nil? :payment p/entityd?))
+        :args (s/cat :check td/entityd?)
+        :ret (s/or :nothing nil? :payment td/entityd?))
 
 
 (defn payment
@@ -77,8 +76,8 @@
   (:payment/_check check))
 
 (s/fdef payment
-        :args (s/cat :check p/entityd?)
-        :ret p/entityd?)
+        :args (s/cat :check td/entityd?)
+        :ret td/entityd?)
 
 
 ;; =============================================================================
@@ -186,7 +185,7 @@
    :check/received-on received-on))
 
 (s/fdef update
-        :args (s/cat :check p/entity?
+        :args (s/cat :check td/entity?
                      :updates (s/keys :opt-un [:check/name
                                                :check/amount
                                                :check/date

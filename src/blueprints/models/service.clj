@@ -1,10 +1,9 @@
 (ns blueprints.models.service
   (:refer-clojure :exclude [name])
-  (:require [datomic.api :as d]
-            [clojure.spec :as s]
-            [toolbelt.predicates :as p]
-            [toolbelt.core :as tb]
-            [toolbelt.datomic :as td]))
+  (:require[clojure.spec.alpha :as s]
+           [datomic.api :as d]
+           [toolbelt.core :as tb]
+           [toolbelt.datomic :as td]))
 
 
 ;; =============================================================================
@@ -26,7 +25,7 @@
   :service/code)
 
 (s/fdef code
-        :args (s/cat :service p/entity?)
+        :args (s/cat :service td/entity?)
         :ret string?)
 
 
@@ -35,7 +34,7 @@
   :service/name)
 
 (s/fdef name
-        :args (s/cat :service p/entity?)
+        :args (s/cat :service td/entity?)
         :ret string?)
 
 
@@ -44,7 +43,7 @@
   :service/desc)
 
 (s/fdef desc
-        :args (s/cat :service p/entity?)
+        :args (s/cat :service td/entity?)
         :ret string?)
 
 
@@ -53,7 +52,7 @@
   :service/price)
 
 (s/fdef price
-        :args (s/cat :service p/entity?)
+        :args (s/cat :service td/entity?)
         :ret (s/or :nothing nil? :price float?))
 
 
@@ -62,7 +61,7 @@
   :service/cost)
 
 (s/fdef cost
-        :args (s/cat :service p/entity?)
+        :args (s/cat :service td/entity?)
         :ret (s/or :nothing nil? :cost float?))
 
 
@@ -72,7 +71,7 @@
   (get service :service/rental false))
 
 (s/fdef rental
-        :args (s/cat :service p/entity?)
+        :args (s/cat :service td/entity?)
         :ret boolean?)
 
 
@@ -81,7 +80,7 @@
   :service/billed)
 
 (s/fdef billed
-        :args (s/cat :service p/entity?)
+        :args (s/cat :service td/entity?)
         :ret ::billed)
 
 
@@ -109,10 +108,10 @@
         (d/entity db))))
 
 (s/fdef by-code
-        :args (s/cat :db p/db?
+        :args (s/cat :db td/db?
                      :code string?
-                     :property (s/? p/entity?))
-        :ret (s/or :nothing nil? :service p/entity?))
+                     :property (s/? td/entity?))
+        :ret (s/or :nothing nil? :service td/entity?))
 
 
 (defn ordered-from-catalogue
@@ -129,9 +128,9 @@
        db (:db/id account) (:db/id catalogue)))
 
 (s/fdef ordered-from-catalogue
-        :args (s/cat :db p/db?
-                     :account p/entity?
-                     :catalogue p/entity?)
+        :args (s/cat :db td/db?
+                     :account td/entity?
+                     :catalogue td/entity?)
         :ret (s/* integer?))
 
 

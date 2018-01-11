@@ -1,14 +1,12 @@
 (ns blueprints.models.payment
-  (:require [datomic.api :as d]
-            [toolbelt
-             [datomic :as td]
-             [predicates :as p]]
-            [clojure.spec :as s]
-            [blueprints.models.check :as check]
+  (:require [blueprints.models.check :as check]
             [blueprints.models.member-license :as member-license]
-            [toolbelt.date :as date]
+            [clojure.spec.alpha :as s]
             [clj-time.coerce :as c]
-            [clj-time.core :as t]))
+            [clj-time.core :as t]
+            [datomic.api :as d]
+            [toolbelt.date :as date]
+            [toolbelt.datomic :as td]))
 
 
 (def max-autopay-failures
@@ -54,7 +52,7 @@
   :payment/id)
 
 (s/fdef id
-        :args (s/cat :payment p/entity?)
+        :args (s/cat :payment td/entity?)
         :ret uuid?)
 
 
@@ -63,7 +61,7 @@
   :payment/method)
 
 (s/fdef method
-        :args (s/cat :payment p/entity?)
+        :args (s/cat :payment td/entity?)
         :ret (s/or :method ::method :nothing nil?))
 
 
@@ -72,7 +70,7 @@
   :payment/amount)
 
 (s/fdef amount
-        :args (s/cat :payment p/entity?)
+        :args (s/cat :payment td/entity?)
         :ret float?)
 
 
@@ -81,7 +79,7 @@
   :payment/status)
 
 (s/fdef status
-        :args (s/cat :payment p/entity?)
+        :args (s/cat :payment td/entity?)
         :ret ::status)
 
 
@@ -90,7 +88,7 @@
   :payment/due)
 
 (s/fdef due
-        :args (s/cat :payment p/entity?)
+        :args (s/cat :payment td/entity?)
         :ret (s/or :inst inst? :nothing nil?))
 
 
@@ -99,7 +97,7 @@
   :payment/pstart)
 
 (s/fdef period-start
-        :args (s/cat :payment p/entity?)
+        :args (s/cat :payment td/entity?)
         :ret (s/or :inst inst? :nothing nil?))
 
 
@@ -108,7 +106,7 @@
   :payment/pend)
 
 (s/fdef period-end
-        :args (s/cat :payment p/entity?)
+        :args (s/cat :payment td/entity?)
         :ret (s/or :inst inst? :nothing nil?))
 
 
@@ -117,7 +115,7 @@
   :payment/paid-on)
 
 (s/fdef paid-on
-        :args (s/cat :payment p/entity?)
+        :args (s/cat :payment td/entity?)
         :ret (s/or :inst inst? :nothing nil?))
 
 
@@ -126,8 +124,8 @@
   :payment/account)
 
 (s/fdef account
-        :args (s/cat :payment p/entity?)
-        :ret (s/or :entity p/entity? :nothing nil?))
+        :args (s/cat :payment td/entity?)
+        :ret (s/or :entity td/entity? :nothing nil?))
 
 
 (defn- infer-payment-for [payment]
@@ -145,7 +143,7 @@
       (infer-payment-for payment)))
 
 (s/fdef payment-for
-        :args (s/cat :payment p/entity?)
+        :args (s/cat :payment td/entity?)
         :ret (s/or :for ::for :nothing nil?))
 
 
@@ -157,7 +155,7 @@
         (infer-payment-for payment))))
 
 (s/fdef payment-for
-        :args (s/cat :payment p/entity?)
+        :args (s/cat :payment td/entity?)
         :ret (s/or :for ::for :nothing nil?))
 
 
@@ -167,7 +165,7 @@
   (:stripe/charge-id payment))
 
 (s/fdef charge-id
-        :args (s/cat :payment p/entity?)
+        :args (s/cat :payment td/entity?)
         :ret (s/or :string string? :nothing nil?))
 
 
@@ -177,7 +175,7 @@
   (:stripe/invoice-id payment))
 
 (s/fdef invoice-id
-        :args (s/cat :payment p/entity?)
+        :args (s/cat :payment td/entity?)
         :ret (s/or :string string? :nothing nil?))
 
 
@@ -187,7 +185,7 @@
   (:stripe/source-id payment))
 
 (s/fdef source-id
-        :args (s/cat :payment p/entity?)
+        :args (s/cat :payment td/entity?)
         :ret (s/or :string string? :nothing nil?))
 
 
@@ -200,7 +198,7 @@
   (= m (method payment)))
 
 (s/fdef has-method?
-        :args (s/cat :method ::method :payment p/entity?)
+        :args (s/cat :method ::method :payment td/entity?)
         :ret boolean?)
 
 
@@ -223,7 +221,7 @@
   (and (invoice? payment) (= (payment-for payment) :payment.for/rent)))
 
 (s/fdef autopay?
-        :args (s/cat :payment p/entity?)
+        :args (s/cat :payment td/entity?)
         :ret boolean?)
 
 
@@ -237,7 +235,7 @@
   (= m (status payment)))
 
 (s/fdef has-status?
-        :args (s/cat :method ::status :payment p/entity?)
+        :args (s/cat :method ::status :payment td/entity?)
         :ret boolean?)
 
 (def paid?
@@ -250,7 +248,7 @@
   (partial has-status? :payment.status/pending))
 
 (s/fdef pending?
-        :args (s/cat :payment p/entity?)
+        :args (s/cat :payment td/entity?)
         :ret boolean?)
 
 
@@ -259,7 +257,7 @@
   (partial has-status? :payment.status/failed))
 
 (s/fdef failed?
-        :args (s/cat :payment p/entity?)
+        :args (s/cat :payment td/entity?)
         :ret boolean?)
 
 
@@ -275,7 +273,7 @@
 ;; =============================================================================
 
 
-(s/def ::account p/entity?)
+(s/def ::account td/entity?)
 (s/def ::uuid uuid?)
 (s/def ::due inst?)
 (s/def ::pstart inst?)
@@ -335,7 +333,7 @@
                 :stripe/charge-id]))
 (s/fdef create
         :args (s/cat :amount float?
-                     :account p/entity?
+                     :account td/entity?
                      :opts (s/keys* :opt-un [::uuid
                                              ::due
                                              ::for
@@ -358,7 +356,7 @@
    :stripe/invoice-id invoice-id})
 
 (s/fdef add-invoice
-        :args (s/cat :payment p/entity? :invoice-id string?)
+        :args (s/cat :payment td/entity? :invoice-id string?)
         :ret map?)
 
 
@@ -372,7 +370,7 @@
      :payment/method m)))
 
 (s/fdef add-charge
-        :args (s/cat :payment p/entity? :charge-id string?)
+        :args (s/cat :payment td/entity? :charge-id string?)
         :ret map?)
 
 
@@ -385,7 +383,7 @@
      :payment/method :payment.method/check}))
 
 (s/fdef add-check
-        :args (s/cat :payment p/entity? :check p/entity?)
+        :args (s/cat :payment td/entity? :check td/entity?)
         :ret map?)
 
 
@@ -396,7 +394,7 @@
    :stripe/source-id source-id})
 
 (s/fdef add-source
-        :args (s/cat :payment p/entity? :source-id string?)
+        :args (s/cat :payment td/entity? :source-id string?)
         :ret map?)
 
 
@@ -407,7 +405,7 @@
    :payment/status :payment.status/paid})
 
 (s/fdef is-paid
-        :args (s/cat :payment p/entity?)
+        :args (s/cat :payment td/entity?)
         :ret map?)
 
 
@@ -418,7 +416,7 @@
    :payment/status :payment.status/failed})
 
 (s/fdef is-failed
-        :args (s/cat :payment p/entity?)
+        :args (s/cat :payment td/entity?)
         :ret map?)
 
 
@@ -450,7 +448,7 @@
             :due due)))
 
 (s/fdef autopay
-        :args (s/cat :member-license p/entity?
+        :args (s/cat :member-license td/entity?
                      :amount (s/and pos? number?)
                      :invoice-id string?
                      :period-start inst?)
@@ -468,8 +466,8 @@
   (d/entity db [:payment/id uuid]))
 
 (s/fdef by-id
-        :args (s/cat :db p/db? :uuid uuid?)
-        :ret p/entityd?)
+        :args (s/cat :db td/db? :uuid uuid?)
+        :ret td/entityd?)
 
 
 (defn by-charge-id
@@ -479,8 +477,8 @@
   (d/entity db [:stripe/charge-id charge-id]))
 
 (s/fdef by-charge-id
-        :args (s/cat :db p/db? :charge-id string?)
-        :ret (s/or :entity p/entityd? :nothing nil?))
+        :args (s/cat :db td/db? :charge-id string?)
+        :ret (s/or :entity td/entityd? :nothing nil?))
 
 
 (defn by-invoice-id
@@ -490,8 +488,8 @@
   (d/entity db [:stripe/invoice-id invoice-id]))
 
 (s/fdef by-invoice-id
-        :args (s/cat :db p/db? :invoice-id string?)
-        :ret (s/or :entity p/entityd? :nothing nil?))
+        :args (s/cat :db td/db? :invoice-id string?)
+        :ret (s/or :entity td/entityd? :nothing nil?))
 
 
 (defn ^{:deprecated "1.11.0"} payments
@@ -507,8 +505,8 @@
        (map (partial d/entity db))))
 
 (s/fdef payments
-        :args (s/cat :db p/db? :account p/entity?)
-        :ret (s/* p/entityd?))
+        :args (s/cat :db td/db? :account td/entity?)
+        :ret (s/* td/entityd?))
 
 
 (defn- datekey->where-clauses [key]
@@ -568,7 +566,7 @@
        (d/query)
        (map (partial d/entity db))))
 
-(s/def ::account p/entity?)
+(s/def ::account td/entity?)
 (s/def ::types (s/+ ::for))
 (s/def ::from inst?)
 (s/def ::to inst?)
@@ -576,11 +574,11 @@
 (s/def ::datekey #{:created :paid})
 
 (s/fdef query
-        :args (s/cat :db p/db?
+        :args (s/cat :db td/db?
                      :opts (s/keys* :opt-un [::account
                                              ::types
                                              ::from
                                              ::to
                                              ::statuses
                                              ::datekey]))
-        :ret (s/* p/entityd?))
+        :ret (s/* td/entityd?))

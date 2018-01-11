@@ -1,9 +1,8 @@
 (ns blueprints.models.customer
-  (:require [clojure.spec :as s]
+  (:require [clojure.spec.alpha :as s]
             [datomic.api :as d]
             [toolbelt.core :as tb]
-            [toolbelt.datomic :as td]
-            [toolbelt.predicates :as p]))
+            [toolbelt.datomic :as td]))
 
 
 ;; =============================================================================
@@ -16,7 +15,7 @@
   :stripe-customer/customer-id)
 
 (s/fdef id
-        :args (s/cat :customer p/entity?)
+        :args (s/cat :customer td/entity?)
         :ret string?)
 
 
@@ -25,8 +24,8 @@
   :stripe-customer/account)
 
 (s/fdef account
-        :args (s/cat :customer p/entity?)
-        :ret p/entity?)
+        :args (s/cat :customer td/entity?)
+        :ret td/entity?)
 
 
 (def bank-token
@@ -34,7 +33,7 @@
   :stripe-customer/bank-account-token)
 
 (s/fdef bank-token
-        :args (s/cat :customer p/entity?)
+        :args (s/cat :customer td/entity?)
         :ret (s/? string?))
 
 
@@ -43,8 +42,8 @@
   :stripe-customer/managed)
 
 (s/fdef managing-property
-        :args (s/cat :customer p/entity?)
-        :ret (s/? p/entity?))
+        :args (s/cat :customer td/entity?)
+        :ret (s/? td/entity?))
 
 
 ;; =============================================================================
@@ -57,7 +56,7 @@
   (some? (bank-token customer)))
 
 (s/fdef has-verified-bank-account?
-        :args (s/cat :customer p/entity?)
+        :args (s/cat :customer td/entity?)
         :ret boolean?)
 
 
@@ -77,10 +76,10 @@
    :stripe-customer/managed (when-some [p managing-property] (td/id p))))
 
 (s/def ::bank-token string?)
-(s/def ::managing-property p/entity?)
+(s/def ::managing-property td/entity?)
 (s/fdef create
         :args (s/cat :customer-id string?
-                     :account p/entity?
+                     :account td/entity?
                      :opts (s/keys* :opt-un [::bank-token
                                              ::managing-property]))
         :ret (s/keys :req [:db/id
@@ -97,7 +96,7 @@
    :stripe-customer/bank-account-token bank-token})
 
 (s/fdef add-bank-token
-        :args (s/cat :customer p/entity? :bank-token string?)
+        :args (s/cat :customer td/entity? :bank-token string?)
         :ret (s/keys :req [:db/id :stripe-customer/bank-account-token]))
 
 
@@ -120,8 +119,8 @@
        (d/entity db)))
 
 (s/fdef by-account
-        :args (s/cat :db p/db? :account p/entity?)
-        :ret (s/or :entity p/entityd? :nothing nil?))
+        :args (s/cat :db td/db? :account td/entity?)
+        :ret (s/or :entity td/entityd? :nothing nil?))
 
 
 (defn by-customer-id
@@ -130,8 +129,8 @@
   (d/entity db [:stripe-customer/customer-id customer-id]))
 
 (s/fdef by-customer-id
-        :args (s/cat :db p/db? :customer-id string?)
-        :ret (s/or :entity p/entityd? :nothing nil?))
+        :args (s/cat :db td/db? :customer-id string?)
+        :ret (s/or :entity td/entityd? :nothing nil?))
 
 
 (defn autopay
@@ -147,5 +146,5 @@
        (d/entity db)))
 
 (s/fdef autopay
-        :args (s/cat :db p/db? :account p/entity?)
-        :ret (s/or :entity p/entityd? :nothing nil?))
+        :args (s/cat :db td/db? :account td/entity?)
+        :ret (s/or :entity td/entityd? :nothing nil?))
