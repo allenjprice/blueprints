@@ -109,3 +109,18 @@
 (s/fdef by-entity
         :args (s/cat :db td/db? :entity td/entity?)
         :ret (s/or :nothing nil? :entity td/entityd?))
+
+
+(defn all-by-entity
+  "Look up all sync entities by entity being synced."
+  [db entity]
+  (->> (d/q '[:find [?e ...]
+              :in $ ?ref
+              :where
+              [?e :sync/ref ?ref]]
+            db (td/id entity))
+       (map (partial d/entity db))))
+
+(s/fdef by-entity
+        :args (s/cat :db td/db? :entity td/entity?)
+        :ret (s/* td/entityd?))
