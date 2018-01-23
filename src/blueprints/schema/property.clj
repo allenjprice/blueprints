@@ -160,6 +160,20 @@
        "The id of the Stripe Connect account used for security deposits."]))]))
 
 
+(def ^{:added "1.17.0"} ops-fee-extensions
+  (concat
+   [{:db/id               :property/ops-fee
+     :db/ident            :property/ops-fee-rent
+     :db/doc              "The percent fee to apply to rent payments."
+     :db.alter/_attribute :db.part/db}]
+   (s/generate-schema
+    [(s/schema
+      property
+      (s/fields
+       [ops-fee-orders :float :indexed
+        "The percent fee to apply to premium service order payments."]))])))
+
+
 (defn norms [part]
   {:starcity/add-property-schema
    {:txes [schema]}
@@ -196,7 +210,11 @@
    {:txes [add-tours-attr]}
 
    :schema.property/improvements-07192017
-   {:txes [schema-cleanup add-deposit-connect-id]
+   {:txes     [schema-cleanup add-deposit-connect-id]
     :requires [:starcity/add-property-schema
                :schema/add-stripe-credentials-to-property-schema-9-8-16
-               :schema.property/add-tours-attr-03232017]}})
+               :schema.property/add-tours-attr-03232017]}
+
+   :schema.property/ops-fee-extensions-11272017
+   {:txes     [ops-fee-extensions]
+    :requires [:schema.property/add-ops-fee-12-14-16]}})

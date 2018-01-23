@@ -34,7 +34,11 @@
     (is (dbt/value-type a :instant))
     (is (dbt/indexed a)))
 
-  (test-attr a :property/ops-fee
+  (test-attr a :property/ops-fee-rent
+    (is (dbt/value-type a :float))
+    (is (dbt/indexed a)))
+
+  (test-attr a :property/ops-fee-orders
     (is (dbt/value-type a :float))
     (is (dbt/indexed a)))
 

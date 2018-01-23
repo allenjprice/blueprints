@@ -56,6 +56,10 @@
         :args (s/cat :property td/entity?)
         :ret string?)
 
+;; Because not only rent is subject to this now
+(def ^{:added "1.17.0"} connect-id
+  rent-connect-id)
+
 
 (def ^{:added "1.10.0"} deposit-connect-id
   "The id for the account to route security deposit payments to."
@@ -66,11 +70,32 @@
         :ret string?)
 
 
-(def ops-fee
+(def ^{:deprecated "1.17.0"} ops-fee
   "The percentage of rent payments to route to the parent Stripe account."
   :property/ops-fee)
 
 (s/fdef ops-fee
+        :args (s/cat :property td/entity?)
+        :ret float?)
+
+
+(defn ops-fee-rent
+  "The percentage of rent payments to route to the platform Stripe account."
+  [property]
+  (:property/ops-fee-rent property))
+
+(s/fdef ops-fee-rent
+        :args (s/cat :property td/entity?)
+        :ret float?)
+
+
+(defn ops-fee-orders
+  "The percentage of premium service order payments to route to the platform
+  Stripe account."
+  [property]
+  (:property/ops-fee-orders property))
+
+(s/fdef ops-fee-orders
         :args (s/cat :property td/entity?)
         :ret float?)
 

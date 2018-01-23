@@ -24,18 +24,20 @@
 ;; =============================================================================
 
 
-(def email
+(defn email
   "This account's email."
-  :account/email)
+  [account]
+  (:account/email account))
 
 (s/fdef email
         :args (s/cat :account td/entity?)
         :ret string?)
 
 
-(def phone-number
+(defn phone-number
   "This account's phone number."
-  :account/phone-number)
+  [account]
+  (:account/phone-number account))
 
 (s/fdef phone-number
         :args (s/cat :account td/entity?)
@@ -183,6 +185,24 @@
 (s/fdef emergency-contact
         :args (s/cat :account td/entity?)
         :ret (s/or :nothing nil? :contact td/entityd?))
+
+
+(defn current-property
+  "Produce the property associated with `account` in `db`."
+  [db account]
+  (->> (d/q '[:find ?p .
+              :in $ ?a
+              :where
+              [?a :account/licenses ?l]
+              [?l :member-license/unit ?u]
+              [?l :member-license/status :member-license.status/active]
+              [?p :property/units ?u]]
+            db (td/id account))
+       (d/entity db)))
+
+(s/fdef current-property
+        :args (s/cat :db td/db? :account td/entity?)
+        :ret (s/or :nil nil? :entity td/entityd?))
 
 
 ;; =============================================================================

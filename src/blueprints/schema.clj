@@ -31,6 +31,7 @@
             [blueprints.schema.suggestion :as suggestion]
             [blueprints.schema.sync :as sync]
             [blueprints.schema.tag :as tag]
+            [blueprints.schema.transaction :as transaction]
             [io.rkn.conformity :as c]))
 
 (defn partition-norms [part]
@@ -70,7 +71,8 @@
                         se/norms
                         suggestion/norms
                         sync/norms
-                        tag/norms]
+                        tag/norms
+                        transaction/norms]
                        (apply juxt))]
     (apply merge (gen-norms part))))
 
