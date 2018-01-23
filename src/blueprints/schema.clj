@@ -30,6 +30,7 @@
             [blueprints.schema.stripe-event :as se]
             [blueprints.schema.suggestion :as suggestion]
             [blueprints.schema.tag :as tag]
+            [blueprints.schema.transaction :as transaction]
             [io.rkn.conformity :as c]))
 
 (defn partition-norms [part]
@@ -68,7 +69,8 @@
                         sc/norms
                         se/norms
                         suggestion/norms
-                        tag/norms]
+                        tag/norms
+                        transaction/norms]
                        (apply juxt))]
     (apply merge (gen-norms part))))
 
