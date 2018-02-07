@@ -11,7 +11,10 @@
                  [datomic-schema "1.3.0"]
                  [clj-time "0.14.2"]]
 
-  :profiles {:provided {:dependencies [[com.datomic/datomic-free "0.9.5544"]]}}
+  :source-paths ["src"]
+
+  :profiles {:provided {:dependencies [[com.datomic/datomic-free "0.9.5544"]]}
+             :dev      {:source-paths ["src" "test"]}}
 
   :plugins [[s3-wagon-private "1.2.0"]]
 

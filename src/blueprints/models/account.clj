@@ -187,9 +187,19 @@
         :ret (s/or :nothing nil? :contact td/entityd?))
 
 
-(defn current-property
+(defmulti current-property
   "Produce the property associated with `account` in `db`."
-  [db account]
+  (fn [db account] (role account)))
+
+(s/fdef current-property
+        :args (s/cat :db td/db? :account td/entity?)
+        :ret (s/nilable td/entityd?))
+
+
+(defmethod current-property :default [_ _] nil)
+
+
+(defn by-member-license [db account]
   (->> (d/q '[:find ?p .
               :in $ ?a
               :where
@@ -200,9 +210,24 @@
             db (td/id account))
        (d/entity db)))
 
-(s/fdef current-property
-        :args (s/cat :db td/db? :account td/entity?)
-        :ret (s/or :nil nil? :entity td/entityd?))
+
+(defmethod current-property :account.role/admin [db account]
+  (by-member-license db account))
+
+
+(defmethod current-property :account.role/member [db account]
+  (by-member-license db account))
+
+
+(defmethod current-property :account.role/onboarding
+  [db account]
+  (->> (d/q '[:find ?p .
+              :in $ ?a
+              :where
+              [?approval :approval/account ?a]
+              [?approval :approval/property ?p]]
+            db (td/id account))
+       (d/entity db)))
 
 
 ;; =============================================================================
