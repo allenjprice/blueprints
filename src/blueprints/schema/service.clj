@@ -64,9 +64,53 @@
       [cost :float :indexed "Cost override of the base service."]))]))
 
 
+(defn- ^{:added "2.3.0"} add-service-fields [part]
+  (concat
+   (s/generate-schema
+    [(s/schema
+      service-field
+      (s/fields
+       [type :ref :indexed
+        "The type of service field."]
+
+       [label :string :indexed
+        "The label presented..."]))])
+
+   [{:db/id    (d/tempid part)
+     :db/ident :service-field.type/time}
+    {:db/id    (d/tempid part)
+     :db/ident :service-field.type/date}
+    {:db/id    (d/tempid part)
+     :db/ident :service-field.type/text}
+    {:db/id    (d/tempid part)
+     :db/ident :service-field.type/number}]
+
+   [{:db/id          (d/tempid :db.part/db)
+     :db/ident       :service-field.time/range-start
+     :db/valueType   :db.type/instant
+     :db/cardinality :db.cardinality/one
+     :db/index       true
+     :db/doc         "The starting range of a time field."}
+    {:db/id          (d/tempid :db.part/db)
+     :db/ident       :service-field.time/range-end
+     :db/valueType   :db.type/instant
+     :db/cardinality :db.cardinality/one
+     :db/index       true
+     :db/doc         "The ending range of a time field."}
+    {:db/id          (d/tempid :db.part/db)
+     :db/ident       :service-field.time/interval
+     :db/valueType   :db.type/long
+     :db/cardinality :db.cardinality/one
+     :db/index       true
+     :db/doc         "The interval of a time field in minutes."}]))
+
+
 (defn norms [part]
   {:schema.services/add-schema-04132017
    {:txes [schema (billing-types part)]}
 
    :schema.service/add-cost-10202017
-   {:txes [add-cost]}})
+   {:txes [add-cost]}
+
+   :schema.services/add-service-fields-02272018
+   {:txes [(add-service-fields part)]}})
