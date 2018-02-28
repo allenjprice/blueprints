@@ -52,12 +52,26 @@
       [max :long "Maximum number."]
       [step :float "Number step."]))]))
 
+
 (defn- field-types [part]
   [{:db/id    (d/tempid part)
     :db/ident :cat-field.type/desc}
    {:db/id    (d/tempid part)
     :db/ident :cat-field.type/quantity}])
 
+
+(def ^{:added "2.3.0"} add-cat-item-properties
+  (s/generate-schema
+   [(s/schema
+     cat-item
+     (s/fields
+      [properties :ref :many :indexed
+       "Properties that this catalog item is available at."]))]))
+
+
 (defn norms [part]
   {:schema.catalogue/add-schema-04182017
-   {:txes [schema (field-types part)]}})
+   {:txes [schema (field-types part)]}
+
+   :schema.catalog/add-cat-item-properties-02272018
+   {:txes [add-cat-item-properties]}})

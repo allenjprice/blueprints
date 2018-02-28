@@ -33,7 +33,6 @@
     (is (dbt/value-type a :string))
     (is (dbt/indexed a)))
 
-
   (test-attr a :account/phone-number
     (is (dbt/value-type a :string))
     (is (dbt/indexed a)))

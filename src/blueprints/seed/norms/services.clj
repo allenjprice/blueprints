@@ -110,6 +110,20 @@
                        {:svc-variant/name  "hanging"
                         :svc-variant/price 40.0}]}])
 
+
+;; {:db/id             (d/tempid part)
+;;  :service/code   "cleaning,one"
+;;  :service/name   "Single Room Cleaning"
+;;  :service/desc   "Have your room dusted, vacuumed and all surfaces cleaned."
+;;  :service/price  40.0
+;;  :service/billed :service.billed/once
+;;  :service/fields [{:service-field/type  :service-field.type/date
+;;                    :service-field/label "When would you like your room cleaned?"}]}
+
 (defn norms [conn part]
   {:blueprints.seed/add-initial-services
-   {:txes [(add-initial-services part)]}})
+   {:txes [(add-initial-services part)]}
+
+   ;; :blueprints.seed/add-new-services-or-whatever
+   ;; {:txes [[[:]]]}
+   })
