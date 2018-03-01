@@ -120,6 +120,44 @@
 ;;  :service/fields [{:service-field/type  :service-field.type/date
 ;;                    :service-field/label "When would you like your room cleaned?"}]}
 
+(defn- ^{:added "2.3.0"} update-services [part]
+  [{:db/id                 [:service/code "pets,dog,boarding"]
+    :service/code          "pets,dog,boarding"
+    :service/name          "Dog boarding"
+    :service/desc          "Board your dog with Starcity while you're away"
+    :service/desc-internal "Doggie stays with us. Price is billed per night."
+    :service/rental        false
+    :service/billed        :service.billed/once
+    :service/catalogs      [:pets]
+    :service/variants      [{:svc-variant/name  "small"
+                             :svc-variant/price 45.0}
+                            {:svc-variant/name  "medium"
+                             :svc-variant/price 45.0}]
+    :service/properties    [[:property/code "2072mission"]
+                            [:property/code "52gilbert"]]
+    :service/fields        [{:service-field/index 0
+                             :service-field/type  :service-field.type/date
+                             :service-field/label "When do we start boarding?"}
+                            {:service-field/index 1
+                             :service-field/type  :service-field.type/date
+                             :service-field/label "When will you pick up your pup?"}
+                            {:service-field/index 2
+                             :service-field/type  :service-field.type/text
+                             :service-field/label "Any additional instructions?"}]}
+   {:db/id            [:service/code "pets,dog,walking,single"]
+    :service/code     "pets,dog,walking,single"
+    :service/name     "Dog Walking - Single"
+    :service/desc     "One walk for your furry family member."
+    :service/rental   false
+    :service/billed   :service.billed/once
+    :service/catalogs [:pets]
+    :service/variants [{:svc-variant/name  "small"
+                        :svc-variant/price 15.0}
+                       {:svc-variant/name  "medium"
+                        :svc-variant/price 15.0}]
+    :service/properties [[:property/code "2072mission"]
+                         [:property/code "52gilbert"]]}])
+
 (defn norms [conn part]
   {:blueprints.seed/add-initial-services
    {:txes [(add-initial-services part)]}
