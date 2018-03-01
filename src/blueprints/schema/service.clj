@@ -111,10 +111,25 @@
      :db/index       true
      :db/doc         "The interval of a time field in minutes."}]))
 
+(defn- ^{:added "2.3.0"} make-code-unique
+  [{:db/id     :service/code
+    :db/unique :db.unique/identity}])
+
+(defn- ^{:added "2.3.0"} add-catalogs
+  (s/generate-schema
+   [(s/schema
+     service
+     (s/fields
+      [catalogs :keyword :many :indexed
+       "The catalogs in which this service should appear"]))]))
+
 
 (defn norms [part]
   {:schema.services/add-schema-04132017
    {:txes [schema (billing-types part)]}
 
    :schema.service/add-cost-10202017
-   {:txes [add-cost]}})
+   {:txes [add-cost]}
+
+   :schema.service/add-fields-and-catalogs-03012018
+   {:txes [add-service-fields make-code-unique add-catalogs]}})
