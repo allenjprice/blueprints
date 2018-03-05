@@ -45,11 +45,6 @@
     (is (cardinality a :many))
     (is (component a)))
 
-  (test-attr a :cat-item/properties
-    (is (value-type a :ref))
-    (is (cardinality a :many))
-    (is (indexed a)))
-
   (test-attr a :cat-field/label
     (is (value-type a :string))
     (is (indexed a)))
