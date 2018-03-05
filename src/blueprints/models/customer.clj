@@ -46,6 +46,15 @@
         :ret (s/? td/entity?))
 
 
+(defn statement-name
+  [customer]
+  (:customer/statement-name customer))
+
+(s/fdef statement-name
+        :args (s/cat :customer td/entity?)
+        :ret (s/nilable string?))
+
+
 ;; =============================================================================
 ;; Predicates
 ;; =============================================================================

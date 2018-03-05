@@ -51,3 +51,30 @@
 
   (test-attr _ :service.billed/once)
   (test-attr _ :service.billed/monthly))
+
+
+(deftest service-fields-conformed?
+  (test-attr a :service-field/type
+    (is (value-type a :ref))
+    (is (indexed a)))
+
+  (test-attr a :service-field/label
+    (is (value-type a :string))
+    (is (indexed a)))
+
+  (test-attr a :service-field.time/range-start
+    (is (value-type a :instant))
+    (is (indexed a)))
+
+  (test-attr a :service-field.time/range-end
+    (is (value-type a :instant))
+    (is (indexed a)))
+
+  (test-attr a :service-field.time/interval
+    (is (value-type a :long))
+    (is (indexed a)))
+
+  (test-attr _ :service-field.type/time)
+  (test-attr _ :service-field.type/date)
+  (test-attr _ :service-field.type/text)
+  (test-attr _ :service-field.type/number))

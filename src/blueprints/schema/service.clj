@@ -64,6 +64,7 @@
       [cost :float :indexed "Cost override of the base service."]))]))
 
 
+
 (defn- ^{:added "2.3.0"} add-fields-and-catalogs [part]
   (concat
    (s/generate-schema
@@ -85,11 +86,13 @@
        [index :long :indexed
         "The position of this field within the list"]
 
+
        [type :ref :indexed
         "The type of service field."]
 
        [label :string :indexed
         "The label presented..."]))])
+
 
     [{:db/id    (d/tempid part)
      :db/ident :service-field.type/time}
@@ -117,6 +120,7 @@
      :db/valueType   :db.type/long
      :db/cardinality :db.cardinality/one
      :db/index       true
+
      :db/doc         "The interval of a time field in minutes."}
     {:db/id     :service/code
      :db/unique :db.unique/identity}
@@ -132,3 +136,4 @@
 
    :schema.service/add-fields-and-catalogs-03012018
    {:txes [(add-fields-and-catalogs part)]}})
+

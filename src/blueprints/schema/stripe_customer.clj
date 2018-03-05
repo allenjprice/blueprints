@@ -56,6 +56,15 @@
         "Reference to the property that this customer is connected to."]))])))
 
 
+(def ^{:added "2.3.0"} add-customer-statement-name
+  (s/generate-schema
+   [(s/schema
+     customer
+     (s/fields
+      [statement-name :string :indexed
+       "The name of this customer as it should appear on a statement descriptor."]))]))
+
+
 (defn norms [part]
   {:schema/add-stripe-customer-schema-8-30-16
    {:txes [schema]}
@@ -66,4 +75,7 @@
    :schema.customer/schema-overhaul-12042017
    {:txes [schema-overhaul]
     :requires [:schema/add-stripe-customer-schema-8-30-16
-               :schema.stripe-customer/add-managed-12-14-16]}})
+               :schema.stripe-customer/add-managed-12-14-16]}
+
+   :schema.customer/add-customer-statement-name-02282018
+   {:txes [add-customer-statement-name]}})
