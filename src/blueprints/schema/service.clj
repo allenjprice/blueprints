@@ -76,7 +76,7 @@
        [fields :ref :many :component :indexed
         "A service's fields."]
 
-       [name-internal :string :indexe
+       [name-internal :string :indexed
         "The staff-facing name for a service offering."]))
 
      (s/schema
