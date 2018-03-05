@@ -52,11 +52,14 @@
       [max :long "Maximum number."]
       [step :float "Number step."]))]))
 
+
 (defn- field-types [part]
   [{:db/id    (d/tempid part)
     :db/ident :cat-field.type/desc}
    {:db/id    (d/tempid part)
     :db/ident :cat-field.type/quantity}])
+
+
 
 (defn norms [part]
   {:schema.catalogue/add-schema-04182017

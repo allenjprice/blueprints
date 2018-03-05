@@ -64,19 +64,37 @@
       [cost :float :indexed "Cost override of the base service."]))]))
 
 
-(defn- ^{:added "2.3.0"} add-service-fields [part]
+
+(defn- ^{:added "2.3.0"} add-fields-and-catalogs [part]
   (concat
    (s/generate-schema
     [(s/schema
+      service
+      (s/fields
+       [catalogs :keyword :many :indexed
+        "The catalogs in which this service should appear"]
+
+       [fields :ref :many :component :indexed
+        "A service's fields."]
+
+       [name-internal :string :indexed
+        "The staff-facing name for a service offering."]))
+
+     (s/schema
       service-field
       (s/fields
+       [index :long :indexed
+        "The position of this field within the list"]
+
+
        [type :ref :indexed
         "The type of service field."]
 
        [label :string :indexed
         "The label presented..."]))])
 
-   [{:db/id    (d/tempid part)
+
+    [{:db/id    (d/tempid part)
      :db/ident :service-field.type/time}
     {:db/id    (d/tempid part)
      :db/ident :service-field.type/date}
@@ -102,7 +120,11 @@
      :db/valueType   :db.type/long
      :db/cardinality :db.cardinality/one
      :db/index       true
-     :db/doc         "The interval of a time field in minutes."}]))
+
+     :db/doc         "The interval of a time field in minutes."}
+    {:db/id     :service/code
+     :db/unique :db.unique/identity}
+    ]))
 
 
 (defn norms [part]
@@ -112,5 +134,6 @@
    :schema.service/add-cost-10202017
    {:txes [add-cost]}
 
-   :schema.services/add-service-fields-02272018
-   {:txes [(add-service-fields part)]}})
+   :schema.service/add-fields-and-catalogs-03012018
+   {:txes [(add-fields-and-catalogs part)]}})
+

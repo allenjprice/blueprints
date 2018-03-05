@@ -43,6 +43,12 @@
     (is (cardinality a :one))
     (is (indexed a)))
 
+  (test-attr a :service/fields
+    (is (value-type a :ref))
+    (is (cardinality a :many))
+    (is (component a))
+    (is (indexed a)))
+
   (test-attr _ :service.billed/once)
   (test-attr _ :service.billed/monthly))
 

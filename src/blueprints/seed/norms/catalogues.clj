@@ -129,6 +129,7 @@
         :cat-item/service (by-code db "plants,planter")}]}]))
 
 (defn norms [conn part]
-  (merge
-   {:blueprints.seed/add-initial-catalogues
-    {:txes [(add-initial-catalogues conn part)]}}))
+  ;; (merge
+  ;;  {:blueprints.seed/add-initial-catalogues
+  ;;   {:txes [(add-initial-catalogues conn part)]}})
+  {})
