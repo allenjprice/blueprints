@@ -74,10 +74,12 @@
         "The catalogs in which this service should appear"]
 
        [fields :ref :many :component :indexed
-        "A service's fields."]))])
+        "A service's fields."]
 
-   (s/generate-schema
-    [(s/schema
+       [name-internal :string :indexe
+        "The staff-facing name for a service offering."]))
+
+     (s/schema
       service-field
       (s/fields
        [index :long :indexed
@@ -89,7 +91,7 @@
        [label :string :indexed
         "The label presented..."]))])
 
-   [{:db/id    (d/tempid part)
+    [{:db/id    (d/tempid part)
      :db/ident :service-field.type/time}
     {:db/id    (d/tempid part)
      :db/ident :service-field.type/date}
@@ -129,4 +131,4 @@
    {:txes [add-cost]}
 
    :schema.service/add-fields-and-catalogs-03012018
-   {:txes [add-fields-and-catalogs]}})
+   {:txes [(add-fields-and-catalogs part)]}})

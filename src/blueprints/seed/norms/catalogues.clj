@@ -88,9 +88,7 @@
       [{:cat-item/index   0
         :cat-item/service (by-code db "cleaning,weekly")}
        {:cat-item/index   1
-        :cat-item/service (by-code db "laundry,weekly")}
-       {:cat-item/index   2
-        :cat-item/service (by-code db "cleaning,one")}]}
+        :cat-item/service (by-code db "laundry,weekly")}]}
      ;; Room Upgrades, Mission
      {:db/id                (d/tempid part)
       :catalogue/name       "Room Upgrades"

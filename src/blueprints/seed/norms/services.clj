@@ -121,7 +121,7 @@
 ;;                    :service-field/label "When would you like your room cleaned?"}]}
 
 (defn- ^{:added "2.3.0"} update-services [part]
-  [{:db/id                 [:service/code "pets,dog,boarding"]
+  [{:db/id                 (d/tempid part)
     :service/code          "pets,dog,boarding"
     :service/name          "Dog boarding"
     :service/desc          "Board your dog with Starcity while you're away"
@@ -144,7 +144,7 @@
                             {:service-field/index 2
                              :service-field/type  :service-field.type/text
                              :service-field/label "Any additional instructions?"}]}
-   {:db/id            [:service/code "pets,dog,walking,single"]
+   {:db/id            (d/tempid part)
     :service/code     "pets,dog,walking,single"
     :service/name     "Dog Walking - Single"
     :service/desc     "One walk for your furry family member."
@@ -162,6 +162,5 @@
   {:blueprints.seed/add-initial-services
    {:txes [(add-initial-services part)]}
 
-   ;; :blueprints.seed/add-new-services-or-whatever
-   ;; {:txes [[[:]]]}
-   })
+   :blueprints.seed/update-services-03012018
+   {:txes [(update-services part)]}})
