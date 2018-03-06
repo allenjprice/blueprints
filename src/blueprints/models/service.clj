@@ -35,36 +35,40 @@
   (:service/fields service))
 
 
-(def service-name
+(defn service-name
   "The human-friendly name of this service."
-  :service/name)
+  [service]
+  (:service/name service))
 
-(s/fdef name
+(s/fdef service-name
         :args (s/cat :service td/entity?)
         :ret string?)
 
 
-(def desc
+(defn desc
   "The human-friendly description of this service."
-  :service/desc)
+  [service]
+  (:service/desc service))
 
 (s/fdef desc
         :args (s/cat :service td/entity?)
         :ret string?)
 
 
-(def price
+(defn price
   "The price of this service."
-  :service/price)
+  [service]
+  (:service/price service))
 
 (s/fdef price
         :args (s/cat :service td/entity?)
         :ret (s/or :nothing nil? :price float?))
 
 
-(def cost
+(defn cost
   "The cost of this service."
-  :service/cost)
+  [service]
+  (:service/cost service))
 
 (s/fdef cost
         :args (s/cat :service td/entity?)
@@ -81,13 +85,56 @@
         :ret boolean?)
 
 
-(def billed
+(defn billed
   "Billing method of this service."
-  :service/billed)
+  [service]
+  (:service/billed service))
 
 (s/fdef billed
         :args (s/cat :service td/entity?)
         :ret ::billed)
+
+
+(defn name-internal
+  "The internal name of this service."
+  [service]
+  (:service/name-internal service))
+
+(s/fdef name-internal
+        :args (s/cat :service td/entity?)
+        :ret string?)
+
+
+(defn desc-internal
+  "The internal description of this service"
+  [service]
+  (:service/desc-internal service))
+
+(s/fdef desc-internal
+        :args (s/cat :service td/entity?)
+        :ret string?)
+
+
+(defn catalogs
+  "The catalogs this service is part of."
+  [service]
+  (:service/catalogs service))
+
+
+(defn properties
+  "Properties this service is offered at."
+  [service]
+  (:service/properties service))
+
+
+(defn variants
+  "Variants of this service."
+  [service]
+  (:service/variants service))
+
+
+;; Might need an active selector
+
 
 
 ;; =============================================================================
