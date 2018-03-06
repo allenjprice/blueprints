@@ -1,5 +1,6 @@
 (ns blueprints.seed.norms.services
-  (:require [datomic.api :as d]))
+  (:require [datomic.api :as d]
+            [blueprints.models.service :as service]))
 
 (defn- ^{:added "1.5.0"} add-initial-services [part]
   [{:db/id          (d/tempid part)
@@ -114,7 +115,7 @@
 
 
 (defn- ^{:added "2.3.0"} update-services [part]
-   ;; add - dog boarding
+  ;; add - dog boarding
   [{:db/id                 (d/tempid part)
     :service/code          "pets,dog,boarding"
     :service/name          "Dog boarding"
@@ -171,18 +172,14 @@
                              :service-field/label "Any additional instructions?"}]}
 
    ;; add - single laundry service
-   {:db/id                 (d/tempid part)
-    :service/code          "laundry"
-    :service/name          "Dry Cleaning Pickup and Delivery"
-    :service/name-internal "Dry Cleaning Pickup and Delivery"
-    :service/desc          "Starcity will take care of picking up your dry cleaning, getting it cleaned, and returning it to you. Does not include the cost of dry cleaning itself."
-    :service/billed        :service.billed/once
-    :service/catalogs      [:laundry]
-    :service/properties    [[:property/code "2072mission"]
-                            [:property/code "52gilbert"]]
-    :service/fields        [{:service-field/index 0
-                             :service-field/type  :service-field.type/text
-                             :service-field/label "Any additional instructions?"}]}
+   (service/create "drycleaning,single"
+                   "Dry Cleaning Pickup and Delivery"
+                   "Starcity will take care of picking up your dry cleaning, getting it cleaned, and returning it to you. Does not include the cost of dry cleaning itself."
+                   {:catalogs   [:laundry]
+                    :properties [[:property/code "2072mission"]
+                                 [:property/code "52gilbert"]]
+                    :fields     [(service/create-field "Any additional instructions?" :text)]})
+
    ;; modify - weekly laundry service
    {:db/id                 [:service/code "laundry,weekly"]
     :service/name-internal "Complete Laundry Service and Delivery"
@@ -246,7 +243,7 @@
    ;; modify - weekly room cleaning
    {:db/id                 [:service/code "cleaning,weekly"]
     :service/name-internal "Weekly Room Cleaning"
-    :service/catalogs      [:cleaining :subscriptions]
+    :service/catalogs      [:cleaning :subscriptions]
     :service/fields        [{:service-field/index 0
                              :service-field/type  :service-field.type/text
                              :service-field/label "Any additional instructions?"}]}
@@ -257,6 +254,8 @@
     :service/name          "Extra Keyfob"
     :service/name-internal "Extra Keyfob"
     :service/desc          "Lost keyfob? No prob!"
+    :service/properties    [[:property/code "2072mission"]
+                            [:property/code "52gilbert"]]
     :service/catalogs      [:misc]
     :service/fields        [{:service-field/index 0
                              :service-field/type  :service-field.type/number
@@ -290,8 +289,7 @@
    [:db.fn/retractEntity [:service/code "apple-tv"]]
    [:db.fn/retractEntity [:service/code "box-fan"]]
    [:db.fn/retractEntity [:service/code "white-noise-machine"]]
-   [:db.fn/retractEntity [:service/code "plants,planter"]]
-   ])
+   [:db.fn/retractEntity [:service/code "plants,planter"]]])
 
 
 (defn norms [conn part]

@@ -1,10 +1,10 @@
 (ns blueprints.models.service
-  (:refer-clojure :exclude [name])
-  (:require[clojure.spec.alpha :as s]
-           [datomic.api :as d]
-           [toolbelt.core :as tb]
-           [toolbelt.datomic :as td]))
-
+  (:require [clojure.spec.alpha :as s]
+            [clojure.string :as string]
+            [datomic.api :as d]
+            [toolbelt.core :as tb]
+            [toolbelt.datomic :as td]
+            [toolbelt.datomic.schema :as tds]))
 
 ;; =============================================================================
 ;; Spec
@@ -20,16 +20,22 @@
 ;; =============================================================================
 
 
-(def code
+(defn code
   "The code used to refer to this service."
-  :service/code)
+  [service]
+  (:service/code service))
 
 (s/fdef code
         :args (s/cat :service td/entity?)
         :ret string?)
 
 
-(def name
+(defn fields
+  [service]
+  (:service/fields service))
+
+
+(def service-name
   "The human-friendly name of this service."
   :service/name)
 
@@ -89,7 +95,7 @@
 ;; =============================================================================
 
 
-(defn by-code
+(defn ^{:deprecated "2.3.0"} by-code
   "Find the service identified by `code`, optionally restricted to `property`."
   ([db code]
    (->> (d/q '[:find ?e .
@@ -114,7 +120,7 @@
         :ret (s/or :nothing nil? :service td/entity?))
 
 
-(defn ordered-from-catalogue
+(defn ^{:deprecated "2.3.0"} ordered-from-catalogue
   "Produce a list of service ids that have been ordered by `account` from
   `catalogue`."
   [db account catalogue]
@@ -134,7 +140,7 @@
         :ret (s/* integer?))
 
 
-(defn list-all
+(defn ^{:deprecated "2.3.0"} list-all
   "List all services in a human-readable way."
   [db]
   (let [svcs (->> (d/q '[:find [?e ...]
@@ -148,7 +154,7 @@
 
 
 (defn- services-query
-  [db {:keys [q]}]
+  [db {:keys [q properties catalogs]}]
   (let [init '{:find  [[?s ...]]
                :in    [$]
                :args  []
@@ -157,25 +163,45 @@
       true
       (update :args conj db)
 
-      (some? q)
+      (not (string/blank? q))
       (-> (update :in conj '?q)
-          (update :args conj (str q "*"))
+          (update :args (td/safe-wildcard q))
           (update :where conj
                   '(or [(fulltext $ :service/code ?q) [[?s]]]
                        [(fulltext $ :service/name ?q) [[?s]]]
                        [(fulltext $ :service/desc ?q) [[?s]]])))
 
+      (not (empty? properties))
+      (-> (update :in conj '[?p ...])
+          (update :where conj '[?s :service/properties ?p])
+          (update :args conj properties))
+
+      (not (empty? catalogs))
+      (-> (update :in conj '[?c ...])
+          (update :where conj '[?s :service/catalogs ?c])
+          (update :args conj catalogs))
+
       true
       (update :where #(if (empty? %) (conj % '[?s :service/code _]) %)))))
 
 
+;; TODO: billed
 (defn query
   "Query services using `params`."
-  [db & {:as params}]
+  [db params]
   (->> (services-query db params)
        (td/remap-query)
        (d/query)
        (map (partial d/entity db))))
+
+
+(comment
+
+  (->> (query (d/db user/conn)
+              {:q "room  "})
+       (map #(select-keys % [:service/code
+                             :service/desc])))
+  )
 
 
 ;; =============================================================================
@@ -215,25 +241,61 @@
 ;; =============================================================================
 
 
+(defn create-field
+  "Create a new field."
+  ([label type]
+   (create-field label type {}))
+  ([label type {:keys [index] :or {index 0}}]
+   {:service-field/index index
+    :service-field/type  (keyword "service-field.type" (name type))
+    :service-field/label label}))
+
+
 (defn create
   "Create a new service."
-  [code name desc billed & {:keys [price rental]
-                            :or   {rental false}}]
-  (tb/assoc-when
-   {:db/id          (d/tempid :db.part/starcity)
-    :service/code   code
-    :service/name   name
-    :service/desc   desc
-    :service/billed billed
-    :service/rental rental}
-   :service/price (float price)))
+  ([code name desc]
+   (create code name desc {}))
+  ([code name desc {:keys [price rental billed fields catalogs
+                           name-internal]
+                    :or   {rental        false
+                           name-internal name
+                           billed        :service.billed/once}}]
+   (tb/assoc-when
+    {:db/id          (tds/tempid)
+     :service/code   code
+     :service/name   name
+     :service/desc   desc
+     :service/billed billed
+     :service/rental rental}
+    :service/price (when-some [p price] (float p))
+    :service/catalogs (when-some [cs catalogs] cs)
+    :service/fields (when-some [fs fields]
+                      (map-indexed
+                       #(assoc %2 :service-field/index %1)
+                       fs)))))
 
-(s/def ::price (s/and number? pos?))
-(s/def ::rental boolean?)
-(s/fdef create
-        :args (s/cat :code string?
-                     :name string?
-                     :desc string?
-                     :billed ::billed
-                     :opts (s/keys* :opt-un [::price ::rental]))
-        :ret map?)
+
+;; TODO: Finish this
+(defn edit
+  [service {:keys [name desc]}]
+  (tb/assoc-when
+   {:db/id (td/id service)}
+   :service/name name
+   :service/desc desc))
+
+
+;; TODO: Add field
+
+
+(defn remove-field
+  "Remove `field` from `service`, keeping index attrs in order."
+  [service field]
+  (let [fields (->> (fields service)
+                    (sort-by :service-field/index)
+                    (remove #(= (td/id %) (td/id field))))]
+    (conj
+     (map-indexed
+      (fn [i f]
+        [:db/add (td/id f) :service-field/index i])
+      fields)
+     [:db.fn/retractEntity (td/id field)])))
