@@ -142,7 +142,6 @@
      :db/valueType   :db.type/long
      :db/cardinality :db.cardinality/one
      :db/index       true
-
      :db/doc "The interval of a time field in minutes."}
 
     {:db/id     :service/code
