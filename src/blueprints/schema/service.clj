@@ -91,17 +91,39 @@
         "The type of service field."]
 
        [label :string :indexed
-        "The label presented..."]))])
+        "The label presented..."]
+
+       [options :ref :many :component :indexed
+        "If the service field type is a dropdown, needs options..."]))
+
+     (s/schema
+      service-field-option
+      (s/fields
+       [value-type :ref :indexed
+        "The kind of data represented in the value of each option."]
+       [value :string :indexed
+        "The actual value of the dropdown. Stored as a string."]
+       [label :string :indexed
+        "The label presented to the user..."]
+       [index :long :indexed
+        "The position in which this option should appear in the menu"]))])
 
 
-    [{:db/id    (d/tempid part)
+   [{:db/id    (d/tempid part)
      :db/ident :service-field.type/time}
     {:db/id    (d/tempid part)
      :db/ident :service-field.type/date}
     {:db/id    (d/tempid part)
      :db/ident :service-field.type/text}
     {:db/id    (d/tempid part)
-     :db/ident :service-field.type/number}]
+     :db/ident :service-field.type/number}
+    {:db/id    (d/tempid part)
+     :db/ident :service-field.type/dropdown}]
+
+   [{:db/id    (d/tempid part)
+     :db/ident :service-field-option.type/text}
+    {:db/id    (d/tempid part)
+     :db/ident :service-field-option.type/number}]
 
    [{:db/id          (d/tempid :db.part/db)
      :db/ident       :service-field.time/range-start
@@ -121,10 +143,10 @@
      :db/cardinality :db.cardinality/one
      :db/index       true
 
-     :db/doc         "The interval of a time field in minutes."}
+     :db/doc "The interval of a time field in minutes."}
+
     {:db/id     :service/code
-     :db/unique :db.unique/identity}
-    ]))
+     :db/unique :db.unique/identity}]))
 
 
 (defn norms [part]
@@ -136,4 +158,3 @@
 
    :schema.service/add-fields-and-catalogs-03012018
    {:txes [(add-fields-and-catalogs part)]}})
-

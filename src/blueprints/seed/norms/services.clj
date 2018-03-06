@@ -163,9 +163,21 @@
     :service/billed        :service.billed/monthly
     :service/properties    [[:property/code "2072mission"]
                             [:property/code "52gilbert"]]
-    :service/fields        [{:service-field/index 0
-                             :service-field/type  :service-field.type/time ;; how do we represent broader categories of time? e.g, morning, afternoon, evening?
-                             :service-field/label "When should we take your pup for a walk?"}
+    :service/fields        [{:service-field/index   0
+                             :service-field/type    :service-field.type/dropdown
+                             :service-field/label   "When should we take your pup for a walk?"
+                             :service-field/options [{:service-field-option/index      0
+                                                      :service-field-option/value      "morning"
+                                                      :service-field-option/text       "Morning"
+                                                      :service-field-option/value-type :service-field-option.type/text}
+                                                     {:service-field-option/index 1
+                                                      :service-field-option/value "afternoon"
+                                                      :service-field-option/value-type :service-field-option.type/text
+                                                      :service-field-option/text "Afternoon"}
+                                                     {:service-field-option/index 2
+                                                      :service-field-option/value "evening"
+                                                      :service-field-option/value-type :service-field-option.type/text
+                                                      :service-field-option/text "Evening"}]}
                             {:service-field/index 1
                              :service-field/type  :service-field.type/text
                              :service-field/label "Any additional instructions?"}]}
