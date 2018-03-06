@@ -93,6 +93,10 @@
        [label :string :indexed
         "The label presented..."]
 
+
+       [required :boolean
+        "`true` if the user is required to enter a value into this field when placing an order"]
+
        [options :ref :many :component :indexed
         "If the service field type is a dropdown, it needs options..."]))
 

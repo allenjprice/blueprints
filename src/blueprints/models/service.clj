@@ -133,6 +133,12 @@
   (:service/variants service))
 
 
+(defn options
+  "Options of the dropdown field in a service"
+  [field]
+  (:service-field/options field))
+
+
 ;; Might need an active selector
 
 
@@ -324,14 +330,43 @@
 
 ;; TODO: Finish this
 (defn edit
-  [service {:keys [name desc]}]
+  [service {:keys
+            [name desc billed rental name-internal
+             desc-internal cost price]}]
   (tb/assoc-when
    {:db/id (td/id service)}
-   :service/name name
-   :service/desc desc))
+   :service/name   name
+   :service/desc   desc
+   :service/billed billed
+   :service/rental rental
+   :service/name-internal name-internal
+   :service/desc-internal desc-internal
+   :service/cost (when-some [c cost] (float c))
+   :service/price (when-some [p price] (float p))
+   :service/fields (when-some [fs fields]
+                     (map-indexed
+                      #(assoc %2 :service-field/index %1)
+                      fs))
+   :service/catalogs (when-some [cs catalogs] cs)
+   :service/properties (when-some [p properties] p)
+   :service/variants "varyingwoo"))
+
+(defn remove-one
+  [service]
+  [:db.fn/retractEntity (td/id service)])
 
 
 ;; TODO: Add field
+;; see `create-field` above?
+
+(defn edit-field
+  "Edit one field within a service"
+  [field {:keys [label type index]}]
+  (tb/assoc-when
+   {:db/id (td/id field)}
+   :service-field/type type
+   :service-field/label label
+   :service-field/index index))
 
 
 (defn remove-field
@@ -346,3 +381,35 @@
         [:db/add (td/id f) :service-field/index i])
       fields)
      [:db.fn/retractEntity (td/id field)])))
+
+
+(defn create-option
+  "Create a new option (to be associated with service fields of type `dropdown`"
+  ([label value]
+   (create-option label value {}))
+  ([label value {:keys [index] :or {index 0}}]
+    {:service-field-option/value value ;;TODO - maybe we shouldn't expect the community team/admins to supply this value?
+    :service-field-option/label label
+    :service-field-option/index index}))
+
+(defn edit-option
+  "Edit one option within a dropdown service field"
+  [option {:keys [label value index]}]
+  (tb/assoc-when
+   {:db/id (td/id option)}
+   :service-field-option/value value
+   :service-field-option/label label
+   :service-field-option/index index))
+
+
+(defn remove-option
+  "Remove `option` from a dropdown service `field`, keeping index attrs in order"
+  [field option]
+  (let [options (->> (options field)
+                     (sort-by :service-field-option/index)
+                     (remove #(= (td/id %) (td/id option))))]
+    (conj
+     (map-indexed
+      #([:db/add (td/id %2) :service-field-option/index %1])
+      options)
+     [:db.fn/retractEntity (td/id option)])))
