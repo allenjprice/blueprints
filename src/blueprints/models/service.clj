@@ -1,5 +1,6 @@
 (ns blueprints.models.service
-  (:require [clojure.spec.alpha :as s]
+  (:require [blueprints.models.property :as property]
+            [clojure.spec.alpha :as s]
             [clojure.string :as string]
             [datomic.api :as d]
             [toolbelt.core :as tb]
@@ -251,9 +252,8 @@
 (comment
 
   (->> (query (d/db user/conn)
-              {:q "room  "})
-       (map #(select-keys % [:service/code
-                             :service/desc])))
+              {:q "move"})
+       (map d/touch))
   )
 
 
@@ -304,15 +304,24 @@
     :service-field/label label}))
 
 
+(defn create-variant
+  "Create a new variant"
+  [name price cost]
+  {:svc-variant/name  name
+   :svc-variant/price (float price)
+   :svc-variant/cost  (float cost)})
+
+
 (defn create
   "Create a new service."
   ([code name desc]
    (create code name desc {}))
-  ([code name desc {:keys [price rental billed fields catalogs
-                           name-internal]
+  ([code name desc {:keys [price cost rental billed fields catalogs
+                           name-internal properties desc-internal variants]
                     :or   {rental        false
                            name-internal name
-                           billed        :service.billed/once}}]
+                           billed        :service.billed/once
+                           desc-internal desc}}]
    (tb/assoc-when
     {:db/id          (tds/tempid)
      :service/code   code
@@ -321,18 +330,20 @@
      :service/billed billed
      :service/rental rental}
     :service/price (when-some [p price] (float p))
-    :service/catalogs (when-some [cs catalogs] cs)
+    :service/cost (when-some [c cost] (float c))
+    :service/catalogs catalogs
+    :service/variants variants
     :service/fields (when-some [fs fields]
                       (map-indexed
                        #(assoc %2 :service-field/index %1)
-                       fs)))))
+                       fs))
+    :service/properties (when-some [ps properties]
+                          (map td/id ps)))))
 
 
-;; TODO: Finish this
 (defn edit
-  [service {:keys
-            [name desc billed rental name-internal
-             desc-internal cost price]}]
+  [service {:keys [name desc billed rental name-internal desc-internal
+                   cost price catalogs fields properties variants]}]
   (tb/assoc-when
    {:db/id (td/id service)}
    :service/name   name
@@ -347,17 +358,11 @@
                      (map-indexed
                       #(assoc %2 :service-field/index %1)
                       fs))
-   :service/catalogs (when-some [cs catalogs] cs)
-   :service/properties (when-some [p properties] p)
-   :service/variants "varyingwoo"))
+   :service/catalogs catalogs
+   :service/properties (when-some [ps properties]
+                         (map td/id ps))
+   :service/variants variants))
 
-(defn remove-one
-  [service]
-  [:db.fn/retractEntity (td/id service)])
-
-
-;; TODO: Add field
-;; see `create-field` above?
 
 (defn edit-field
   "Edit one field within a service"
@@ -369,28 +374,15 @@
    :service-field/index index))
 
 
-(defn remove-field
-  "Remove `field` from `service`, keeping index attrs in order."
-  [service field]
-  (let [fields (->> (fields service)
-                    (sort-by :service-field/index)
-                    (remove #(= (td/id %) (td/id field))))]
-    (conj
-     (map-indexed
-      (fn [i f]
-        [:db/add (td/id f) :service-field/index i])
-      fields)
-     [:db.fn/retractEntity (td/id field)])))
-
-
 (defn create-option
   "Create a new option (to be associated with service fields of type `dropdown`"
   ([label value]
    (create-option label value {}))
   ([label value {:keys [index] :or {index 0}}]
-    {:service-field-option/value value ;;TODO - maybe we shouldn't expect the community team/admins to supply this value?
+   {:service-field-option/value value ;;TODO - maybe we shouldn't expect the community team/admins to supply this value?
     :service-field-option/label label
     :service-field-option/index index}))
+
 
 (defn edit-option
   "Edit one option within a dropdown service field"
@@ -402,14 +394,40 @@
    :service-field-option/index index))
 
 
+(defn remove-indexed-subentity
+  "Removes an entity with an index attribute and preserves other indices"
+  [entity subentity-attr subentity index-attr]
+  (let [subentities (->> (subentity-attr entity)
+                         (sort-by index-attr)
+                         (remove #(= (td/id %) (td/id subentity))))]
+    (conj
+     (map-indexed
+      (fn [i f]
+        [:db/add (td/id f) index-attr i])
+      subentities)
+     [:db.fn/retractEntity (td/id subentity)])))
+
+
+(defn remove-field
+  "Remove `field` from `service`, keeping index attrs in order."
+  [service field]
+  (remove-indexed-subentity service :service/fields field :service-field/index))
+
+
 (defn remove-option
   "Remove `option` from a dropdown service `field`, keeping index attrs in order"
   [field option]
-  (let [options (->> (options field)
-                     (sort-by :service-field-option/index)
-                     (remove #(= (td/id %) (td/id option))))]
-    (conj
-     (map-indexed
-      #([:db/add (td/id %2) :service-field-option/index %1])
-      options)
-     [:db.fn/retractEntity (td/id option)])))
+  (remove-indexed-subentity field :service-field/options option :service-field-option/index))
+
+
+(comment
+
+  (d/transact user/conn [(create "code,code" "name" "this is a desc" {:fields [(create-field "something" :time)
+                                                         (create-field "something2" :date)
+                                                         (create-field "something3" :text)]})])
+
+  (d/touch (d/entity (d/db user/conn) [:service/code "code,code"]))
+
+  (d/transact user/conn (remove-field (d/entity (d/db user/conn) [:service/code "code,code"]) (d/entity (d/db user/conn) 17592186045799)))
+
+  )
