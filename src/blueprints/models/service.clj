@@ -294,14 +294,33 @@
 ;; =============================================================================
 
 
+;; options are part of service fields
+(defn create-option
+  "Create a new option (to be associated with service fields of type `dropdown`"
+  ([label value]
+   (create-option label value {}))
+  ([label value {:keys [index] :or {index 0}}]
+   {:service-field-option/value value ;;TODO - maybe we shouldn't expect the community team/admins to supply this value?
+    :service-field-option/label label
+    :service-field-option/index index}))
+
+
 (defn create-field
   "Create a new field."
   ([label type]
    (create-field label type {}))
-  ([label type {:keys [index] :or {index 0}}]
-   {:service-field/index index
-    :service-field/type  (keyword "service-field.type" (name type))
-    :service-field/label label}))
+  ([label type {:keys [index required options]
+                :or   {index    0
+                       required true}}]
+   (tb/assoc-when
+    {:service-field/index    index
+     :service-field/type     (keyword "service-field.type" (name type))
+     :service-field/label    label
+     :service-field/required required}
+    :service-field/options (when-some [os options]
+                             (map-indexed
+                              #(assoc %2 :service-field-option/index %1)
+                              os)))))
 
 
 (defn create-variant
@@ -316,19 +335,21 @@
   "Create a new service."
   ([code name desc]
    (create code name desc {}))
-  ([code name desc {:keys [price cost rental billed fields catalogs
-                           name-internal properties desc-internal variants]
-                    :or   {rental        false
-                           name-internal name
+  ([code name desc {:keys [name-internal desc-internal billed rental
+                           price cost catalogs variants fields properties]
+                    :or   {name-internal name
+                           desc-internal desc
                            billed        :service.billed/once
-                           desc-internal desc}}]
+                           rental        false}}]
    (tb/assoc-when
-    {:db/id          (tds/tempid)
-     :service/code   code
-     :service/name   name
-     :service/desc   desc
-     :service/billed billed
-     :service/rental rental}
+    {:db/id                 (tds/tempid)
+     :service/code          code
+     :service/name          name
+     :service/desc          desc
+     :service/name-internal name-internal
+     :service/desc-internal desc-internal
+     :service/billed        billed
+     :service/rental        rental}
     :service/price (when-some [p price] (float p))
     :service/cost (when-some [c cost] (float c))
     :service/catalogs catalogs
@@ -341,27 +362,30 @@
                           (map td/id ps)))))
 
 
+;; edit currently works to assoc information into a key,
+;; lists get a new thing added into them, what happens when we want to
+;; replace the current value, or remove one?
 (defn edit
-  [service {:keys [name desc billed rental name-internal desc-internal
-                   cost price catalogs fields properties variants]}]
+  [service {:keys [name desc name-internal desc-internal billed rental
+                   price cost catalogs variants fields properties]}]
   (tb/assoc-when
    {:db/id (td/id service)}
    :service/name   name
    :service/desc   desc
-   :service/billed billed
-   :service/rental rental
    :service/name-internal name-internal
    :service/desc-internal desc-internal
-   :service/cost (when-some [c cost] (float c))
+   :service/billed billed
+   :service/rental rental
    :service/price (when-some [p price] (float p))
+   :service/cost (when-some [c cost] (float c))
+   :service/catalogs catalogs
+   :service/variants variants
    :service/fields (when-some [fs fields]
                      (map-indexed
                       #(assoc %2 :service-field/index %1)
                       fs))
-   :service/catalogs catalogs
    :service/properties (when-some [ps properties]
-                         (map td/id ps))
-   :service/variants variants))
+                         (map td/id ps))))
 
 
 (defn edit-field
@@ -369,19 +393,10 @@
   [field {:keys [label type index]}]
   (tb/assoc-when
    {:db/id (td/id field)}
-   :service-field/type type
+   :service-field/type (keyword "service-field.type" (name type))
    :service-field/label label
    :service-field/index index))
 
-
-(defn create-option
-  "Create a new option (to be associated with service fields of type `dropdown`"
-  ([label value]
-   (create-option label value {}))
-  ([label value {:keys [index] :or {index 0}}]
-   {:service-field-option/value value ;;TODO - maybe we shouldn't expect the community team/admins to supply this value?
-    :service-field-option/label label
-    :service-field-option/index index}))
 
 
 (defn edit-option
@@ -392,6 +407,28 @@
    :service-field-option/value value
    :service-field-option/label label
    :service-field-option/index index))
+
+
+(comment
+
+  (d/transact user/conn [(create "code,code" "name" "description"
+                                 {
+                                  ;; :variants      [(create-variant "variant 1" 25 10)]
+                                  :fields        [(create-field "This is a field" "dropdown" {:options [(create-option "label 1" "one")
+                                                                                                        (create-option "label 2" "two")]})]
+                                  ;; :properties    [[:property/code "52gilbert"]]
+                                  })])
+
+  (d/transact user/conn [[:db.fn/retractEntity (td/id [:service/code "code,code"])]])
+
+  (d/transact user/conn [(edit-field (d/entity (d/db user/conn) 17592186045822) {:label "oldie"
+                                                                                 :type "time"})])
+
+  (d/touch (d/entity (d/db user/conn) [:service/code "code,code"]))
+
+  (d/transact user/conn (remove-field (d/entity (d/db user/conn) [:service/code "code,code"]) (d/entity (d/db user/conn) 17592186045799)))
+
+  )
 
 
 (defn remove-indexed-subentity
