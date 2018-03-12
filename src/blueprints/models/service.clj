@@ -313,9 +313,9 @@
                 :or   {index    0
                        required true}}]
    (tb/assoc-when
-    {:service-field/index    index
+    {:service-field/label    label
      :service-field/type     (keyword "service-field.type" (name type))
-     :service-field/label    label
+     :service-field/index    index
      :service-field/required required}
     :service-field/options (when-some [os options]
                              (map-indexed
@@ -380,23 +380,44 @@
    :service/cost (when-some [c cost] (float c))
    :service/catalogs catalogs
    :service/variants variants
-   :service/fields (when-some [fs fields]
-                     (map-indexed
-                      #(assoc %2 :service-field/index %1)
-                      fs))
    :service/properties (when-some [ps properties]
                          (map td/id ps))))
 
 
+(defn add-fields
+  "Add a list of new fields to an existing service"
+  [service new-fields]
+  (let [fcount (count (fields service))]
+    (tb/assoc-when
+     {:db/id (td/id service)}
+     :service/fields (when-some [nfs new-fields]
+                       (map-indexed
+                        #(assoc %2 :service-field/index (+ %1 fcount))
+                        nfs)))))
+
+
+;; do we want to check if a field is a dropdown?
+(defn add-options
+  "Add a list of new options to an existing field"
+  [field new-options]
+  (let [ocount (count (:service-field/options field))]
+    (tb/assoc-when
+     {:db/id (td/id field)}
+     :service-field/options (when-some [nos new-options]
+                              (map-indexed
+                               #(assoc %2 :service-field-option/index (+ %1 ocount))
+                               nos)))))
+
+
 (defn edit-field
   "Edit one field within a service"
-  [field {:keys [label type index]}]
+  [field {:keys [label type index required options]}]
   (tb/assoc-when
    {:db/id (td/id field)}
-   :service-field/type (keyword "service-field.type" (name type))
    :service-field/label label
-   :service-field/index index))
-
+   :service-field/type (keyword "service-field.type" (name type))
+   :service-field/index index
+   :service-field/required required))
 
 
 (defn edit-option
@@ -407,28 +428,6 @@
    :service-field-option/value value
    :service-field-option/label label
    :service-field-option/index index))
-
-
-(comment
-
-  (d/transact user/conn [(create "code,code" "name" "description"
-                                 {
-                                  ;; :variants      [(create-variant "variant 1" 25 10)]
-                                  :fields        [(create-field "This is a field" "dropdown" {:options [(create-option "label 1" "one")
-                                                                                                        (create-option "label 2" "two")]})]
-                                  ;; :properties    [[:property/code "52gilbert"]]
-                                  })])
-
-  (d/transact user/conn [[:db.fn/retractEntity (td/id [:service/code "code,code"])]])
-
-  (d/transact user/conn [(edit-field (d/entity (d/db user/conn) 17592186045822) {:label "oldie"
-                                                                                 :type "time"})])
-
-  (d/touch (d/entity (d/db user/conn) [:service/code "code,code"]))
-
-  (d/transact user/conn (remove-field (d/entity (d/db user/conn) [:service/code "code,code"]) (d/entity (d/db user/conn) 17592186045799)))
-
-  )
 
 
 (defn remove-indexed-subentity
@@ -457,14 +456,41 @@
   (remove-indexed-subentity field :service-field/options option :service-field-option/index))
 
 
+
+
 (comment
 
-  (d/transact user/conn [(create "code,code" "name" "this is a desc" {:fields [(create-field "something" :time)
-                                                         (create-field "something2" :date)
-                                                         (create-field "something3" :text)]})])
+  (d/transact user/conn [(create "code,code" "name" "description"
+                                 {
+                                  ;; :variants      [(create-variant "variant 1" 25 10)]
+                                  :fields        [(create-field "This is a field" "dropdown" {:options [(create-option "label 1" "one")
+                                                                                                        (create-option "label 2" "two")]})]
+                                  ;; :properties    [[:property/code "52gilbert"]]
+                                  })])
+
+
+  (d/transact user/conn [[:db.fn/retractEntity (td/id [:service/code "code,code"])]])
+
+
+  #_(d/transact user/conn [(edit-field (d/entity (d/db user/conn) 17592186045849) {:label "oldie"
+                                                                                 :type "time"
+                                                                                   :options [(create-option "LABEL 3" "three")]})])
+
+
+  (d/transact user/conn [(add-fields (d/entity (d/db user/conn) [:service/code "code,code"])
+                                     [(create-field "field 2" "time")
+                                      (create-field "field 3" "text")
+                                      (create-field "field 4" "date")])])
+
+
+  (d/transact user/conn [(add-options (d/entity (d/db user/conn) 17592186045859) [(create-option "option 5" "FIVE")
+                                                                                  (create-option "option 6" "SIX")])])
+
 
   (d/touch (d/entity (d/db user/conn) [:service/code "code,code"]))
 
-  (d/transact user/conn (remove-field (d/entity (d/db user/conn) [:service/code "code,code"]) (d/entity (d/db user/conn) 17592186045799)))
+
+  (d/transact user/conn (remove-field (d/entity (d/db user/conn) [:service/code "code,code"]) (d/entity (d/db user/conn) 17592186045884)))
+
 
   )
