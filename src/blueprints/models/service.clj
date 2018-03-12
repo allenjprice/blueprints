@@ -456,6 +456,10 @@
   (remove-indexed-subentity field :service-field/options option :service-field-option/index))
 
 
+(defn remove-property
+  "Remove a `property` from a `service`"
+  [service property]
+  [:db/retract (:db/id service) :service/properties (:db/id property)])
 
 
 (comment
@@ -468,6 +472,10 @@
                                   ;; :properties    [[:property/code "52gilbert"]]
                                   })])
 
+
+  (d/transact user/conn [(edit [:service/code "code,code"]
+                               {:properties [[:property/code "2072mission"]
+                                             [:property/code "52gilbert"]]})])
 
   (d/transact user/conn [[:db.fn/retractEntity (td/id [:service/code "code,code"])]])
 
@@ -485,6 +493,9 @@
 
   (d/transact user/conn [(add-options (d/entity (d/db user/conn) 17592186045859) [(create-option "option 5" "FIVE")
                                                                                   (create-option "option 6" "SIX")])])
+
+
+  (d/transact user/conn [(remove-property (d/entity (d/db user/conn) [:service/code "code,code"]) (d/entity (d/db user/conn) 285873023222986))])
 
 
   (d/touch (d/entity (d/db user/conn) [:service/code "code,code"]))
