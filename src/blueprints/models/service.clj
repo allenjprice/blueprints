@@ -208,7 +208,7 @@
 
 
 (defn- services-query
-  [db {:keys [q properties catalogs]}]
+  [db {:keys [q properties catalogs billed]}]
   (let [init '{:find  [[?s ...]]
                :in    [$]
                :args  []
@@ -228,18 +228,22 @@
       (not (empty? properties))
       (-> (update :in conj '[?p ...])
           (update :where conj '[?s :service/properties ?p])
-          (update :args conj properties))
+          (update :args conj (map td/id properties)))
 
       (not (empty? catalogs))
       (-> (update :in conj '[?c ...])
           (update :where conj '[?s :service/catalogs ?c])
           (update :args conj catalogs))
 
+      (not (empty? billed))
+      (-> (update :in conj '[?b ...])
+          (update :where conj '[?s :service/billed ?b])
+          (update :args conj billed))
+
       true
       (update :where #(if (empty? %) (conj % '[?s :service/code _]) %)))))
 
 
-;; TODO: billed
 (defn query
   "Query services using `params`."
   [db params]
@@ -249,16 +253,7 @@
        (map (partial d/entity db))))
 
 
-(comment
-
-  (->> (query (d/db user/conn)
-              {:q "move"})
-       (map d/touch))
-  )
-
-
-;; =============================================================================
-;; Lookups
+;; lookups =====================================================================
 
 
 (defn moving-assistance [db]
@@ -481,7 +476,7 @@
 
 
   #_(d/transact user/conn [(edit-field (d/entity (d/db user/conn) 17592186045849) {:label "oldie"
-                                                                                 :type "time"
+                                                                                   :type "time"
                                                                                    :options [(create-option "LABEL 3" "three")]})])
 
 
