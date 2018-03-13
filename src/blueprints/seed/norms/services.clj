@@ -161,6 +161,7 @@
     :service/name          "Dog Walking - Subscription"
     :service/name-internal "Dog Walking - Subscription"
     :service/desc          "Daily walks for your furry family member"
+    :service/catalogs      [:pets :subscriptions]
     :service/billed        :service.billed/monthly
     :service/properties    [[:property/code "2072mission"]
                             [:property/code "52gilbert"]]
