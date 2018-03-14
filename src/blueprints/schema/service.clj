@@ -64,17 +64,52 @@
       [cost :float :indexed "Cost override of the base service."]))]))
 
 
-(defn- ^{:added "2.3.0"} add-service-fields [part]
+
+(defn- ^{:added "2.3.0"} add-fields-and-catalogs [part]
   (concat
    (s/generate-schema
     [(s/schema
+      service
+      (s/fields
+       [catalogs :keyword :many :indexed
+        "The catalogs in which this service should appear"]
+
+       [fields :ref :many :component :indexed
+        "A service's fields."]
+
+       [name-internal :string :indexed
+        "The staff-facing name for a service offering."]))
+
+     (s/schema
       service-field
       (s/fields
+       [index :long :indexed
+        "The position of this field within the list"]
+
+
        [type :ref :indexed
         "The type of service field."]
 
        [label :string :indexed
-        "The label presented..."]))])
+        "The label for the input fields in the UI"]
+
+
+       [required :boolean
+        "`true` if the user is required to enter a value into this field when placing an order"]
+
+       [options :ref :many :component :indexed
+        "Options to choose from if the service field is of type `dropdown`"]))
+
+     (s/schema
+      service-field-option
+      (s/fields
+       [value :string :indexed
+        "The actual value of the dropdown. Stored as a string."]
+       [label :string :indexed
+        "The label presented to the user."]
+       [index :long :indexed
+        "The position in which this option should appear within the dropdown menu."]))])
+
 
    [{:db/id    (d/tempid part)
      :db/ident :service-field.type/time}
@@ -83,7 +118,10 @@
     {:db/id    (d/tempid part)
      :db/ident :service-field.type/text}
     {:db/id    (d/tempid part)
-     :db/ident :service-field.type/number}]
+     :db/ident :service-field.type/number}
+    {:db/id    (d/tempid part)
+     :db/ident :service-field.type/dropdown}]
+
 
    [{:db/id          (d/tempid :db.part/db)
      :db/ident       :service-field.time/range-start
@@ -102,7 +140,11 @@
      :db/valueType   :db.type/long
      :db/cardinality :db.cardinality/one
      :db/index       true
-     :db/doc         "The interval of a time field in minutes."}]))
+
+     :db/doc "The interval of a time field in minutes."}
+    {:db/id     :service/code
+     :db/unique :db.unique/identity}
+    ]))
 
 
 (defn norms [part]
@@ -112,5 +154,5 @@
    :schema.service/add-cost-10202017
    {:txes [add-cost]}
 
-   :schema.services/add-service-fields-02272018
-   {:txes [(add-service-fields part)]}})
+   :schema.service/add-fields-and-catalogs-03012018
+   {:txes [(add-fields-and-catalogs part)]}})

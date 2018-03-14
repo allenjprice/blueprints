@@ -180,8 +180,8 @@
   [order]
   (let [service (service order)]
     (if-let [vn (-> order variant :svc-variant/name)]
-      (str (service/name service) " - " (string/capitalize vn))
-      (service/name service))))0
+      (str (service/service-name service) " - " (string/capitalize vn))
+      (service/service-name service))))
 
 (s/fdef computed-name
         :args (s/cat :order td/entity?)

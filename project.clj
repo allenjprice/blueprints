@@ -7,14 +7,16 @@
                  [io.rkn/conformity "0.4.0"]
                  [starcity/toolbelt-core "0.3.0"]
                  [starcity/toolbelt-date "0.2.0"]
-                 [starcity/toolbelt-datomic "0.2.0"]
+                 [starcity/toolbelt-datomic "0.4.0-SNAPSHOT"]
                  [datomic-schema "1.3.0"]
                  [clj-time "0.14.2"]]
 
   :source-paths ["src"]
 
   :profiles {:provided {:dependencies [[com.datomic/datomic-free "0.9.5544"]]}
-             :dev      {:source-paths ["src" "test"]}}
+             :dev      {:dependencies [[mount "0.1.11"]]
+                        :source-paths ["src" "test"
+                                       "env/dev"]}}
 
   :plugins [[s3-wagon-private "1.2.0"]]
 
