@@ -91,14 +91,14 @@
         "The type of service field."]
 
        [label :string :indexed
-        "The label presented..."]
+        "The label for the input fields in the UI"]
 
 
        [required :boolean
         "`true` if the user is required to enter a value into this field when placing an order"]
 
        [options :ref :many :component :indexed
-        "If the service field type is a dropdown, it needs options..."]))
+        "Options to choose from if the service field is of type `dropdown`"]))
 
      (s/schema
       service-field-option
