@@ -235,6 +235,7 @@
     :service/name          "Single Bed Linen Change"
     :service/name-internal "Single Bed Linen Change"
     :service/desc          "Have us change your sheets for fresh set."
+    :service/billed        :service.billed/once
     :service/catalogs      [:cleaning]
     :service/price         20.0
     :service/fields        [{:service-field/index 0
@@ -255,6 +256,7 @@
     :service/name          "Extra Keyfob"
     :service/name-internal "Extra Keyfob"
     :service/desc          "Lost keyfob? No prob!"
+    :service/billed        :service.billed/once
     :service/properties    [[:property/code "2072mission"]
                             [:property/code "52gilbert"]]
     :service/catalogs      [:misc]
@@ -275,6 +277,7 @@
     :service/name          "Wish"
     :service/name-internal "Wish"
     :service/desc          "Wish upon a star."
+    :service/billed        :service.billed/once
     :service/catalogs      [:misc]
     :service/fields        [{:service-field/index 0
                              :service-field/type  :service-field.type/text
