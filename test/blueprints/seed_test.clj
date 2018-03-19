@@ -1,10 +1,11 @@
 (ns blueprints.seed-test
   (:require [blueprints.seed :as seed]
-            [blueprints.test.datomic :as db :refer [with-conn]]
+            [blueprints.schema :as schema]
+            [toolbelt.datomic.test :as tdt :refer [with-conn]]
             [clojure.test :refer :all]
             [datomic.api :as d]))
 
-(use-fixtures :once db/conn-fixture)
+(use-fixtures :once (tdt/conn-fixture schema/conform))
 
 ;; We don't need to check for the presence of all entities in our seed sets due
 ;; to the transactional aspect of Datomic--if some of the data is there, all of
@@ -36,10 +37,4 @@
 
       (testing "properties have been seeded"
         (is (not (nil? (d/entity (d/db conn) [:property/internal-name "52gilbert"]))))
-        (is (not (nil? (d/entity (d/db conn) [:property/internal-name "2072mission"])))))
-
-      (testing "services have been seeded"
-        (is (not (nil? (find-service conn "plants,planter")))))
-
-      (testing "catalogues have been seeded"
-        (is (not (nil? (find-catalogue conn :cleaning+laundry))))))))
+        (is (not (nil? (d/entity (d/db conn) [:property/internal-name "2072mission"]))))))))

@@ -1,6 +1,6 @@
 (ns blueprints.models.transaction-test
   (:require [blueprints.models.transaction :as transaction]
-            [blueprints.test.datomic :as dbt :refer [with-conn]]
+            [toolbelt.datomic.test :as tdt :refer [with-conn]]
             [clojure.test :refer :all]
             [datomic.api :as d]
             [toolbelt.datomic :as td]
@@ -12,7 +12,7 @@
    :transaction/source-id source-id})
 
 
-(use-fixtures :once dbt/conn-fixture)
+(use-fixtures :once (tdt/conn-fixture blueprints.schema/conform))
 
 
 (defn speculate [db & tx-data]

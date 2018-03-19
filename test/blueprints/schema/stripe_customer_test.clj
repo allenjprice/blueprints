@@ -1,34 +1,34 @@
 (ns blueprints.schema.stripe-customer-test
-  (:require [blueprints.test.datomic :as dbt :refer [test-attr]]
+  (:require [toolbelt.datomic.test :as tdt :refer [test-attr]]
             [clojure.string :as string]
             [clojure.test :refer :all]))
 
-(use-fixtures :once dbt/conn-fixture)
+(use-fixtures :once (tdt/conn-fixture blueprints.schema/conform))
 
 
 (deftest stripe-customer-schema-conformed
 
   (test-attr a :customer/platform-id
-    (is (dbt/value-type a :string))
-    (is (dbt/unique-identity a)))
+    (is (tdt/value-type a :string))
+    (is (tdt/unique-identity a)))
 
   (test-attr a :customer/account
-    (is (dbt/value-type a :ref))
-    (is (dbt/indexed a)))
+    (is (tdt/value-type a :ref))
+    (is (tdt/indexed a)))
 
   (test-attr a :customer/connected
-    (is (dbt/value-type a :ref))
-    (is (dbt/cardinality a :many))
-    (is (dbt/component a))
-    (is (dbt/indexed a)))
+    (is (tdt/value-type a :ref))
+    (is (tdt/cardinality a :many))
+    (is (tdt/component a))
+    (is (tdt/indexed a)))
 
   (test-attr a :connected-customer/customer-id
-    (is (dbt/value-type a :string))
-    (is (dbt/unique-identity a)))
+    (is (tdt/value-type a :string))
+    (is (tdt/unique-identity a)))
 
   (test-attr a :connected-customer/property
-    (is (dbt/value-type a :ref))
-    (is (dbt/indexed a)))
+    (is (tdt/value-type a :ref))
+    (is (tdt/indexed a)))
 
   (test-attr a :stripe-customer/bank-account-token
     (is (string/starts-with? (:db/doc a) "DEPRECATED")))
