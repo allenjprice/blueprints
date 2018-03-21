@@ -1,8 +1,8 @@
 (ns blueprints.schema.catalogue-test
-  (:require [blueprints.test.datomic :as dbt :refer :all]
+  (:require [toolbelt.datomic.test :as tdt :refer :all]
             [clojure.test :refer :all]))
 
-(use-fixtures :once dbt/conn-fixture)
+(use-fixtures :once (tdt/conn-fixture blueprints.schema/conform))
 
 (deftest catalogue-conformed?
   (test-attr a :catalogue/name
@@ -44,11 +44,6 @@
     (is (value-type a :ref))
     (is (cardinality a :many))
     (is (component a)))
-
-  (test-attr a :cat-item/properties
-    (is (value-type a :ref))
-    (is (cardinality a :many))
-    (is (indexed a)))
 
   (test-attr a :cat-field/label
     (is (value-type a :string))

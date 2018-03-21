@@ -1,9 +1,10 @@
 (ns blueprints.schema.order-test
-  (:require [blueprints.test.datomic :as dbt :refer :all]
-            [clojure.test :refer :all]))
+  (:require [blueprints.schema :as schema]
+            [clojure.test :refer :all]
+            [toolbelt.datomic.test :as tdt :refer :all]))
 
 
-(use-fixtures :once dbt/conn-fixture)
+(use-fixtures :once (tdt/conn-fixture blueprints.schema/conform))
 
 
 (deftest orders-conformed?
