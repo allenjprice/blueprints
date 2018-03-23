@@ -120,22 +120,22 @@
     :service/code          "pets,dog,boarding"
     :service/name          "Dog boarding"
     :service/name-internal "Dog boarding"
-    :service/desc          "Board your dog with Starcity while you're away"
+    :service/desc          "Board your dog with Starcity while you're away."
     :service/desc-internal "Doggie stays with us. Price is billed per night."
     :service/billed        :service.billed/once
     :service/catalogs      [:pets]
-    :service/variants      [{:svc-variant/name  "small"
-                             :svc-variant/price 45.0}
-                            {:svc-variant/name  "medium"
-                             :svc-variant/price 45.0}]
+    :service/price         45.0
+    :service/cost          0
     :service/properties    [[:property/code "2072mission"]
                             [:property/code "52gilbert"]]
-    :service/fields        [{:service-field/index 0
-                             :service-field/type  :service-field.type/date
-                             :service-field/label "When do we start boarding?"}
-                            {:service-field/index 1
-                             :service-field/type  :service-field.type/date
-                             :service-field/label "When will you pick up your pup?"}
+    :service/fields        [{:service-field/index    0
+                             :service-field/type     :service-field.type/date
+                             :service-field/required true
+                             :service-field/label    "When do we start boarding?"}
+                            {:service-field/index    1
+                             :service-field/required true
+                             :service-field/type     :service-field.type/date
+                             :service-field/label    "When will you pick up your pup?"}
                             {:service-field/index 2
                              :service-field/type  :service-field.type/text
                              :service-field/label "Any additional instructions?"}]}
@@ -160,14 +160,26 @@
     :service/code          "pets,dogs,walking,subscription"
     :service/name          "Dog Walking - Subscription"
     :service/name-internal "Dog Walking - Subscription"
-    :service/desc          "Daily walks for your furry family member"
+    :service/desc          "Five walks per week, during business days, for your furry family member."
+    :service/cost          0
+    :service/price         420.0
     :service/catalogs      [:pets :subscriptions]
     :service/billed        :service.billed/monthly
     :service/properties    [[:property/code "2072mission"]
                             [:property/code "52gilbert"]]
-    :service/fields        [{:service-field/index 0
-                             :service-field/type  :service-field.type/time ;; how do we represent broader categories of time? e.g, morning, afternoon, evening?
-                             :service-field/label "When should we take your pup for a walk?"}
+    :service/fields        [{:service-field/index    0
+                             :service-field/type     :service-field.type/dropdown
+                             :service-field/required true
+                             :service-field/label    "When should we take your pup for a walk?"
+                             :service-field/options [{:service-field-option/index 0
+                                                      :service-field-option/label "Morning"
+                                                      :service-field-option/value "Morning"}
+                                                     {:service-field-option/index 1
+                                                      :service-field-option/label "Afternoon"
+                                                      :service-field-option/value "Afternoon"}
+                                                     {:service-field-option/index 2
+                                                      :service-field-option/label "Evening"
+                                                      :service-field-option/value "Evening"}]}
                             {:service-field/index 1
                              :service-field/type  :service-field.type/text
                              :service-field/label "Any additional instructions?"}]}
@@ -179,11 +191,20 @@
                    {:catalogs   [:laundry]
                     :properties [[:property/code "2072mission"]
                                  [:property/code "52gilbert"]]
+                    :price      15.0
+                    :cost       0
+                    :rental     false
+                    :billed     :once
                     :fields     [(service/create-field "Any additional instructions?" :text)]})
 
    ;; modify - weekly laundry service
    {:db/id                 [:service/code "laundry,weekly"]
-    :service/name-internal "Complete Laundry Service and Delivery"
+    :service/name-internal "Weekly Laundry Service and Delivery - Subscription"
+    :service/desc          "Give us your dirty laundry, we'll bring it back so fresh and so clean. Whether you need dry-cleaning or wash and fold, we'll keep your shirts pressed and your jackets stain-free with our next-day laundry service. The membership price includes pickup and delivery - individual item pricing will be billed at the end of the month."
+    :service/active        true
+    :service/properties    [[:property/code "2072mission"]
+                            [:property/code "52gilbert"]]
+    :service/cost          0
     :service/catalogs      [:laundry :subscriptions]
     :service/fields        [{:service-field/index 0
                              :service-field/type  :service-field.type/text
