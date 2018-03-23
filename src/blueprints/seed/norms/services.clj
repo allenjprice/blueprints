@@ -125,7 +125,7 @@
     :service/billed        :service.billed/once
     :service/catalogs      [:pets]
     :service/price         45.0
-    :service/cost          0
+    :service/cost          0.0
     :service/properties    [[:property/code "2072mission"]
                             [:property/code "52gilbert"]]
     :service/fields        [{:service-field/index    0
@@ -161,7 +161,7 @@
     :service/name          "Dog Walking - Subscription"
     :service/name-internal "Dog Walking - Subscription"
     :service/desc          "Five walks per week, during business days, for your furry family member."
-    :service/cost          0
+    :service/cost          0.0
     :service/price         420.0
     :service/catalogs      [:pets :subscriptions]
     :service/billed        :service.billed/monthly
@@ -192,7 +192,7 @@
                     :properties [[:property/code "2072mission"]
                                  [:property/code "52gilbert"]]
                     :price      15.0
-                    :cost       0
+                    :cost       0.0
                     :rental     false
                     :billed     :once
                     :fields     [(service/create-field "Any additional instructions?" :text)]})
@@ -204,7 +204,7 @@
     :service/active        true
     :service/properties    [[:property/code "2072mission"]
                             [:property/code "52gilbert"]]
-    :service/cost          0
+    :service/cost          0.0
     :service/catalogs      [:laundry :subscriptions]
     :service/fields        [{:service-field/index 0
                              :service-field/type  :service-field.type/text
