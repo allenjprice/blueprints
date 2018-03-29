@@ -228,6 +228,16 @@
         :ret (s/* td/entityd?))
 
 
+(defn uuid
+  "The `uuid` of the order."
+  [order]
+  (:order/uuid order))
+
+(s/fdef uuid
+        :args (s/cat :order td/entity?)
+        :ret uuid?)
+
+
 ;; =============================================================================
 ;; Predicates
 ;; =============================================================================
