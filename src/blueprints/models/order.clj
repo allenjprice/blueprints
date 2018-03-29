@@ -218,6 +218,16 @@
         :ret (s/or :nothing nil? :date inst?))
 
 
+(defn fields
+  "Information collected from service fields while ordering."
+  [order]
+  (:order/fields order))
+
+(s/fdef fields
+        :args (s/cat :order td/entity?)
+        :ret (s/* td/entityd?))
+
+
 ;; =============================================================================
 ;; Predicates
 ;; =============================================================================
@@ -471,6 +481,17 @@
 (s/def ::line
   (s/keys :req [:line-item/desc :line-item/price] :opt [:line-item/cost]))
 
+(s/def :order-field/service-field td/entity?)
+(s/def :order-field.value/text string?)
+(s/def :order-field.value/number float?)
+(s/def :order-field.value/date inst?)
+(s/def :order-field.value/option string?)
+(s/def ::field
+  (s/keys :req [:order-field/service-field]
+          :opt [:order-field.value/text :order-field.value/number
+                :order-field.value/date :order-field.value/option]))
+
+
 (s/def ::quantity (s/and pos? number?))
 (s/def ::request string?)
 (s/def ::summary string?)
@@ -478,15 +499,18 @@
 (s/def ::price (s/and pos? float?))
 (s/def ::cost (s/and pos? float?))
 (s/def ::lines (s/+ ::line))
+(s/def ::fields (s/+ ::field))
 (s/def ::create-opts
-  (s/keys :opt-un [::quantity ::desc ::request ::cost ::summary ::variant ::status ::price ::lines]))
+  (s/keys :opt-un [::quantity ::desc ::request ::cost ::summary ::variant
+                   ::status ::price ::lines ::fields]))
 
 
 (defn create
   "Create a new order."
   ([account service]
    (create account service {}))
-  ([account service {:keys [quantity desc request cost summary variant status price lines]
+  ([account service {:keys [quantity desc request cost summary variant status
+                            price lines fields]
                      :or   {status :order.status/pending}
                      :as   opts}]
    (tb/assoc-when
@@ -499,6 +523,7 @@
     :order/cost (when-let [c cost] (float cost))
     :order/variant variant
     :order/quantity (when-let [q quantity] (float q))
+    :order/fields fields
     :order/lines lines
     :order/summary summary
     :order/request (or request desc))))
@@ -626,6 +651,28 @@
         :args (s/cat :desc string?
                      :price (s/and number? pos?)
                      :cost (s/? number?))
+        :ret map?)
+
+
+(defn order-field-key
+  [service-field]
+  (get
+   {:service-field.type/time     :order-field.value/date
+    :service-field.type/date     :order-field.value/date
+    :service-field.type/text     :order-field.value/text
+    :service-field.type/number   :order-field.value/number
+    :service-field.type/dropdown :order-field.value/option}
+   (:service-field/type service-field)))
+
+
+(defn order-field
+  "Create an order field."
+  [service-field value]
+  {:order-field/service-field      (td/id service-field)
+   (order-field-key service-field) value})
+
+(s/fdef order-field
+        :args (s/cat :field td/entityd? :value any?)
         :ret map?)
 
 

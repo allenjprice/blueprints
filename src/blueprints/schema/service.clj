@@ -77,6 +77,9 @@
        [fields :ref :many :component :indexed
         "A service's fields."]
 
+       [active :boolean :indexed
+        "`true` if the service is made available."]
+
        [name-internal :string :indexed
         "The staff-facing name for a service offering."]))
 

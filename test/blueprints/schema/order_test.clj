@@ -8,6 +8,7 @@
 
 
 (deftest orders-conformed?
+
   (test-attr a :order/account
     (is (value-type a :ref))
     (is (indexed a))
@@ -80,4 +81,31 @@
 
   (test-attr a :line-item/cost
     (is (value-type a :float))
+    (is (indexed a)))
+
+
+  (test-attr a :order/fields
+    (is (value-type a :ref))
+    (is (indexed a))
+    (is (cardinality a :many))
+    (is (component a)))
+
+  (test-attr a :order-field/service-field
+    (is (value-type a :ref))
+    (is (indexed a)))
+
+  (test-attr a :order-field.value/text
+    (is (value-type a :string))
+    (is (fulltext a)))
+
+  (test-attr a :order-field.value/number
+    (is (value-type a :float))
+    (is (indexed a)))
+
+  (test-attr a :order-field.value/date
+    (is (value-type a :instant))
+    (is (indexed a)))
+
+  (test-attr a :order-field.value/option
+    (is (value-type a :string))
     (is (indexed a))))

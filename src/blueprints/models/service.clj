@@ -208,7 +208,7 @@
 
 
 (defn- services-query
-  [db {:keys [q properties catalogs billed]}]
+  [db {:keys [q properties catalogs billed active]}]
   (let [init '{:find  [[?s ...]]
                :in    [$]
                :args  []
@@ -239,6 +239,11 @@
       (-> (update :in conj '[?b ...])
           (update :where conj '[?s :service/billed ?b])
           (update :args conj billed))
+
+      (some? active)
+      (-> (update :in conj '?active)
+          (update :where conj '[?s :service/active ?active])
+          (update :args conj active))
 
       true
       (update :where #(if (empty? %) (conj % '[?s :service/code _]) %)))))
@@ -331,12 +336,12 @@
   ([code name desc]
    (create code name desc {}))
   ([code name desc {:keys [name-internal desc-internal billed rental
-                           price cost catalogs variants fields properties]
+                           price cost catalogs variants fields properties active]
                     :or   {name-internal name
                            desc-internal desc
                            billed        :service.billed/once
                            rental        false}}]
-   (tb/assoc-when
+   (tb/assoc-some
     {:db/id                 (tds/tempid)
      :service/code          code
      :service/name          name
@@ -349,6 +354,7 @@
     :service/cost (when-some [c cost] (float c))
     :service/catalogs catalogs
     :service/variants variants
+    :service/active active
     :service/fields (when-some [fs fields]
                       (map-indexed
                        #(assoc %2 :service-field/index %1)
@@ -362,7 +368,7 @@
 ;; replace the current value, or remove one?
 (defn edit
   [service {:keys [name desc name-internal desc-internal billed rental
-                   price cost catalogs variants fields properties]}]
+                   price cost catalogs properties active]}]
   (tb/assoc-when
    {:db/id (td/id service)}
    :service/name   name
@@ -374,7 +380,7 @@
    :service/price (when-some [p price] (float p))
    :service/cost (when-some [c cost] (float c))
    :service/catalogs catalogs
-   :service/variants variants
+   :service/active active
    :service/properties (when-some [ps properties]
                          (map td/id ps))))
 

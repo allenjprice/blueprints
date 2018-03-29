@@ -120,22 +120,23 @@
     :service/code          "pets,dog,boarding"
     :service/name          "Dog boarding"
     :service/name-internal "Dog boarding"
-    :service/desc          "Board your dog with Starcity while you're away"
+    :service/desc          "Board your dog with Starcity while you're away."
     :service/desc-internal "Doggie stays with us. Price is billed per night."
     :service/billed        :service.billed/once
     :service/catalogs      [:pets]
-    :service/variants      [{:svc-variant/name  "small"
-                             :svc-variant/price 45.0}
-                            {:svc-variant/name  "medium"
-                             :svc-variant/price 45.0}]
+    :service/price         45.0
+    :service/cost          0.0
+    :service/active        true
     :service/properties    [[:property/code "2072mission"]
                             [:property/code "52gilbert"]]
-    :service/fields        [{:service-field/index 0
-                             :service-field/type  :service-field.type/date
-                             :service-field/label "When do we start boarding?"}
-                            {:service-field/index 1
-                             :service-field/type  :service-field.type/date
-                             :service-field/label "When will you pick up your pup?"}
+    :service/fields        [{:service-field/index    0
+                             :service-field/type     :service-field.type/date
+                             :service-field/required true
+                             :service-field/label    "When do we start boarding?"}
+                            {:service-field/index    1
+                             :service-field/required true
+                             :service-field/type     :service-field.type/date
+                             :service-field/label    "When will you pick up your pup?"}
                             {:service-field/index 2
                              :service-field/type  :service-field.type/text
                              :service-field/label "Any additional instructions?"}]}
@@ -147,27 +148,55 @@
     :service/name-internal "Dog Walking - Single"
     :service/desc          "One walk for your furry family member."
     :service/billed        :service.billed/once
+    :service/active        true
+    :service/cost          0.0
+    :service/price         30.0
     :service/catalogs      [:pets]
-    :service/variants      [{:svc-variant/name  "small"
-                             :svc-variant/price 15.0}
-                            {:svc-variant/name  "medium"
-                             :svc-variant/price 15.0}]
     :service/properties    [[:property/code "2072mission"]
-                            [:property/code "52gilbert"]]}
+                            [:property/code "52gilbert"]]
+    :service/fields        [{:service-field/index    0
+                             :service-field/type     :service-field.type/dropdown
+                             :service-field/required true
+                             :service-field/label    "When should we take your pup for a walk?"
+                             :service-field/options  [{:service-field-option/index 0
+                                                       :service-field-option/label "Morning"
+                                                       :service-field-option/value "Morning"}
+                                                      {:service-field-option/index 1
+                                                       :service-field-option/label "Afternoon"
+                                                       :service-field-option/value "Afternoon"}
+                                                      {:service-field-option/index 2
+                                                       :service-field-option/label "Evening"
+                                                       :service-field-option/value "Evening"}]}
+                            {:service-field/index 1
+                             :service-field/type  :service-field.type/text
+                             :service-field/label "Any additional instructions?"}]}
 
    ;; add - dog walking subscription
    {:db/id                 (d/tempid part)
     :service/code          "pets,dogs,walking,subscription"
-    :service/name          "Dog Walking - Subscription"
+    :service/name          "Dog Walking - Subscription "
     :service/name-internal "Dog Walking - Subscription"
-    :service/desc          "Daily walks for your furry family member"
+    :service/desc          "Five walks per week, during business days, for your furry family member."
+    :service/cost          0.0
+    :service/price         420.0
+    :service/active        true
     :service/catalogs      [:pets :subscriptions]
     :service/billed        :service.billed/monthly
     :service/properties    [[:property/code "2072mission"]
                             [:property/code "52gilbert"]]
-    :service/fields        [{:service-field/index 0
-                             :service-field/type  :service-field.type/time ;; how do we represent broader categories of time? e.g, morning, afternoon, evening?
-                             :service-field/label "When should we take your pup for a walk?"}
+    :service/fields        [{:service-field/index    0
+                             :service-field/type     :service-field.type/dropdown
+                             :service-field/required true
+                             :service-field/label    "When should we take your pup for a walk?"
+                             :service-field/options  [{:service-field-option/index 0
+                                                       :service-field-option/label "Morning"
+                                                       :service-field-option/value "Morning"}
+                                                      {:service-field-option/index 1
+                                                       :service-field-option/label "Afternoon"
+                                                       :service-field-option/value "Afternoon"}
+                                                      {:service-field-option/index 2
+                                                       :service-field-option/label "Evening"
+                                                       :service-field-option/value "Evening"}]}
                             {:service-field/index 1
                              :service-field/type  :service-field.type/text
                              :service-field/label "Any additional instructions?"}]}
@@ -179,11 +208,21 @@
                    {:catalogs   [:laundry]
                     :properties [[:property/code "2072mission"]
                                  [:property/code "52gilbert"]]
+                    :price      15.0
+                    :active     true
+                    :cost       0.0
+                    :rental     false
+                    :billed     :service.billed/once
                     :fields     [(service/create-field "Any additional instructions?" :text)]})
 
    ;; modify - weekly laundry service
    {:db/id                 [:service/code "laundry,weekly"]
-    :service/name-internal "Complete Laundry Service and Delivery"
+    :service/name-internal "Weekly Laundry Service and Delivery - Subscription"
+    :service/desc          "Give us your dirty laundry, we'll bring it back so fresh and so clean. Whether you need dry-cleaning or wash and fold, we'll keep your shirts pressed and your jackets stain-free with our next-day laundry service. The membership price includes pickup and delivery - individual item pricing will be billed at the end of the month."
+    :service/active        true
+    :service/properties    [[:property/code "2072mission"]
+                            [:property/code "52gilbert"]]
+    :service/cost          0.0
     :service/catalogs      [:laundry :subscriptions]
     :service/fields        [{:service-field/index 0
                              :service-field/type  :service-field.type/text
@@ -193,6 +232,10 @@
    {:db/id                 [:service/code "storage,bin,small"]
     :service/name-internal "Storage Bin - Small"
     :service/catalogs      [:storage :subscriptions]
+    :service/active        true
+    :service/cost          0.13
+    :service/properties    [[:property/code "2072mission"]
+                            [:property/code "52gilbert"]]
     :service/fields        [{:service-field/index 0
                              :service-field/type  :service-field.type/text
                              :service-field/label "Any additional instructions?"}]}
@@ -201,6 +244,10 @@
    {:db/id                 [:service/code "storage,bin,large"]
     :service/name-internal "Storage Bin - Large"
     :service/catalogs      [:storage :subscriptions]
+    :service/active        true
+    :service/properties    [[:property/code "2072mission"]
+                            [:property/code "52gilbert"]]
+    :service/cost          0.23
     :service/fields        [{:service-field/index 0
                              :service-field/type  :service-field.type/text
                              :service-field/label "Any additional instructions?"}]}
@@ -209,6 +256,7 @@
    {:db/id                 [:service/code "storage,misc"]
     :service/name-internal "Other Storage - for odd objects"
     :service/catalogs      [:storage :subscriptions]
+    :service/active        false
     :service/fields        [{:service-field/index 0
                              :service-field/type  :service-field.type/text
                              :service-field/label "Any additional instructions?"}]}
@@ -216,15 +264,20 @@
    ;; add - single room cleaning
    {:db/id                 (d/tempid part)
     :service/code          "cleaning,room,single"
-    :service/name          "Single Room Cleaning"
-    :service/name-internal "Single Room Cleaning"
-    :service/desc          "Have your room dusted, vacuumed, all surfaces cleaned and your linens changed."
+    :service/name          "Room Cleaning - Single"
+    :service/name-internal "Room Cleaning - Single"
+    :service/desc          "Have your furniture dusted, floor vacuumed, all surfaces cleaned, and your linens changed."
     :service/catalogs      [:cleaning]
     :service/price         40.0
+    :service/cost          11.0
+    :service/active        true
+    :service/properties    [[:property/code "2072mission"]
+                            [:property/code "52gilbert"]]
     :service/billed        :service.billed/once
-    :service/fields        [{:service-field/index 0
-                             :service-field/type  :service-field.type/date
-                             :service-field/label "When would you like your room cleaned?"}
+    :service/fields        [{:service-field/index    0
+                             :service-field/type     :service-field.type/date
+                             :service-field/required true
+                             :service-field/label    "When would you like your room cleaned?"}
                             {:service-field/index 1
                              :service-field/type  :service-field.type/text
                              :service-field/label "Any additional instructions?"}]}
@@ -232,18 +285,32 @@
    ;; add - single linen change
    {:db/id                 (d/tempid part)
     :service/code          "cleaning,linen,single"
-    :service/name          "Single Bed Linen Change"
-    :service/name-internal "Single Bed Linen Change"
-    :service/desc          "Have us change your sheets for fresh set."
+    :service/name          "Bed Linen Change - Single"
+    :service/name-internal "Bed Linen Change - Single"
+    :service/desc          "Have us change your sheets for a fresh set."
+    :service/billed        :service.billed/once
     :service/catalogs      [:cleaning]
     :service/price         20.0
-    :service/fields        [{:service-field/index 0
+    :service/cost          5.50
+    :service/properties    [[:property/code "2072mission"]
+                            [:property/code "52gilbert"]]
+    :service/fields        [{:service-field/index    0
+                             :service-field/type     :service-field.type/date
+                             :service-field/required true
+                             :service-field/label    "When would you like your linens changed?"}
+                            {:service-field/index 1
                              :service-field/type  :service-field.type/text
                              :service-field/label "Any additional instructions?"}]}
 
    ;; modify - weekly room cleaning
    {:db/id                 [:service/code "cleaning,weekly"]
-    :service/name-internal "Weekly Room Cleaning"
+    :service/name-internal "Room Cleaning - Weekly"
+    :service/cost          44.0
+    :service/price         130.0
+    :service/active        true
+    :service/billed        :service.billed/monthly
+    :service/properties    [[:property/code "2072mission"]
+                            [:property/code "52gilbert"]]
     :service/catalogs      [:cleaning :subscriptions]
     :service/fields        [{:service-field/index 0
                              :service-field/type  :service-field.type/text
@@ -254,18 +321,22 @@
     :service/code          "keyfob"
     :service/name          "Extra Keyfob"
     :service/name-internal "Extra Keyfob"
-    :service/desc          "Lost keyfob? No prob!"
-    :service/properties    [[:property/code "2072mission"]
-                            [:property/code "52gilbert"]]
-    :service/catalogs      [:misc]
-    :service/fields        [{:service-field/index 0
-                             :service-field/type  :service-field.type/number
-                             :service-field/label "How many?"}]}
+    :service/desc          "Need a keyfob? No prob!"
+    :service/billed        :service.billed/once
+    :service/cost          2.0
+    :service/price         20.0
+    :service/active        true
+    :service/properties    [[:property/code "2072mission"]]
+    :service/fields        [{:service-field/index    0
+                             :service-field/type     :service-field.type/number
+                             :service-field/required true
+                             :service-field/label    "How many?"}]}
 
    ;; modify - move-in assistance
    {:db/id                 [:service/code "moving,move-in"]
     :service/name-internal "Move-in assistance"
     :service/catalogs      [:misc]
+    :service/active        false
     :service/fields        [{:service-field/index 0
                              :service-field/type  :service-field.type/text
                              :service-field/label "Any additional instructions?"}]}
@@ -275,7 +346,9 @@
     :service/name          "Wish"
     :service/name-internal "Wish"
     :service/desc          "Wish upon a star."
+    :service/billed        :service.billed/once
     :service/catalogs      [:misc]
+    :service/active        false
     :service/fields        [{:service-field/index 0
                              :service-field/type  :service-field.type/text
                              :service-field/label "Tell us about your wish, and we'll get back to you within 24 hours."}]}
