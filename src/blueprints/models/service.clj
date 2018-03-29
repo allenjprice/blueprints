@@ -1,4 +1,5 @@
 (ns blueprints.models.service
+  (:refer-clojure :exclude [name])
   (:require [blueprints.models.property :as property]
             [clojure.spec.alpha :as s]
             [clojure.string :as string]
@@ -44,6 +45,10 @@
 (s/fdef service-name
         :args (s/cat :service td/entity?)
         :ret string?)
+
+
+(def ^{:deprecated "2.3.0"} name
+  service-name)
 
 
 (defn desc
@@ -204,7 +209,7 @@
                   (map (partial d/entity db)))]
     (println "CODE :: NAME :: DESCRIPTION")
     (doseq [svc (sort-by :service/code svcs)]
-      (println (format "%s: '%s' (%s)" (code svc) (name svc) (desc svc))))))
+      (println (format "%s: '%s' (%s)" (code svc) (clojure.core/name svc) (desc svc))))))
 
 
 (defn- services-query
@@ -314,7 +319,7 @@
                        required true}}]
    (tb/assoc-when
     {:service-field/label    label
-     :service-field/type     (keyword "service-field.type" (name type))
+     :service-field/type     (keyword "service-field.type" (clojure.core/name type))
      :service-field/index    index
      :service-field/required required}
     :service-field/options (when-some [os options]
@@ -416,7 +421,7 @@
   (tb/assoc-when
    {:db/id (td/id field)}
    :service-field/label label
-   :service-field/type (keyword "service-field.type" (name type))
+   :service-field/type (keyword "service-field.type" (clojure.core/name type))
    :service-field/index index
    :service-field/required required))
 
