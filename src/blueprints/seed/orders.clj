@@ -35,9 +35,9 @@
   [field]
   (let [order-field {:order-field/service-field (:db/id field)}]
     (->> (case (:service-field/type field)
-           :service-field.type/number (float (rand-int-to-5))
-           :service-field.type/time (rand-inst)
-           :service-field.type/date (rand-inst)
+           :service-field.type/number   (float (rand-int-to-5))
+           :service-field.type/time     (rand-inst)
+           :service-field.type/date     (rand-inst)
            :service-field.type/dropdown (rand-option (:service-field/options field))
            (rand-string))
          (assoc order-field (order/order-field-key field)))))
@@ -50,7 +50,7 @@
 
 (defn order
   [account-id service-id service & {:keys [quantity desc variant status price cost fields]
-                            :or   {status :order.status/pending}}]
+                                    :or   {status :order.status/pending}}]
   (toolbelt.core/assoc-when
    {:db/id         (utils/tempid)
     :order/uuid    (d/squuid)
