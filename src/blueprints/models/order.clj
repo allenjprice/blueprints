@@ -309,6 +309,16 @@
 ;; =============================================================================
 
 
+(defn by-uuid
+  "Find an order given its `uuid`."
+  [db uuid]
+  (d/entity db [:order/uuid uuid]))
+
+(s/fdef by-uuid
+        :args (s/cat :db td/db? :uuid uuid?)
+        :ret td/entityd?)
+
+
 (defn by-account
   "Find an order given the `account` and `service`."
   [db account service]
