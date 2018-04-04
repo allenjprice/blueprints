@@ -35,9 +35,9 @@
   [field]
   (let [order-field {:order-field/service-field (:db/id field)}]
     (->> (case (:service-field/type field)
-           :service-field.type/number (float (rand-int-to-5))
-           :service-field.type/time (rand-inst)
-           :service-field.type/date (rand-inst)
+           :service-field.type/number   (float (rand-int-to-5))
+           :service-field.type/time     (rand-inst)
+           :service-field.type/date     (rand-inst)
            :service-field.type/dropdown (rand-option (:service-field/options field))
            (rand-string))
          (assoc order-field (order/order-field-key field)))))
@@ -48,15 +48,23 @@
   [fields]
   (map #(rand-service-field-by-type %) fields))
 
+
+(defn rand-order-status
+  "generate random order status"
+  []
+  (let [statuses [:pending :placed :canceled :charged :failed :processing :fulfilled]]
+    (-> (map #(keyword "order.status" (name %)) statuses)
+        (rand-nth))))
+
+
 (defn order
-  [account-id service-id service & {:keys [quantity desc variant status price cost fields]
-                            :or   {status :order.status/pending}}]
+  [account-id service-id service & {:keys [quantity desc variant price cost fields]}]
   (toolbelt.core/assoc-when
    {:db/id         (utils/tempid)
     :order/uuid    (d/squuid)
     :order/service service-id
     :order/account account-id
-    :order/status  status}
+    :order/status  (rand-order-status)}
    :order/price (when-let [p price] (float p))
    :order/cost (when-let [c cost] (float c))
    :order/variant variant
