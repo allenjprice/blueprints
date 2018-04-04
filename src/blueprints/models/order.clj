@@ -5,7 +5,8 @@
             [clojure.string :as string]
             [datomic.api :as d]
             [toolbelt.core :as tb]
-            [toolbelt.datomic :as td]))
+            [toolbelt.datomic :as td]
+            [taoensso.timbre :as timbre]))
 
 
 ;; =============================================================================
@@ -688,8 +689,10 @@
 (defn order-field
   "Create an order field."
   [service-field value]
-  {:order-field/service-field      (td/id service-field)
-   (order-field-key service-field) value})
+  (let [order-field {:order-field/service-field (td/id service-field)}]
+    (if value
+      (assoc order-field (order-field-key service-field) value)
+      order-field)))
 
 (s/fdef order-field
         :args (s/cat :field td/entityd? :value any?)
