@@ -353,6 +353,7 @@
                              :service-field/type  :service-field.type/text
                              :service-field/label "Tell us about your wish, and we'll get back to you within 24 hours."}]}
 
+
    ;; add - furniture installtion fee
    {:db/id          (d/tempid part)
     :service/code   "fee,installation,furniture"
@@ -363,6 +364,23 @@
     :service/price  36.0
     :service/cost   30.0}
 
+
+   ;; removals
+   [:db.fn/retractEntity [:service/code "customize,furniture,quote"]]
+   [:db.fn/retractEntity [:service/code "customize,room,quote"]]
+   [:db.fn/retractEntity [:service/code "kitchenette,coffe/tea,bundle"]]
+   [:db.fn/retractEntity [:service/code "kitchenette,microwave"]]
+   [:db.fn/retractEntity [:service/code "mirror,full-length"]]
+   [:db.fn/retractEntity [:service/code "tv,wall,32inch"]]
+   [:db.fn/retractEntity [:service/code "apple-tv"]]
+   [:db.fn/retractEntity [:service/code "box-fan"]]
+   [:db.fn/retractEntity [:service/code "white-noise-machine"]]
+   [:db.fn/retractEntity [:service/code "plants,planter"]]])
+
+
+
+(defn- ^{:added "2.3.0"} add-rentals [part]
+  [
    ;; add furniture rental - laptop desk
    {:db/id              (d/tempid part)
     :service/code       "furniture,rental,laptop,desk"
@@ -453,21 +471,7 @@
     :service/fees       [[:service/code "fee,installation,furniture"]]
     :service/billed     :service.billed/monthly
     :service/rental     true
-    :service/catalogs   [:furniture :subscription]}
-
-
-
-   ;; removals
-   [:db.fn/retractEntity [:service/code "customize,furniture,quote"]]
-   [:db.fn/retractEntity [:service/code "customize,room,quote"]]
-   [:db.fn/retractEntity [:service/code "kitchenette,coffe/tea,bundle"]]
-   [:db.fn/retractEntity [:service/code "kitchenette,microwave"]]
-   [:db.fn/retractEntity [:service/code "mirror,full-length"]]
-   [:db.fn/retractEntity [:service/code "tv,wall,32inch"]]
-   [:db.fn/retractEntity [:service/code "apple-tv"]]
-   [:db.fn/retractEntity [:service/code "box-fan"]]
-   [:db.fn/retractEntity [:service/code "white-noise-machine"]]
-   [:db.fn/retractEntity [:service/code "plants,planter"]]])
+    :service/catalogs   [:furniture :subscription]}])
 
 
 (defn norms [conn part]
@@ -476,4 +480,8 @@
 
    :blueprints.seed/update-services-03012018
    {:txes [(update-services part)]
-    :requires [:blueprints.seed/add-initial-services]}})
+    :requires [:blueprints.seed/add-initial-services]}
+
+   :blueprints.seed/add-rentals-040418
+   {:txes [(add-rentals part)]
+    :requires [:blueprints.seed/update-services-03012018]}})
