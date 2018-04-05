@@ -2,7 +2,8 @@
   "The `service` entity represents a Starcity offering with monetary value that
   can be purchased."
   (:require [datomic-schema.schema :as s]
-            [datomic.api :as d]))
+            [datomic.api :as d]
+            [toolbelt.datomic :as td]))
 
 (def ^{:added "1.5.0"} schema
   (s/generate-schema
@@ -83,7 +84,7 @@
        [name-internal :string :indexed
         "The staff-facing name for a service offering."]
 
-       [fees :ref :many :component :indexed
+       [fees :ref :many :indexed
         "One-time setup fees (like installation for furniture rentals) that
         are incurred when ordering a service. These are, themselves, services."]))
 
