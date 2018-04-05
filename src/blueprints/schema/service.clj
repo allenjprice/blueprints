@@ -81,7 +81,11 @@
         "`true` if the service is made available."]
 
        [name-internal :string :indexed
-        "The staff-facing name for a service offering."]))
+        "The staff-facing name for a service offering."]
+
+       [fees :ref :many :component :indexed
+        "One-time setup fees (like installation for furniture rentals) that
+        are incurred when ordering a service. These are, themselves, services."]))
 
      (s/schema
       service-field
