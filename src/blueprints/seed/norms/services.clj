@@ -353,6 +353,110 @@
                              :service-field/type  :service-field.type/text
                              :service-field/label "Tell us about your wish, and we'll get back to you within 24 hours."}]}
 
+   ;; add - furniture installtion fee
+   {:db/id          (d/tempid part)
+    :service/code   "fee,installation,furniture"
+    :service/name   "Installation Fee - Furniture"
+    :service/desc   "One-time instalation charge added to a furniture rental."
+    :service/billed :service.billed/once
+    :service/active false
+    :service/price  36.0
+    :service/cost   30.0}
+
+   ;; add furniture rental - laptop desk
+   {:db/id              (d/tempid part)
+    :service/code       "furniture,rental,laptop,desk"
+    :service/name       "Laptop Desk"
+    :service/desc       "A small desk for your laptop. There is a one-time delivery and installation fee for this service."
+    :service/active     true
+    :service/properties [[:property/code "2072mission"]
+                         [:property/code "52gilbert"]]
+    :service/price      8.0
+    :service/cost       5.6
+    :service/billed     :service.billed/monthly
+    :service/rental     true
+    :service/catalogs   [:furniture :subscription]}
+
+
+   ;; add - furniture rental - desk
+   {:db/id              (d/tempid part)
+    :service/code       "furniture,rental,desk"
+    :service/name       "Desk"
+    :service/desc       "A secretary desk for you to work on. There is a one-time delivery and installation fee for this service."
+    :service/active     true
+    :service/properties [[:property/code "2072mission"]
+                         [:property/code "52gilbert"]]
+    :service/price      20.0
+    :service/cost       15.0
+    :service/fees       [[:service/code "fee,installation,furniture"]]
+    :service/billed     :service.billed/monthly
+    :service/rental     true
+    :service/catalogs   [:furniture :subscription]}
+
+
+   ;; add - furniture rental small dresser
+   {:db/id              (d/tempid part)
+    :service/code       "furniture,rental,dresser,small"
+    :service/name       "Small Dresser"
+    :service/desc       "Want extra space for your clothes? We have dressers! Dimensions: 34\" tall x 18\" D x 36\" W. There is a one-time delivery and installation fee for this service."
+    :service/active     true
+    :service/properties [[:property/code "2072mission"]
+                         [:property/code "52gilbert"]]
+    :service/price      15.0
+    :service/cost       12.0
+    :service/fees       [[:service/code "fee,installation,furniture"]]
+    :service/billed     :service.billed/monthly
+    :service/rental     true
+    :service/catalogs   [:furniture :subscription]}
+
+
+   ;; add - furniture rental large dresser
+   {:db/id              (d/tempid part)
+    :service/code       "furniture,rental,dresser,large"
+    :service/name       "Large Dresser"
+    :service/desc       "Want extra space for your clothes? We have dressers! Dimensions: 48.75\" tall x 18\" D x 36\" W. There is a one-time delivery and installation fee for this service."
+    :service/active     true
+    :service/properties [[:property/code "2072mission"]
+                         [:property/code "52gilbert"]]
+    :service/price      15.0
+    :service/cost       12.0
+    :service/fees       [[:service/code "fee,installation,furniture"]]
+    :service/billed     :service.billed/monthly
+    :service/rental     true
+    :service/catalogs   [:furniture :subscription]}
+
+
+   ;; add - furniture rental bookshelf
+   {:db/id              (d/tempid part)
+    :service/code       "furniture,rental,bookshelf"
+    :service/name       "Bookshelf"
+    :service/desc       "Need some extra shelves for your books or decorative items?  Add a freestanding bookshelf. Dimensions: 76.25\" tall x 14.5\" D x 24.5\" W. There is a one-time delivery and installation fee for this service."
+    :service/active     true
+    :service/properties [[:property/code "2072mission"]
+                         [:property/code "52gilbert"]]
+    :service/price      10.0
+    :service/cost       6.61
+    :service/fees       [[:service/code "fee,installation,furniture"]]
+    :service/billed     :service.billed/monthly
+    :service/rental     true
+    :service/catalogs   [:furniture :subscription]}
+
+
+   ;; add - furniture rental microwave
+   {:db/id              (d/tempid part)
+    :service/code       "furniture,rental,microwave"
+    :service/name       "A small microwave for your kitchenette. There is a one-time delivery and installation fee for this service."
+    :service/active     true
+    :service/properties [[:property/code "2072mission"]]
+    :service/price      8.0
+    :service/cost       4.0
+    :service/fees       [[:service/code "fee,installation,furniture"]]
+    :service/billed     :service.billed/monthly
+    :service/rental     true
+    :service/catalogs   [:furniture :subscription]}
+
+
+
    ;; removals
    [:db.fn/retractEntity [:service/code "customize,furniture,quote"]]
    [:db.fn/retractEntity [:service/code "customize,room,quote"]]
