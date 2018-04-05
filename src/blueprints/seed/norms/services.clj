@@ -463,7 +463,8 @@
    ;; add - furniture rental microwave
    {:db/id              (d/tempid part)
     :service/code       "furniture,rental,microwave"
-    :service/name       "A small microwave for your kitchenette. There is a one-time delivery and installation fee for this service."
+    :service/name       "Microwave"
+    :service/desc       "A small microwave for your kitchenette. There is a one-time delivery and installation fee for this service."
     :service/active     true
     :service/properties [[:property/code "2072mission"]]
     :service/price      8.0
