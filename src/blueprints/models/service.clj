@@ -91,6 +91,12 @@
         :ret boolean?)
 
 
+(defn fees
+  "A list of fees that may be incurred when ordering this service"
+  [service]
+  (:service/fees service))
+
+
 (defn billed
   "Billing method of this service."
   [service]
@@ -146,6 +152,9 @@
 
 
 ;; Might need an active selector
+
+
+
 
 
 
@@ -340,7 +349,7 @@
   "Create a new service."
   ([code name desc]
    (create code name desc {}))
-  ([code name desc {:keys [name-internal desc-internal billed rental
+  ([code name desc {:keys [name-internal desc-internal billed rental fees
                            price cost catalogs variants fields properties active]
                     :or   {name-internal name
                            desc-internal desc
@@ -365,7 +374,9 @@
                        #(assoc %2 :service-field/index %1)
                        fs))
     :service/properties (when-some [ps properties]
-                          (map td/id ps)))))
+                          (map td/id ps))
+    :service/fees (when-some [fs fees]
+                    (map td/id fs)))))
 
 
 ;; edit currently works to assoc information into a key,
