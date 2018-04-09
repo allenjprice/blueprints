@@ -1,5 +1,5 @@
 (ns blueprints.models.service
-  (:refer-clojure :exclude [name])
+  (:refer-clojure :exclude [name type])
   (:require [blueprints.models.property :as property]
             [clojure.spec.alpha :as s]
             [clojure.string :as string]
@@ -360,7 +360,8 @@
                     :or   {name-internal name
                            desc-internal desc
                            billed        :service.billed/once
-                           rental        false}}]
+                           rental        false
+                           type          :service.type/service}}]
    (tb/assoc-some
     {:db/id                 (tds/tempid)
      :service/code          code

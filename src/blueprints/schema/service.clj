@@ -157,9 +157,9 @@
 
 (defn- service-types [part]
   [{:db/id    (d/tempid part)
-    :db/ident :service.types/service}
+    :db/ident :service.type/service}
    {:db/id    (d/tempid part)
-    :db/ident :service.types/fee}])
+    :db/ident :service.type/fee}])
 
 
 (def ^{:added "4.2.1"} add-types
