@@ -97,6 +97,12 @@
   (:service/fees service))
 
 
+(defn type
+  "The type of service (service, fee, event ticket, etc.)"
+  [service]
+  (:service/type service))
+
+
 (defn billed
   "Billing method of this service."
   [service]
@@ -349,7 +355,7 @@
   "Create a new service."
   ([code name desc]
    (create code name desc {}))
-  ([code name desc {:keys [name-internal desc-internal billed rental fees
+  ([code name desc {:keys [name-internal desc-internal billed rental fees type
                            price cost catalogs variants fields properties active]
                     :or   {name-internal name
                            desc-internal desc
@@ -360,6 +366,7 @@
      :service/code          code
      :service/name          name
      :service/desc          desc
+     :service/type          type
      :service/name-internal name-internal
      :service/desc-internal desc-internal
      :service/billed        billed
