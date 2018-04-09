@@ -481,6 +481,7 @@
    ;; onboarding + subscriptions with an s + type service
    {:db/id            [:service/code "furniture,rental,laptop,desk"]
     :service/type     :service.type/service
+    :service/fees     [[:service/code "fee,installation,furniture"]]
     :service/catalogs [:furniture :subscriptions :onboarding]}
 
    {:db/id            [:service/code "furniture,rental,desk"]
