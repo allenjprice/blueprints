@@ -559,6 +559,12 @@
    {:db/id           [:service/code "fee,installation,furniture"]
     :service/type :service.types/fee}
 
+
+   [:db/retract [:service/code "furniture,rental,bookshelf"] :service/catalogs :subscription]
+   [:db/retract [:service/code "furniture,rental,desk"] :service/catalogs :subscription]
+   [:db/retract [:service/code "furniture,rental,laptop,desk"] :service/catalogs :subscription]
+   [:db/retract [:service/code "furniture,rental,dresser,small"] :service/catalogs :subscription]
+   [:db/retract [:service/code "furniture,rental,dresser,large"] :service/catalogs :subscription]
    ])
 
 
