@@ -162,7 +162,7 @@
     :db/ident :service.type/fee}])
 
 
-(def ^{:added "4.2.1"} add-types
+(def ^{:added "2.4.1"} add-types
   (s/generate-schema
    [(s/schema
      service
@@ -182,5 +182,4 @@
    {:txes [(add-fields-and-catalogs part)]}
 
    :schema.service/add-types-04092018
-   {:txes [(service-types part)
-           add-types]}})
+   {:txes [(service-types part) add-types]}})
