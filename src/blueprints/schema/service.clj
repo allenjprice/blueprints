@@ -155,6 +155,22 @@
     ]))
 
 
+(defn- service-types [part]
+  [{:db/id    (d/tempid part)
+    :db/ident :service.type/service}
+   {:db/id    (d/tempid part)
+    :db/ident :service.type/fee}])
+
+
+(def ^{:added "4.2.1"} add-types
+  (s/generate-schema
+   [(s/schema
+     service
+     (s/fields
+      [type :ref :indexed
+       "Indicates the type of service (service, fee, event ticket, etc.)"]))]))
+
+
 (defn norms [part]
   {:schema.services/add-schema-04132017
    {:txes [schema (billing-types part)]}
@@ -163,4 +179,8 @@
    {:txes [add-cost]}
 
    :schema.service/add-fields-and-catalogs-03012018
-   {:txes [(add-fields-and-catalogs part)]}})
+   {:txes [(add-fields-and-catalogs part)]}
+
+   :schema.service/add-types-04092018
+   {:txes [(service-types part)
+           add-types]}})

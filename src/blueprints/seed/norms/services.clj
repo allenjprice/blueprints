@@ -1,6 +1,7 @@
 (ns blueprints.seed.norms.services
   (:require [datomic.api :as d]
-            [blueprints.models.service :as service]))
+            [blueprints.models.service :as service]
+            [taoensso.timbre :as timbre]))
 
 (defn- ^{:added "1.5.0"} add-initial-services [part]
   [{:db/id          (d/tempid part)
@@ -475,14 +476,109 @@
     :service/catalogs   [:furniture :subscription]}])
 
 
+(defn- ^{:added "2.4.1"} add-types-fix-subscriptions [part]
+  [
+   ;; onboarding + subscriptions with an s + type service
+   {:db/id            [:service/code "furniture,rental,laptop,desk"]
+    :service/type     :service.type/service
+    :service/catalogs [:furniture :subscriptions :onboarding]}
+
+   {:db/id            [:service/code "furniture,rental,desk"]
+    :service/type     :service.type/service
+    :service/catalogs [:furniture :subscriptions :onboarding]}
+
+   {:db/id            [:service/code "furniture,rental,dresser,small"]
+    :service/type     :service.type/service
+    :service/catalogs [:furniture :subscriptions :onboarding]}
+
+   {:db/id            [:service/code "furniture,rental,dresser,large"]
+    :service/type     :service.type/service
+    :service/catalogs [:furniture :subscriptions :onboarding]}
+
+   {:db/id            [:service/code "furniture,rental,bookshelf"]
+    :service/type     :service.type/service
+    :service/catalogs [:furniture :subscriptions :onboarding]}
+
+   {:db/id            [:service/code "storage,bin,small"]
+    :service/type     :service.type/service
+    :service/catalogs [:storage :subscriptions :onboarding]}
+
+   {:db/id            [:service/code "furniture,rental,microwave"]
+    :service/type     :service.type/service
+    :service/catalogs [:furniture :subscriptions :onboarding]}
+
+   {:db/id            [:service/code "storage,bin,large"]
+    :service/type     :service.type/service
+    :service/catalogs [:storage :subscriptions :onboarding]}
+
+   {:db/id            [:service/code "pets,dogs,walking,subscription"]
+    :service/type     :service.type/service
+    :service/catalogs [:pets :subscriptions :onboarding]}
+
+   {:db/id            [:service/code "storage,misc"]
+    :service/type     :service.type/service
+    :service/catalogs [:storage :subscriptions :onboarding]}
+
+   {:db/id            [:service/code "moving,move-in"]
+    :service/type     :service.type/service
+    :service/catalogs [:onboarding]}
+
+   {:db/id            [:service/code "cleaning,weekly"]
+    :service/type     :service.type/service
+    :service/catalogs [:cleaning :subscriptions :onboarding]}
+
+   {:db/id            [:service/code "laundry,weekly"]
+    :service/type     :service.type/service
+    :service/catalogs [:laundry :subscriptions :onboarding]}
+
+   ;; type service
+   {:db/id        [:service/code "cleaning,room,single"]
+    :service/type :service.type/service}
+
+   {:db/id        [:service/code "cleaning,linen,single"]
+    :service/type :service.type/service}
+
+   {:db/id        [:service/code "keyfob"]
+    :service/type :service.type/service}
+
+   {:db/id        [:service/code "pets,dog,boarding"]
+    :service/type :service.type/service}
+
+   {:db/id        [:service/code "wish"]
+    :service/type :service.type/service}
+
+   {:db/id        [:service/code "pets,dog,walking,single"]
+    :service/type :service.type/service}
+
+
+   {:db/id        [:service/code "drycleaning,single"]
+    :service/type :service.type/service}
+
+   {:db/id        [:service/code "kitchenette,coffee/tea,bundle"]
+    :service/type :service.type/service}
+
+   {:db/id        [:service/code "fee,installation,furniture"]
+    :service/type :service.type/fee}
+
+   [:db/retract [:service/code "furniture,rental,bookshelf"] :service/catalogs :subscription]
+   [:db/retract [:service/code "furniture,rental,desk"] :service/catalogs :subscription]
+   [:db/retract [:service/code "furniture,rental,laptop,desk"] :service/catalogs :subscription]
+   [:db/retract [:service/code "furniture,rental,dresser,small"] :service/catalogs :subscription]
+   [:db/retract [:service/code "furniture,rental,dresser,large"] :service/catalogs :subscription]])
+
+
 (defn norms [conn part]
   {:blueprints.seed/add-initial-services
    {:txes [(add-initial-services part)]}
 
    :blueprints.seed/update-services-03012018
-   {:txes [(update-services part)]
+   {:txes     [(update-services part)]
     :requires [:blueprints.seed/add-initial-services]}
 
    :blueprints.seed/add-rentals-040418
-   {:txes [(add-rentals part)]
-    :requires [:blueprints.seed/update-services-03012018]}})
+   {:txes     [(add-rentals part)]
+    :requires [:blueprints.seed/update-services-03012018]}
+
+   :blueprints.seed/add-types-and-onboarding-04092018
+   {:txes     [(add-types-fix-subscriptions part)]
+    :requires [:blueprints.seed/add-rentals-040418]}})

@@ -1,5 +1,5 @@
 (ns blueprints.models.service
-  (:refer-clojure :exclude [name])
+  (:refer-clojure :exclude [name type])
   (:require [blueprints.models.property :as property]
             [clojure.spec.alpha :as s]
             [clojure.string :as string]
@@ -95,6 +95,12 @@
   "A list of fees that may be incurred when ordering this service"
   [service]
   (:service/fees service))
+
+
+(defn type
+  "The type of service (service, fee, event ticket, etc.)"
+  [service]
+  (:service/type service))
 
 
 (defn billed
@@ -349,17 +355,19 @@
   "Create a new service."
   ([code name desc]
    (create code name desc {}))
-  ([code name desc {:keys [name-internal desc-internal billed rental fees
+  ([code name desc {:keys [name-internal desc-internal billed rental fees type
                            price cost catalogs variants fields properties active]
                     :or   {name-internal name
                            desc-internal desc
                            billed        :service.billed/once
-                           rental        false}}]
+                           rental        false
+                           type          :service.type/service}}]
    (tb/assoc-some
     {:db/id                 (tds/tempid)
      :service/code          code
      :service/name          name
      :service/desc          desc
+     :service/type          type
      :service/name-internal name-internal
      :service/desc-internal desc-internal
      :service/billed        billed
