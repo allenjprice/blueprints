@@ -5,7 +5,6 @@
             [blueprints.schema.avatar :as avatar]
             [blueprints.schema.catalogue :as catalogue]
             [blueprints.schema.charge :as charge]
-            [blueprints.schema.check :as check]
             [blueprints.schema.cmd :as cmd]
             [blueprints.schema.community-safety :as cs]
             [blueprints.schema.event :as event]
@@ -18,15 +17,12 @@
             [blueprints.schema.note :as note]
             [blueprints.schema.onboard :as onboard]
             [blueprints.schema.order :as order]
-            [blueprints.schema.payment :as payment]
             [blueprints.schema.property :as property]
             [blueprints.schema.referral :as referral]
             [blueprints.schema.security-deposit :as sd]
             [blueprints.schema.service :as service]
             [blueprints.schema.session :as session]
             [blueprints.schema.source :as source]
-            [blueprints.schema.stripe :as stripe]
-            [blueprints.schema.stripe-customer :as sc]
             [blueprints.schema.stripe-event :as se]
             [blueprints.schema.suggestion :as suggestion]
             [blueprints.schema.sync :as sync]
@@ -46,7 +42,6 @@
                         avatar/norms
                         catalogue/norms
                         charge/norms
-                        check/norms
                         cs/norms
                         cmd/norms
                         event/norms
@@ -59,15 +54,12 @@
                         note/norms
                         onboard/norms
                         order/norms
-                        payment/norms
                         property/norms
                         referral/norms
                         sd/norms
                         service/norms
                         session/norms
                         source/norms
-                        stripe/norms
-                        sc/norms
                         se/norms
                         suggestion/norms
                         sync/norms
