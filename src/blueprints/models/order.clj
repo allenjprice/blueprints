@@ -196,7 +196,7 @@
 
 (s/fdef billed-on
         :args (s/cat :order td/entity?)
-        :ret (s/or :nothing nil? :date inst?))
+        :ret (s/nilable inst?))
 
 
 (defn fulfilled-on
@@ -206,7 +206,7 @@
 
 (s/fdef fulfilled
         :args (s/cat :order td/entity?)
-        :ret (s/or :nothing nil? :date inst?))
+        :ret (s/nilable inst?))
 
 
 (defn projected-fulfillment
@@ -216,7 +216,7 @@
 
 (s/fdef projected-fulfillment
         :args (s/cat :order td/entity?)
-        :ret (s/or :nothing nil? :date inst?))
+        :ret (s/nilable inst?))
 
 
 (defn fields
@@ -237,6 +237,16 @@
 (s/fdef uuid
         :args (s/cat :order td/entity?)
         :ret uuid?)
+
+
+(defn ^{:added "3.0.0"} subscription-id
+  "The teller subscription id of this `order`."
+  [order]
+  (:order/subscription-id order))
+
+(s/fdef subscription-id
+        :args (s/cat :order td/entity?)
+        :ret (s/nilable uuid?))
 
 
 ;; =============================================================================

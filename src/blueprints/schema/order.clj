@@ -178,6 +178,15 @@
      :db.install/_attribute :db.part/db}]))
 
 
+(def ^{:added "3.0.0"} add-subscription-reference
+  (s/generate-schema
+   [(s/schema
+     order
+     (s/fields
+      [subscription-id :ref :indexed
+       "Reference to a teller subscription."]))]))
+
+
 (defn norms [part]
   {:schema.order/add-schema-04132017
    {:txes [schema]}
@@ -197,4 +206,7 @@
     :requires [:schema.order/add-schema-04132017]}
 
    :schema.order/add-order-fields-03192018
-   {:txes [add-order-fields]}})
+   {:txes [add-order-fields]}
+
+   :schema.order/add-subscriptions-reference-04102018
+   {:txes [add-subscription-reference]}})
