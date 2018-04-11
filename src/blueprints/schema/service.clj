@@ -151,8 +151,7 @@
 
      :db/doc "The interval of a time field in minutes."}
     {:db/id     :service/code
-     :db/unique :db.unique/identity}
-    ]))
+     :db/unique :db.unique/identity}]))
 
 
 (defn- service-types [part]
@@ -171,6 +170,15 @@
        "Indicates the type of service (service, fee, event ticket, etc.)"]))]))
 
 
+(def ^{:added "3.0.0"} add-plan-reference
+  (s/generate-schema
+   [(s/schema
+     service
+     (s/fields
+      [plan-id :uuid :indexed
+       "Reference to a teller plan."]))]))
+
+
 (defn norms [part]
   {:schema.services/add-schema-04132017
    {:txes [schema (billing-types part)]}
@@ -182,4 +190,7 @@
    {:txes [(add-fields-and-catalogs part)]}
 
    :schema.service/add-types-04092018
-   {:txes [(service-types part) add-types]}})
+   {:txes [(service-types part) add-types]}
+
+   :schema.service/add-plan-04102018
+   {:txes [add-plan-reference]}})

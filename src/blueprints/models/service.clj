@@ -16,6 +16,9 @@
 (s/def ::billed
   #{:service.billed/once :service.billed/monthly})
 
+(s/def ::type
+  #{:service.type/service :service.type/fee})
+
 
 ;; =============================================================================
 ;; Selectors
@@ -32,12 +35,7 @@
         :ret string?)
 
 
-(defn fields
-  [service]
-  (:service/fields service))
-
-
-(defn service-name
+(defn name
   "The human-friendly name of this service."
   [service]
   (:service/name service))
@@ -47,8 +45,8 @@
         :ret string?)
 
 
-(def ^{:deprecated "2.3.0"} name
-  service-name)
+(def ^{:deprecated "3.0.0"} service-name
+  name)
 
 
 (defn desc
@@ -68,7 +66,7 @@
 
 (s/fdef price
         :args (s/cat :service td/entity?)
-        :ret (s/or :nothing nil? :price float?))
+        :ret (s/nilable float?))
 
 
 (defn cost
@@ -78,7 +76,7 @@
 
 (s/fdef cost
         :args (s/cat :service td/entity?)
-        :ret (s/or :nothing nil? :cost float?))
+        :ret (s/nilable float?))
 
 
 (defn rental
@@ -102,6 +100,10 @@
   [service]
   (:service/type service))
 
+(s/fdef type
+        :args (s/cat :service td/entity?)
+        :ret ::type)
+
 
 (defn billed
   "Billing method of this service."
@@ -124,7 +126,7 @@
 
 
 (defn desc-internal
-  "The internal description of this service"
+  "The internal description of this `service`."
   [service]
   (:service/desc-internal service))
 
@@ -134,13 +136,13 @@
 
 
 (defn catalogs
-  "The catalogs this service is part of."
+  "The catalogs this `service` is part of."
   [service]
   (:service/catalogs service))
 
 
 (defn properties
-  "Properties this service is offered at."
+  "Properties this `service` is offered at."
   [service]
   (:service/properties service))
 
@@ -151,17 +153,32 @@
   (:service/variants service))
 
 
+(defn fields
+  "Fields to be filled out for this `service`."
+  [service]
+  (:service/fields service))
+
+
 (defn options
-  "Options of the dropdown field in a service"
+  "Options of the dropdown `field`."
   [field]
   (:service-field/options field))
 
 
-;; Might need an active selector
+(defn ^{:added "3.0.0"} active?
+  "Is this `service` active?"
+  [service]
+  (:service/active service false))
 
 
+(defn ^{:added "3.0.0"} plan-id
+  "The teller plan id of this `service`, if any."
+  [service]
+  (:service/plan-id service))
 
-
+(s/fdef service-id
+        :args (s/cat :service td/entity?)
+        :ret (s/nilable uuid?))
 
 
 ;; =============================================================================
@@ -281,31 +298,31 @@
 ;; lookups =====================================================================
 
 
-(defn moving-assistance [db]
+(defn ^{:deprecated "3.0.0"} moving-assistance [db]
   (by-code db "moving,move-in"))
 
 
-(defn small-bin [db property]
+(defn ^{:deprecated "3.0.0"} small-bin [db property]
   (by-code db "storage,bin,small" property))
 
 
-(defn large-bin [db property]
+(defn ^{:deprecated "3.0.0"} large-bin [db property]
   (by-code db "storage,bin,large" property))
 
 
-(defn misc-storage [db]
+(defn ^{:deprecated "3.0.0"} misc-storage [db]
   (by-code db "storage,misc"))
 
 
-(defn customize-furniture [db]
+(defn ^{:deprecated "3.0.0"} customize-furniture [db]
   (by-code db "customize,furniture,quote"))
 
 
-(defn customize-room [db]
+(defn ^{:deprecated "3.0.0"} customize-room [db]
   (by-code db "customize,room,quote"))
 
 
-(defn weekly-cleaning [db]
+(defn ^{:deprecated "3.0.0"} weekly-cleaning [db]
   (by-code db "cleaning,weekly"))
 
 
@@ -485,48 +502,3 @@
   "Remove a `property` from a `service`"
   [service property]
   [:db/retract (:db/id service) :service/properties (:db/id property)])
-
-
-(comment
-
-  (d/transact user/conn [(create "code,code" "name" "description"
-                                 {
-                                  ;; :variants      [(create-variant "variant 1" 25 10)]
-                                  :fields        [(create-field "This is a field" "dropdown" {:options [(create-option "label 1" "one")
-                                                                                                        (create-option "label 2" "two")]})]
-                                  ;; :properties    [[:property/code "52gilbert"]]
-                                  })])
-
-
-  (d/transact user/conn [(edit [:service/code "code,code"]
-                               {:properties [[:property/code "2072mission"]
-                                             [:property/code "52gilbert"]]})])
-
-  (d/transact user/conn [[:db.fn/retractEntity (td/id [:service/code "code,code"])]])
-
-
-  #_(d/transact user/conn [(edit-field (d/entity (d/db user/conn) 17592186045849) {:label "oldie"
-                                                                                   :type "time"
-                                                                                   :options [(create-option "LABEL 3" "three")]})])
-
-
-  (d/transact user/conn [(add-fields (d/entity (d/db user/conn) [:service/code "code,code"])
-                                     [(create-field "field 2" "time")
-                                      (create-field "field 3" "text")
-                                      (create-field "field 4" "date")])])
-
-
-  (d/transact user/conn [(add-options (d/entity (d/db user/conn) 17592186045859) [(create-option "option 5" "FIVE")
-                                                                                  (create-option "option 6" "SIX")])])
-
-
-  (d/transact user/conn [(remove-property (d/entity (d/db user/conn) [:service/code "code,code"]) (d/entity (d/db user/conn) 285873023222986))])
-
-
-  (d/touch (d/entity (d/db user/conn) [:service/code "code,code"]))
-
-
-  (d/transact user/conn (remove-field (d/entity (d/db user/conn) [:service/code "code,code"]) (d/entity (d/db user/conn) 17592186045884)))
-
-
-  )
