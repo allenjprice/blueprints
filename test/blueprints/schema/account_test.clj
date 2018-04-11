@@ -1,50 +1,49 @@
 (ns blueprints.schema.account-test
-  (:require [blueprints.test.datomic :as dbt :refer [test-attr]]
+  (:require [toolbelt.datomic.test :as tdt :refer [test-attr]]
             [clojure.test :refer :all]))
 
-
-(use-fixtures :once dbt/conn-fixture)
+(use-fixtures :once (tdt/conn-fixture blueprints.schema/conform))
 
 
 (deftest account-schema-conformed
 
   (test-attr a :account/first-name
-    (is (dbt/value-type a :string))
-    (is (dbt/indexed a)))
+    (is (tdt/value-type a :string))
+    (is (tdt/indexed a)))
 
   (test-attr a :person/first-name
-    (is (dbt/value-type a :string))
-    (is (dbt/indexed a)))
+    (is (tdt/value-type a :string))
+    (is (tdt/indexed a)))
 
 
   (test-attr a :account/middle-name
-    (is (dbt/value-type a :string))
-    (is (dbt/indexed a)))
+    (is (tdt/value-type a :string))
+    (is (tdt/indexed a)))
 
   (test-attr a :person/middle-name
-    (is (dbt/value-type a :string))
-    (is (dbt/indexed a)))
+    (is (tdt/value-type a :string))
+    (is (tdt/indexed a)))
 
   (test-attr a :account/last-name
-    (is (dbt/value-type a :string))
-    (is (dbt/indexed a)))
+    (is (tdt/value-type a :string))
+    (is (tdt/indexed a)))
 
   (test-attr a :person/last-name
-    (is (dbt/value-type a :string))
-    (is (dbt/indexed a)))
+    (is (tdt/value-type a :string))
+    (is (tdt/indexed a)))
 
   (test-attr a :account/phone-number
-    (is (dbt/value-type a :string))
-    (is (dbt/indexed a)))
+    (is (tdt/value-type a :string))
+    (is (tdt/indexed a)))
 
   (test-attr a :person/phone-number
-    (is (dbt/value-type a :string))
-    (is (dbt/indexed a)))
+    (is (tdt/value-type a :string))
+    (is (tdt/indexed a)))
 
   (test-attr a :account/email
-    (is (dbt/unique-identity a))
-    (is (dbt/value-type a :string)))
+    (is (tdt/unique-identity a))
+    (is (tdt/value-type a :string)))
 
   (test-attr a :account/emergency-contact
-    (is (dbt/value-type a :ref))
-    (is (dbt/component a))))
+    (is (tdt/value-type a :ref))
+    (is (tdt/component a))))

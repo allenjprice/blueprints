@@ -1,52 +1,52 @@
 (ns blueprints.schema.security-deposit-test
-  (:require [blueprints.test.datomic :as dbt :refer [test-attr]]
+  (:require [toolbelt.datomic.test :as tdt :refer [test-attr]]
             [clojure.test :refer :all]
             [clojure.string :as string]))
 
 
-(use-fixtures :once dbt/conn-fixture)
+(use-fixtures :once (tdt/conn-fixture blueprints.schema/conform))
 
 
 (deftest security-deposit-schema-conformed
 
   (test-attr a :deposit/account
-    (is (dbt/value-type a :ref))
-    (is (dbt/indexed a)))
+    (is (tdt/value-type a :ref))
+    (is (tdt/indexed a)))
 
   (test-attr a :deposit/method
-    (is (dbt/value-type a :ref))
-    (is (dbt/indexed a)))
+    (is (tdt/value-type a :ref))
+    (is (tdt/indexed a)))
 
-  (dbt/enum-present :deposit.method/ach)
-  (dbt/enum-present :deposit.method/check)
+  (tdt/enum-present :deposit.method/ach)
+  (tdt/enum-present :deposit.method/check)
 
   (test-attr a :deposit/type
-    (is (dbt/value-type a :ref))
-    (is (dbt/indexed a)))
+    (is (tdt/value-type a :ref))
+    (is (tdt/indexed a)))
 
-  (dbt/enum-present :deposit.type/full)
-  (dbt/enum-present :deposit.type/partial)
+  (tdt/enum-present :deposit.type/full)
+  (tdt/enum-present :deposit.type/partial)
 
   (test-attr a :deposit/due
-    (is (dbt/value-type a :instant))
-    (is (dbt/indexed a)))
+    (is (tdt/value-type a :instant))
+    (is (tdt/indexed a)))
 
   (test-attr a :deposit/payments
-    (is (dbt/value-type a :ref))
-    (is (dbt/component a))
-    (is (dbt/cardinality a :many)))
+    (is (tdt/value-type a :ref))
+    (is (tdt/component a))
+    (is (tdt/cardinality a :many)))
 
   (test-attr a :deposit/amount
-    (is (dbt/value-type a :float))
-    (is (dbt/indexed a)))
+    (is (tdt/value-type a :float))
+    (is (tdt/indexed a)))
 
   (test-attr a :deposit/refund-status
-    (is (dbt/value-type a :ref))
-    (is (dbt/indexed a)))
+    (is (tdt/value-type a :ref))
+    (is (tdt/indexed a)))
 
-  (dbt/enum-present :deposit.refund-status/initiated)
-  (dbt/enum-present :deposit.refund-status/successful)
-  (dbt/enum-present :deposit.refund-status/failed)
+  (tdt/enum-present :deposit.refund-status/initiated)
+  (tdt/enum-present :deposit.refund-status/successful)
+  (tdt/enum-present :deposit.refund-status/failed)
 
   ;; deprecations
 

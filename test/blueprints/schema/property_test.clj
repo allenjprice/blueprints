@@ -1,59 +1,59 @@
 (ns blueprints.schema.property-test
-  (:require [blueprints.test.datomic :as dbt :refer [test-attr]]
+  (:require [toolbelt.datomic.test :as tdt :refer [test-attr]]
             [clojure.test :refer :all]
             [clojure.string :as string]))
 
 
-(use-fixtures :once dbt/conn-fixture)
+(use-fixtures :once (tdt/conn-fixture blueprints.schema/conform))
 
 
 (deftest property-schema-conformed
 
   (test-attr a :property/name
-    (is (dbt/value-type a :string))
-    (is (dbt/fulltext a)))
+    (is (tdt/value-type a :string))
+    (is (tdt/fulltext a)))
 
   (test-attr a :property/description
-    (is (dbt/value-type a :string))
-    (is (dbt/fulltext a)))
+    (is (tdt/value-type a :string))
+    (is (tdt/fulltext a)))
 
   (test-attr a :property/code
-    (is (dbt/value-type a :string))
-    (is (dbt/fulltext a))
-    (is (dbt/unique-identity a)))
+    (is (tdt/value-type a :string))
+    (is (tdt/fulltext a))
+    (is (tdt/unique-identity a)))
 
   (test-attr a :property/address
-    (is (dbt/value-type a :ref))
-    (is (dbt/component a)))
+    (is (tdt/value-type a :ref))
+    (is (tdt/component a)))
 
   (test-attr a :property/units
-    (is (dbt/value-type a :ref))
-    (is (dbt/cardinality a :many)))
+    (is (tdt/value-type a :ref))
+    (is (tdt/cardinality a :many)))
 
   (test-attr a :property/available-on
-    (is (dbt/value-type a :instant))
-    (is (dbt/indexed a)))
+    (is (tdt/value-type a :instant))
+    (is (tdt/indexed a)))
 
   (test-attr a :property/ops-fee-rent
-    (is (dbt/value-type a :float))
-    (is (dbt/indexed a)))
+    (is (tdt/value-type a :float))
+    (is (tdt/indexed a)))
 
   (test-attr a :property/ops-fee-orders
-    (is (dbt/value-type a :float))
-    (is (dbt/indexed a)))
+    (is (tdt/value-type a :float))
+    (is (tdt/indexed a)))
 
   (test-attr a :property/tours
-    (is (dbt/value-type a :boolean))
-    (is (dbt/indexed a)))
+    (is (tdt/value-type a :boolean))
+    (is (tdt/indexed a)))
 
   (test-attr a :property/rent-connect-id
-    (is (dbt/value-type a :string))
-    (is (dbt/indexed a)))
+    (is (tdt/value-type a :string))
+    (is (tdt/indexed a)))
 
   (test-attr a :property/deposit-connect-id
-    (is (dbt/value-type a :string))
-    (is (dbt/indexed a)))
+    (is (tdt/value-type a :string))
+    (is (tdt/indexed a)))
 
   (test-attr a :property/cover-image-url
-    (is (dbt/value-type a :string))
+    (is (tdt/value-type a :string))
     (is (string/starts-with? (:db/doc a) "DEPRECATED"))))

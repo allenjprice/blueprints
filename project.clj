@@ -7,7 +7,7 @@
                  [io.rkn/conformity "0.4.0"]
                  [starcity/toolbelt-core "0.3.0"]
                  [starcity/toolbelt-date "0.2.0"]
-                 [starcity/toolbelt-datomic "0.3.0"]
+                 [starcity/toolbelt-datomic "0.5.0"]
                  [datomic-schema "1.3.0"]
                  [clj-time "0.14.2"]]
 
