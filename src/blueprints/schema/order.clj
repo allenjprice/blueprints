@@ -183,7 +183,7 @@
    [(s/schema
      order
      (s/fields
-      [subscription-id :ref :indexed
+      [subscription :ref :indexed
        "Reference to a teller subscription."]))]))
 
 
