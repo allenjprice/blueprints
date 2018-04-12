@@ -171,14 +171,14 @@
   (:service/active service false))
 
 
-(defn ^{:added "3.0.0"} plan-id
-  "The teller plan id of this `service`, if any."
+(defn ^{:added "3.0.0"} plan
+  "The teller plan of this `service`, if any."
   [service]
-  (:service/plan-id service))
+  (:service/plan service))
 
-(s/fdef service-id
+(s/fdef plan
         :args (s/cat :service td/entity?)
-        :ret (s/nilable uuid?))
+        :ret (s/nilable td/entityd?))
 
 
 ;; =============================================================================
