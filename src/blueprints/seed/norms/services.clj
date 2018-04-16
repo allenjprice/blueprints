@@ -568,6 +568,27 @@
    [:db/retract [:service/code "furniture,rental,dresser,large"] :service/catalogs :subscription]])
 
 
+(def ^{:private true :added "2.4.2"} add-bring-your-own-x-services
+  [(service/create "furniture,member-supplied,all"
+                   "Bring Your own Furniture"
+                   "Bring your own furniture on move-in day. We'll remove the existing furniture and hold it in storage."
+                   {:catalogs   [:onboarding]
+                    :properties [[:property/code "2072mission"]
+                                 [:property/code "52gilbert"]]
+                    :price      500.0
+                    :active     true
+                    :cost       0.0})
+   (service/create "furniture,member-supplied,mattress"
+                   "Bring Your own Mattress"
+                   "Bring your own mattress on move-in day. We'll remove the existing mattress and hold it in storage."
+                   {:catalogs   [:onboarding]
+                    :properties [[:property/code "2072mission"]
+                                 [:property/code "52gilbert"]]
+                    :price      200.0
+                    :active     true
+                    :cost       0.0})])
+
+
 (defn norms [conn part]
   {:blueprints.seed/add-initial-services
    {:txes [(add-initial-services part)]}
@@ -582,4 +603,7 @@
 
    :blueprints.seed/add-types-and-onboarding-04092018
    {:txes     [(add-types-fix-subscriptions part)]
-    :requires [:blueprints.seed/add-rentals-040418]}})
+    :requires [:blueprints.seed/add-rentals-040418]}
+
+   :blueprints.seed/add-bring-your-own-x-services-04162018
+   {:txes [add-bring-your-own-x-services]}})
