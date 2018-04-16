@@ -239,14 +239,14 @@
         :ret uuid?)
 
 
-(defn ^{:added "3.0.0"} subscription-id
-  "The teller subscription id of this `order`."
+(defn ^{:added "2.5.0"} subscription
+  "The teller subscription of this `order`."
   [order]
-  (:order/subscription-id order))
+  (:order/subscription order))
 
-(s/fdef subscription-id
+(s/fdef subscription
         :args (s/cat :order td/entity?)
-        :ret (s/nilable uuid?))
+        :ret (s/nilable td/entityd?))
 
 
 ;; =============================================================================

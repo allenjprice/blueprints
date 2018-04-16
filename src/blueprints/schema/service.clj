@@ -175,7 +175,7 @@
    [(s/schema
      service
      (s/fields
-      [plan-id :uuid :indexed
+      [plan :ref :indexed
        "Reference to a teller plan."]))]))
 
 
