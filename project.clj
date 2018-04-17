@@ -4,7 +4,7 @@
   :license {:name "Eclipse Public License"
             :url  "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.9.0"]
-                 [io.rkn/conformity "0.4.0"]
+                 [io.rkn/conformity "0.5.1"]
                  [starcity/toolbelt-core "0.3.0"]
                  [starcity/toolbelt-date "0.2.0"]
                  [starcity/toolbelt-datomic "0.5.0"]

@@ -1,7 +1,7 @@
 (ns blueprints.seed.norms.services
   (:require [datomic.api :as d]
             [blueprints.models.service :as service]
-            [taoensso.timbre :as timbre]))
+            [toolbelt.datomic :as td]))
 
 (defn- ^{:added "1.5.0"} add-initial-services [part]
   [{:db/id          (d/tempid part)
@@ -551,7 +551,6 @@
    {:db/id        [:service/code "pets,dog,walking,single"]
     :service/type :service.type/service}
 
-
    {:db/id        [:service/code "drycleaning,single"]
     :service/type :service.type/service}
 
@@ -589,6 +588,17 @@
                     :cost       0.0})])
 
 
+(def ^{:private true :added "2.4.3"} pre-launch-tweaks
+  (concat
+   ;; misc
+   [[:db/retract [:service/code "furniture,rental,microwave"] :service/catalogs :subscription]
+    [:db/add [:service/code "laundry,weekly"] :service/name "Complete Laundry Service & Delivery"]
+    {:db/id          [:service/code "pets,dog,walking,single"]
+     :service/fields (service/create-field "On which day would you like us to walk your dog?"
+                                           :service-field.type/date
+                                           {:index 2})}]))
+
+
 (defn norms [conn part]
   {:blueprints.seed/add-initial-services
    {:txes [(add-initial-services part)]}
@@ -606,4 +616,9 @@
     :requires [:blueprints.seed/add-rentals-040418]}
 
    :blueprints.seed/add-bring-your-own-x-services-04162018
-   {:txes [add-bring-your-own-x-services]}})
+   {:txes [add-bring-your-own-x-services]}
+
+   :blueprints.seed/pre-launch-tweaks-04162018
+   {:txes     [pre-launch-tweaks]
+    :requires [:blueprints.seed/add-rentals-040418
+               :blueprints.seed/add-types-and-onboarding-04092018]}})
