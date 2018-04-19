@@ -3,7 +3,6 @@
   (:require [blueprints.models.charge :as charge]
             [blueprints.models.check :as check]
             [blueprints.models.payment :as payment]
-            [blueprints.schema.stripe-customer :as sc]
             [clojure.spec.alpha :as s]
             [datomic.api :as d]
             [toolbelt.core :as tb]
