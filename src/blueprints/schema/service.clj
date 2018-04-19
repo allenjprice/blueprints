@@ -194,4 +194,4 @@
    {:txes [(service-types part) add-types]}
 
    :schema.service/add-archive-04182018
-   {:txes [(add-archive part)]}})
+   {:txes [add-archive]}})
