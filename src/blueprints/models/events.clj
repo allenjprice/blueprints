@@ -83,22 +83,22 @@
 
 
 (defn deposit-payment-made
-  [account charge-id]
+  [account payment-id]
   (event/job :deposit/payment-made {:params {:account-id (td/id account)
-                                             :charge     charge-id}}))
+                                             :payment-id payment-id}}))
 
 (s/fdef deposit-payment-made
-        :args (s/cat :account td/entity? :charge-id string?)
+        :args (s/cat :account td/entity? :payment-id uuid?)
         :ret map?)
 
 
 (defn remainder-deposit-payment-made
-  [account charge-id]
+  [account payment-id]
   (event/job :deposit.remainder/payment-made {:params {:account-id (td/id account)
-                                                       :charge     charge-id}}))
+                                                       :payment-id payment-id}}))
 
 (s/fdef remainder-deposit-payment-made
-        :args (s/cat :account td/entity? :charge-id string?)
+        :args (s/cat :account td/entity? :payment-id string?)
         :ret map?)
 
 
