@@ -157,11 +157,20 @@
   (:service-field/options field))
 
 
+(defn archived
+  "Has this service been archived?"
+  [service]
+  (:service/archived service))
+
+
 ;; Might need an active selector
-
-
-
-
+;; Do we want the active selector this way?
+;; Reasoning is that if a service has been archived it shouldn't be active
+;; We can also build in that if a service gets edited to archived it should be set to inactive
+(defn active
+  "Is this service active?"
+  [service]
+  (and (:service/active service) (not (:service/archived service))))
 
 
 ;; =============================================================================
@@ -355,13 +364,14 @@
   "Create a new service."
   ([code name desc]
    (create code name desc {}))
-  ([code name desc {:keys [name-internal desc-internal billed rental fees type
-                           price cost catalogs variants fields properties active]
+  ([code name desc {:keys [name-internal desc-internal billed rental fees type price
+                           cost catalogs variants fields properties active archived]
                     :or   {name-internal name
                            desc-internal desc
                            billed        :service.billed/once
                            rental        false
-                           type          :service.type/service}}]
+                           type          :service.type/service
+                           archived      false}}]
    (tb/assoc-some
     {:db/id                 (tds/tempid)
      :service/code          code
@@ -371,7 +381,8 @@
      :service/name-internal name-internal
      :service/desc-internal desc-internal
      :service/billed        billed
-     :service/rental        rental}
+     :service/rental        rental
+     :service/archived      archived}
     :service/price (when-some [p price] (float p))
     :service/cost (when-some [c cost] (float c))
     :service/catalogs catalogs
@@ -392,7 +403,7 @@
 ;; replace the current value, or remove one?
 (defn edit
   [service {:keys [name desc name-internal desc-internal billed rental
-                   price cost catalogs properties active]}]
+                   price cost catalogs properties active archived]}]
   (tb/assoc-when
    {:db/id (td/id service)}
    :service/name   name
@@ -406,7 +417,8 @@
    :service/catalogs catalogs
    :service/active active
    :service/properties (when-some [ps properties]
-                         (map td/id ps))))
+                         (map td/id ps))
+   :service/archived archived))
 
 
 (defn add-fields

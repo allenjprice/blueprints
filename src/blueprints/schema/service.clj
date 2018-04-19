@@ -171,6 +171,15 @@
        "Indicates the type of service (service, fee, event ticket, etc.)"]))]))
 
 
+(def ^{:added "2.4.4"} add-archive
+  (s/generate-schema
+   [(s/schema
+     service
+     (s/fields
+      [archived :boolean :indexed
+       "`true` if this service has been archived and will not be offered anymore"]))]))
+
+
 (defn norms [part]
   {:schema.services/add-schema-04132017
    {:txes [schema (billing-types part)]}
@@ -182,4 +191,7 @@
    {:txes [(add-fields-and-catalogs part)]}
 
    :schema.service/add-types-04092018
-   {:txes [(service-types part) add-types]}})
+   {:txes [(service-types part) add-types]}
+
+   :schema.service/add-archive-04182018
+   {:txes [(add-archive part)]}})
