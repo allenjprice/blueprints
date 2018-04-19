@@ -435,7 +435,7 @@
           (update :where conj '[(.before ^java.util.Date ?date ?to)]))
 
       true
-      (update :where #(if (empty? %) (conj % '[?o :order/account _]) %)))))
+      (update :where #(if (empty? %) (conj % '[?o :order/uuid _]) %)))))
 
 
 (defn query
