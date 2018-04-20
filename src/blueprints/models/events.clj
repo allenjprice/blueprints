@@ -186,18 +186,6 @@
 ;; =============================================================================
 
 
-(defn process-order
-  "Indicate that `account` has submitted `order` to be processed."
-  [account order]
-  (event/job :order/process {:params {:order-id   (td/id order)
-                                      :account-id (td/id account)}}))
-
-(s/fdef process-order
-        :args (s/cat :account td/entity?
-                     :order td/entity?)
-        :ret map?)
-
-
 (defn order-created
   "Indicate that an `order` has been created."
   [account order-uuid & [notify]]
