@@ -171,6 +171,16 @@
        "Indicates the type of service (service, fee, event ticket, etc.)"]))]))
 
 
+(defn excluded-days [part]
+  [{:db/id          (d/tempid part)
+    :db/ident       :service-field.date/excluded-days
+    :db/valueType   :db.type/long
+    :db/cardinality :db.cardinality/many
+    :db/index       true
+    :db/doc         "A list of days of the week during which a service cannot
+                     be fulfilled."}])
+
+
 (defn norms [part]
   {:schema.services/add-schema-04132017
    {:txes [schema (billing-types part)]}
@@ -182,4 +192,7 @@
    {:txes [(add-fields-and-catalogs part)]}
 
    :schema.service/add-types-04092018
-   {:txes [(service-types part) add-types]}})
+   {:txes [(service-types part) add-types]}
+
+   :schema.service/add-excluded-days-04192018
+   {:txes [(excluded-days part)]}})
