@@ -375,7 +375,7 @@
                            type          :service.type/service
                            archived      false}}]
    (tb/assoc-some
-    {:db/id                 (tds/tempid)
+    {:db/id                 :db.part/starcity
      :service/code          code
      :service/name          name
      :service/desc          desc
