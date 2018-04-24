@@ -198,6 +198,20 @@
         :ret map?)
 
 
+(defn order-created
+  "Indicate that an `order` has been created."
+  [account order-uuid & [notify]]
+  (event/job :order/created {:params {:order-uuid order-uuid
+                                      :account-id (td/id account)
+                                      :notify     (boolean notify)}}))
+
+(s/fdef order-created
+        :args (s/cat :account td/entity?
+                     :uuid uuid?
+                     :notify (s/? boolean?))
+        :ret map?)
+
+
 (defn order-placed
   "Indicates that `order` has been placed by `account`. Can optionally specify
   whether or not to notify the order owner."

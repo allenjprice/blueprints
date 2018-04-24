@@ -1,9 +1,9 @@
 (ns blueprints.schema.service-test
-  (:require [blueprints.test.datomic :as dbt :refer :all]
+  (:require [toolbelt.datomic.test :as tdt :refer :all]
             [clojure.test :refer :all]))
 
 
-(use-fixtures :once dbt/conn-fixture)
+(use-fixtures :once (tdt/conn-fixture blueprints.schema/conform))
 
 
 (deftest services-conformed?

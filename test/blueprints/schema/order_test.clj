@@ -1,12 +1,14 @@
 (ns blueprints.schema.order-test
-  (:require [blueprints.test.datomic :as dbt :refer :all]
-            [clojure.test :refer :all]))
+  (:require [blueprints.schema :as schema]
+            [clojure.test :refer :all]
+            [toolbelt.datomic.test :as tdt :refer :all]))
 
 
-(use-fixtures :once dbt/conn-fixture)
+(use-fixtures :once (tdt/conn-fixture blueprints.schema/conform))
 
 
 (deftest orders-conformed?
+
   (test-attr a :order/account
     (is (value-type a :ref))
     (is (indexed a))
@@ -79,4 +81,31 @@
 
   (test-attr a :line-item/cost
     (is (value-type a :float))
+    (is (indexed a)))
+
+
+  (test-attr a :order/fields
+    (is (value-type a :ref))
+    (is (indexed a))
+    (is (cardinality a :many))
+    (is (component a)))
+
+  (test-attr a :order-field/service-field
+    (is (value-type a :ref))
+    (is (indexed a)))
+
+  (test-attr a :order-field.value/text
+    (is (value-type a :string))
+    (is (fulltext a)))
+
+  (test-attr a :order-field.value/number
+    (is (value-type a :float))
+    (is (indexed a)))
+
+  (test-attr a :order-field.value/date
+    (is (value-type a :instant))
+    (is (indexed a)))
+
+  (test-attr a :order-field.value/option
+    (is (value-type a :string))
     (is (indexed a))))

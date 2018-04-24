@@ -132,6 +132,52 @@
     :db/ident :order.status/failed}])
 
 
+(def ^{:added "2.4.0"} add-order-fields
+  (concat
+   (s/generate-schema
+    [(s/schema
+      order
+      (s/fields
+       [fields :ref :indexed :many :component
+        "Information collected from service fields while ordering"]))])
+
+   [{:db/id                 (d/tempid :db.part/db)
+     :db/ident              :order-field/service-field
+     :db/valueType          :db.type/ref
+     :db/cardinality        :db.cardinality/one
+     :db/index              true
+     :db/doc                "Reference to the service field that this order field is input for."
+     :db.install/_attribute :db.part/db}
+    {:db/id                 (d/tempid :db.part/db)
+     :db/ident              :order-field.value/text
+     :db/valueType          :db.type/string
+     :db/cardinality        :db.cardinality/one
+     :db/fulltext           true
+     :db/doc                "A text value."
+     :db.install/_attribute :db.part/db}
+    {:db/id                 (d/tempid :db.part/db)
+     :db/ident              :order-field.value/number
+     :db/valueType          :db.type/float
+     :db/cardinality        :db.cardinality/one
+     :db/index              true
+     :db/doc                "A float value."
+     :db.install/_attribute :db.part/db}
+    {:db/id                 (d/tempid :db.part/db)
+     :db/ident              :order-field.value/date
+     :db/valueType          :db.type/instant
+     :db/cardinality        :db.cardinality/one
+     :db/index              true
+     :db/doc                "A date value."
+     :db.install/_attribute :db.part/db}
+    {:db/id                 (d/tempid :db.part/db)
+     :db/ident              :order-field.value/option
+     :db/valueType          :db.type/string
+     :db/cardinality        :db.cardinality/one
+     :db/index              true
+     :db/doc                "A dropdown selection."
+     :db.install/_attribute :db.part/db}]))
+
+
 (defn norms [part]
   {:schema.order/add-schema-04132017
    {:txes [schema]}
@@ -148,4 +194,7 @@
 
    :schema.order/additions-10222017
    {:txes [rename-desc-attr (add-failed-status part) add-summary-and-line-items]
-    :requires [:schema.order/add-schema-04132017]}})
+    :requires [:schema.order/add-schema-04132017]}
+
+   :schema.order/add-order-fields-03192018
+   {:txes [add-order-fields]}})
