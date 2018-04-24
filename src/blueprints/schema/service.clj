@@ -180,8 +180,8 @@
        "`true` if this service has been archived and will not be offered anymore"]))]))
 
 
-(def ^{:added "2.4.2"} excluded-days
-  [{:db/id          #db/id[:db.part/id]
+(def ^{:added "2.4.4"} excluded-days
+  [{:db/id          #db/id[:db.part/db]
     :db/ident       :service-field.date/excluded-days
     :db/valueType   :db.type/long
     :db/cardinality :db.cardinality/many
