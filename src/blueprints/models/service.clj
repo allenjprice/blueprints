@@ -351,7 +351,7 @@
                              (map-indexed
                               #(assoc %2 :service-field-option/index %1)
                               os))
-    :service-field.date/excluded-days (:excluded_days field))))
+    :service-field.date/excluded-days (:excluded-days field))))
 
 
 (defn create-variant
