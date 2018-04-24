@@ -5,8 +5,7 @@
             [clojure.string :as string]
             [datomic.api :as d]
             [toolbelt.core :as tb]
-            [toolbelt.datomic :as td]
-            [toolbelt.datomic.schema :as tds]))
+            [toolbelt.datomic :as td]))
 
 ;; =============================================================================
 ;; Spec
@@ -339,8 +338,10 @@
   ([label type]
    (create-field label type {}))
   ([label type {:keys [index required options]
+                :as   field
                 :or   {index    0
                        required true}}]
+
    (tb/assoc-when
     {:service-field/label    label
      :service-field/type     (keyword "service-field.type" (clojure.core/name type))
@@ -349,7 +350,8 @@
     :service-field/options (when-some [os options]
                              (map-indexed
                               #(assoc %2 :service-field-option/index %1)
-                              os)))))
+                              os))
+    :service-field.date/excluded-days (:excluded-days field))))
 
 
 (defn create-variant
