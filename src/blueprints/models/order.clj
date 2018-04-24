@@ -5,8 +5,7 @@
             [clojure.string :as string]
             [datomic.api :as d]
             [toolbelt.core :as tb]
-            [toolbelt.datomic :as td]
-            [taoensso.timbre :as timbre]))
+            [toolbelt.datomic :as td]))
 
 
 ;; =============================================================================
@@ -531,7 +530,7 @@
   ([account service]
    (create account service {}))
   ([account service {:keys [quantity desc request cost summary variant status
-                            price lines fields]
+                            price lines fields attached]
                      :or   {status :order.status/pending}
                      :as   opts}]
    (tb/assoc-when
@@ -547,6 +546,7 @@
     :order/fields fields
     :order/lines lines
     :order/summary summary
+    :order/attached attached
     :order/request (or request desc))))
 
 (s/fdef create
