@@ -180,6 +180,16 @@
        "`true` if this service has been archived and will not be offered anymore"]))]))
 
 
+(def ^{:added "2.4.2"} excluded-days
+  [{:db/id          #db/id[:db.part/id]
+    :db/ident       :service-field.date/excluded-days
+    :db/valueType   :db.type/long
+    :db/cardinality :db.cardinality/many
+    :db/index       true
+    :db/doc         "A list of days of the week during which a service cannot
+                     be fulfilled."}])
+
+
 (defn norms [part]
   {:schema.services/add-schema-04132017
    {:txes [schema (billing-types part)]}
@@ -194,4 +204,7 @@
    {:txes [(service-types part) add-types]}
 
    :schema.service/add-archive-04182018
-   {:txes [add-archive]}})
+   {:txes [add-archive]}
+
+   :schema.service/add-excluded-days-04192018
+   {:txes [excluded-days]}})
