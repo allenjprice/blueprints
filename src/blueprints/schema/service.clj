@@ -171,8 +171,8 @@
        "Indicates the type of service (service, fee, event ticket, etc.)"]))]))
 
 
-(defn excluded-days [part]
-  [{:db/id          (d/tempid part)
+(def ^{:added "2.4.2"} excluded-days
+  [{:db/id          #db/id[:db.part/id]
     :db/ident       :service-field.date/excluded-days
     :db/valueType   :db.type/long
     :db/cardinality :db.cardinality/many
@@ -195,4 +195,4 @@
    {:txes [(service-types part) add-types]}
 
    :schema.service/add-excluded-days-04192018
-   {:txes [(excluded-days part)]}})
+   {:txes [excluded-days]}})
