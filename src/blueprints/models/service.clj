@@ -5,10 +5,7 @@
             [clojure.string :as string]
             [datomic.api :as d]
             [toolbelt.core :as tb]
-            [toolbelt.datomic :as td]
-            [toolbelt.datomic.schema :as tds]
-            [odin.config :as config]
-            [taoensso.timbre :as timbre]))
+            [toolbelt.datomic :as td]))
 
 ;; =============================================================================
 ;; Spec
