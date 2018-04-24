@@ -109,7 +109,7 @@
      order
      (s/fields
       [summary :string :fulltext
-       "Summary of the order provided by Starcity."]
+       "Summary of the provided order by Starcity."]
 
       [lines :ref :many :indexed :component
        "Line-items attached to this order."]))
@@ -178,6 +178,15 @@
      :db.install/_attribute :db.part/db}]))
 
 
+(def ^{:added "2.4.6"} add-order-attached
+  (s/generate-schema
+   [(s/schema
+     order
+     (s/fields
+      [attached :ref :indexed :many
+       "A list of orders that this order references. Used to calculate fees
+        based on the orders which generated the fee."]))]))
+
 (defn norms [part]
   {:schema.order/add-schema-04132017
    {:txes [schema]}
@@ -197,4 +206,7 @@
     :requires [:schema.order/add-schema-04132017]}
 
    :schema.order/add-order-fields-03192018
-   {:txes [add-order-fields]}})
+   {:txes [add-order-fields]}
+
+   :schema.order/add-order-attached-04242018
+   {:txes [add-order-attached]}})
