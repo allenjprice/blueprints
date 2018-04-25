@@ -651,6 +651,7 @@
 (defn is-canceled
   "The order has been canceled."
   [order]
+  ;; here is a comment
   {:db/id        (td/id order)
    :order/status :order.status/canceled})
 
