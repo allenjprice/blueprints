@@ -5,8 +5,7 @@
             [clojure.string :as string]
             [datomic.api :as d]
             [toolbelt.core :as tb]
-            [toolbelt.datomic :as td]
-            [taoensso.timbre :as timbre]))
+            [toolbelt.datomic :as td]))
 
 
 ;; =============================================================================
@@ -521,9 +520,10 @@
 (s/def ::cost (s/and pos? float?))
 (s/def ::lines (s/+ ::line))
 (s/def ::fields (s/+ ::field))
+(s/def ::attached (s/* td/entity?))
 (s/def ::create-opts
   (s/keys :opt-un [::quantity ::desc ::request ::cost ::summary ::variant
-                   ::status ::price ::lines ::fields]))
+                   ::attached ::status ::price ::lines ::fields]))
 
 
 (defn create
@@ -531,7 +531,7 @@
   ([account service]
    (create account service {}))
   ([account service {:keys [quantity desc request cost summary variant status
-                            price lines fields]
+                            price lines fields attached]
                      :or   {status :order.status/pending}
                      :as   opts}]
    (tb/assoc-when
@@ -547,6 +547,7 @@
     :order/fields fields
     :order/lines lines
     :order/summary summary
+    :order/attached (map td/id attached)
     :order/request (or request desc))))
 
 (s/fdef create
@@ -650,6 +651,7 @@
 (defn is-canceled
   "The order has been canceled."
   [order]
+  ;; here is a comment
   {:db/id        (td/id order)
    :order/status :order.status/canceled})
 
