@@ -520,9 +520,10 @@
 (s/def ::cost (s/and pos? float?))
 (s/def ::lines (s/+ ::line))
 (s/def ::fields (s/+ ::field))
+(s/def ::attached (s/* td/entity?))
 (s/def ::create-opts
   (s/keys :opt-un [::quantity ::desc ::request ::cost ::summary ::variant
-                   ::status ::price ::lines ::fields]))
+                   ::attached ::status ::price ::lines ::fields]))
 
 
 (defn create
@@ -546,7 +547,7 @@
     :order/fields fields
     :order/lines lines
     :order/summary summary
-    :order/attached attached
+    :order/attached (map td/id attached)
     :order/request (or request desc))))
 
 (s/fdef create
