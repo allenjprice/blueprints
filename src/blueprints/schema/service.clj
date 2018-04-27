@@ -170,7 +170,26 @@
        "Indicates the type of service (service, fee, event ticket, etc.)"]))]))
 
 
-(def ^{:added "3.0.0"} add-plan-reference
+(def ^{:added "2.4.4"} add-archive
+  (s/generate-schema
+   [(s/schema
+     service
+     (s/fields
+      [archived :boolean :indexed
+       "`true` if this service has been archived and will not be offered anymore"]))]))
+
+
+(def ^{:added "2.4.4"} excluded-days
+  [{:db/id          #db/id[:db.part/db]
+    :db/ident       :service-field.date/excluded-days
+    :db/valueType   :db.type/long
+    :db/cardinality :db.cardinality/many
+    :db/index       true
+    :db/doc         "A list of days of the week during which a service cannot
+                     be fulfilled."}])
+
+
+(def ^{:added "2.5.0"} add-plan-reference
   (s/generate-schema
    [(s/schema
      service
@@ -191,6 +210,12 @@
 
    :schema.service/add-types-04092018
    {:txes [(service-types part) add-types]}
+
+   :schema.service/add-archive-04182018
+   {:txes [add-archive]}
+
+   :schema.service/add-excluded-days-04192018
+   {:txes [excluded-days]}
 
    :schema.service/add-plan-04102018
    {:txes [add-plan-reference]}})

@@ -5,8 +5,7 @@
             [clojure.string :as string]
             [datomic.api :as d]
             [toolbelt.core :as tb]
-            [toolbelt.datomic :as td]
-            [toolbelt.datomic.schema :as tds]))
+            [toolbelt.datomic :as td]))
 
 ;; =============================================================================
 ;; Spec
@@ -171,6 +170,12 @@
   (:service/active service false))
 
 
+(defn archived
+  "Has this service been archived?"
+  [service]
+  (:service/archived service))
+
+
 (defn ^{:added "2.5.0"} plan
   "The teller plan of this `service`, if any."
   [service]
@@ -179,6 +184,13 @@
 (s/fdef plan
         :args (s/cat :service td/entity?)
         :ret (s/nilable td/entityd?))
+
+
+;; TODO: This and `active?` are essentially a duplicate. Can we consolidate?
+(defn active
+  "Is this service active?"
+  [service]
+  (and (:service/active service) (not (:service/archived service))))
 
 
 ;; =============================================================================
@@ -347,8 +359,10 @@
   ([label type]
    (create-field label type {}))
   ([label type {:keys [index required options]
+                :as   field
                 :or   {index    0
                        required true}}]
+
    (tb/assoc-when
     {:service-field/label    label
      :service-field/type     (keyword "service-field.type" (clojure.core/name type))
@@ -357,7 +371,8 @@
     :service-field/options (when-some [os options]
                              (map-indexed
                               #(assoc %2 :service-field-option/index %1)
-                              os)))))
+                              os))
+    :service-field.date/excluded-days (:excluded-days field))))
 
 
 (defn create-variant
@@ -372,15 +387,16 @@
   "Create a new service."
   ([code name desc]
    (create code name desc {}))
-  ([code name desc {:keys [name-internal desc-internal billed rental fees type
-                           price cost catalogs variants fields properties active]
+  ([code name desc {:keys [name-internal desc-internal billed rental fees type price
+                           cost catalogs variants fields properties active archived]
                     :or   {name-internal name
                            desc-internal desc
                            billed        :service.billed/once
                            rental        false
-                           type          :service.type/service}}]
+                           type          :service.type/service
+                           archived      false}}]
    (tb/assoc-some
-    {:db/id                 (tds/tempid)
+    {:db/id                 (d/tempid :db.part/starcity)
      :service/code          code
      :service/name          name
      :service/desc          desc
@@ -388,12 +404,15 @@
      :service/name-internal name-internal
      :service/desc-internal desc-internal
      :service/billed        billed
-     :service/rental        rental}
+     :service/rental        rental
+     :service/archived      archived}
     :service/price (when-some [p price] (float p))
     :service/cost (when-some [c cost] (float c))
     :service/catalogs catalogs
     :service/variants variants
-    :service/active active
+    :service/active (if (true? archived)
+                      false
+                      active)
     :service/fields (when-some [fs fields]
                       (map-indexed
                        #(assoc %2 :service-field/index %1)
@@ -409,7 +428,7 @@
 ;; replace the current value, or remove one?
 (defn edit
   [service {:keys [name desc name-internal desc-internal billed rental
-                   price cost catalogs properties active]}]
+                   price cost catalogs properties active archived]}]
   (tb/assoc-when
    {:db/id (td/id service)}
    :service/name   name
@@ -421,9 +440,12 @@
    :service/price (when-some [p price] (float p))
    :service/cost (when-some [c cost] (float c))
    :service/catalogs catalogs
-   :service/active active
+   :service/active (if (true? archived)
+                     false
+                     active)
    :service/properties (when-some [ps properties]
-                         (map td/id ps))))
+                         (map td/id ps))
+   :service/archived archived))
 
 
 (defn add-fields
