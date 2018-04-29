@@ -485,7 +485,7 @@
         :ret (s/or :entity td/entityd? :nothing nil?))
 
 
-(defn by-subscription-id
+(defn ^{:deprecated "2.5.0"} by-subscription-id
   "Find an order given the id of a Stripe subscription."
   [db sub-id]
   (->> (d/q '[:find ?e .
@@ -499,6 +499,17 @@
 (s/fdef by-subscription-id
         :args (s/cat :db td/db? :sub-id string?)
         :ret (s/or :entity td/entityd? :nothing nil?))
+
+
+(defn ^{:deprecated "2.5.0"} by-subscription
+  "Find an order given its teller `subscription`."
+  [db subscription]
+  (->> (d/q '[:find ?o .
+              :in $ ?s
+              :where
+              [?o :order/subscription ?s]]
+            db (td/id subscription))
+       (d/entity db)))
 
 
 ;; =============================================================================
