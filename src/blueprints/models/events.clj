@@ -83,22 +83,22 @@
 
 
 (defn deposit-payment-made
-  [account charge-id]
+  [account payment-id]
   (event/job :deposit/payment-made {:params {:account-id (td/id account)
-                                             :charge     charge-id}}))
+                                             :payment-id payment-id}}))
 
 (s/fdef deposit-payment-made
-        :args (s/cat :account td/entity? :charge-id string?)
+        :args (s/cat :account td/entity? :payment-id uuid?)
         :ret map?)
 
 
 (defn remainder-deposit-payment-made
-  [account charge-id]
+  [account payment-id]
   (event/job :deposit.remainder/payment-made {:params {:account-id (td/id account)
-                                                       :charge     charge-id}}))
+                                                       :payment-id payment-id}}))
 
 (s/fdef remainder-deposit-payment-made
-        :args (s/cat :account td/entity? :charge-id string?)
+        :args (s/cat :account td/entity? :payment-id uuid?)
         :ret map?)
 
 
@@ -186,18 +186,6 @@
 ;; =============================================================================
 
 
-(defn process-order
-  "Indicate that `account` has submitted `order` to be processed."
-  [account order]
-  (event/job :order/process {:params {:order-id   (td/id order)
-                                      :account-id (td/id account)}}))
-
-(s/fdef process-order
-        :args (s/cat :account td/entity?
-                     :order td/entity?)
-        :ret map?)
-
-
 (defn order-created
   "Indicate that an `order` has been created."
   [account order-uuid & [notify]]
@@ -271,7 +259,6 @@
 (s/fdef alert-payment-due
         :args (s/cat :payment td/entity? :t inst?)
         :ret map?)
-
 
 
 ;; =============================================================================

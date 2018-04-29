@@ -5,8 +5,7 @@
             [clojure.string :as string]
             [datomic.api :as d]
             [toolbelt.core :as tb]
-            [toolbelt.datomic :as td]
-            [taoensso.timbre :as timbre]))
+            [toolbelt.datomic :as td]))
 
 
 ;; =============================================================================
@@ -196,7 +195,7 @@
 
 (s/fdef billed-on
         :args (s/cat :order td/entity?)
-        :ret (s/or :nothing nil? :date inst?))
+        :ret (s/nilable inst?))
 
 
 (defn fulfilled-on
@@ -206,7 +205,7 @@
 
 (s/fdef fulfilled
         :args (s/cat :order td/entity?)
-        :ret (s/or :nothing nil? :date inst?))
+        :ret (s/nilable inst?))
 
 
 (defn projected-fulfillment
@@ -216,7 +215,7 @@
 
 (s/fdef projected-fulfillment
         :args (s/cat :order td/entity?)
-        :ret (s/or :nothing nil? :date inst?))
+        :ret (s/nilable inst?))
 
 
 (defn fields
@@ -237,6 +236,16 @@
 (s/fdef uuid
         :args (s/cat :order td/entity?)
         :ret uuid?)
+
+
+(defn ^{:added "2.5.0"} subscription
+  "The teller subscription of this `order`."
+  [order]
+  (:order/subscription order))
+
+(s/fdef subscription
+        :args (s/cat :order td/entity?)
+        :ret (s/nilable td/entityd?))
 
 
 ;; =============================================================================
@@ -425,7 +434,7 @@
           (update :where conj '[(.before ^java.util.Date ?date ?to)]))
 
       true
-      (update :where #(if (empty? %) (conj % '[?o :order/account _]) %)))))
+      (update :where #(if (empty? %) (conj % '[?o :order/uuid _]) %)))))
 
 
 (defn query
@@ -475,7 +484,7 @@
         :ret (s/or :entity td/entityd? :nothing nil?))
 
 
-(defn by-subscription-id
+(defn ^{:deprecated "2.5.0"} by-subscription-id
   "Find an order given the id of a Stripe subscription."
   [db sub-id]
   (->> (d/q '[:find ?e .
@@ -489,6 +498,17 @@
 (s/fdef by-subscription-id
         :args (s/cat :db td/db? :sub-id string?)
         :ret (s/or :entity td/entityd? :nothing nil?))
+
+
+(defn ^{:deprecated "2.5.0"} by-subscription
+  "Find an order given its teller `subscription`."
+  [db subscription]
+  (->> (d/q '[:find ?o .
+              :in $ ?s
+              :where
+              [?o :order/subscription ?s]]
+            db (td/id subscription))
+       (d/entity db)))
 
 
 ;; =============================================================================
@@ -521,9 +541,10 @@
 (s/def ::cost (s/and pos? float?))
 (s/def ::lines (s/+ ::line))
 (s/def ::fields (s/+ ::field))
+(s/def ::attached (s/* td/entity?))
 (s/def ::create-opts
   (s/keys :opt-un [::quantity ::desc ::request ::cost ::summary ::variant
-                   ::status ::price ::lines ::fields]))
+                   ::attached ::status ::price ::lines ::fields]))
 
 
 (defn create
@@ -531,7 +552,7 @@
   ([account service]
    (create account service {}))
   ([account service {:keys [quantity desc request cost summary variant status
-                            price lines fields]
+                            price lines fields attached]
                      :or   {status :order.status/pending}
                      :as   opts}]
    (tb/assoc-when
@@ -547,6 +568,7 @@
     :order/fields fields
     :order/lines lines
     :order/summary summary
+    :order/attached (map td/id attached)
     :order/request (or request desc))))
 
 (s/fdef create
@@ -650,6 +672,7 @@
 (defn is-canceled
   "The order has been canceled."
   [order]
+  ;; here is a comment
   {:db/id        (td/id order)
    :order/status :order.status/canceled})
 

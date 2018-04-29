@@ -15,6 +15,9 @@
 (s/def ::billed
   #{:service.billed/once :service.billed/monthly})
 
+(s/def ::type
+  #{:service.type/service :service.type/fee})
+
 
 ;; =============================================================================
 ;; Selectors
@@ -31,12 +34,7 @@
         :ret string?)
 
 
-(defn fields
-  [service]
-  (:service/fields service))
-
-
-(defn service-name
+(defn name
   "The human-friendly name of this service."
   [service]
   (:service/name service))
@@ -46,8 +44,8 @@
         :ret string?)
 
 
-(def ^{:deprecated "2.3.0"} name
-  service-name)
+(def ^{:deprecated "3.0.0"} service-name
+  name)
 
 
 (defn desc
@@ -67,7 +65,7 @@
 
 (s/fdef price
         :args (s/cat :service td/entity?)
-        :ret (s/or :nothing nil? :price float?))
+        :ret (s/nilable float?))
 
 
 (defn cost
@@ -77,7 +75,7 @@
 
 (s/fdef cost
         :args (s/cat :service td/entity?)
-        :ret (s/or :nothing nil? :cost float?))
+        :ret (s/nilable float?))
 
 
 (defn rental
@@ -101,6 +99,10 @@
   [service]
   (:service/type service))
 
+(s/fdef type
+        :args (s/cat :service td/entity?)
+        :ret ::type)
+
 
 (defn billed
   "Billing method of this service."
@@ -123,7 +125,7 @@
 
 
 (defn desc-internal
-  "The internal description of this service"
+  "The internal description of this `service`."
   [service]
   (:service/desc-internal service))
 
@@ -133,13 +135,13 @@
 
 
 (defn catalogs
-  "The catalogs this service is part of."
+  "The catalogs this `service` is part of."
   [service]
   (:service/catalogs service))
 
 
 (defn properties
-  "Properties this service is offered at."
+  "Properties this `service` is offered at."
   [service]
   (:service/properties service))
 
@@ -150,10 +152,22 @@
   (:service/variants service))
 
 
+(defn fields
+  "Fields to be filled out for this `service`."
+  [service]
+  (:service/fields service))
+
+
 (defn options
-  "Options of the dropdown field in a service"
+  "Options of the dropdown `field`."
   [field]
   (:service-field/options field))
+
+
+(defn ^{:added "2.4.0"} active?
+  "Is this `service` active?"
+  [service]
+  (:service/active service false))
 
 
 (defn archived
@@ -162,10 +176,17 @@
   (:service/archived service))
 
 
-;; Might need an active selector
-;; Do we want the active selector this way?
-;; Reasoning is that if a service has been archived it shouldn't be active
-;; We can also build in that if a service gets edited to archived it should be set to inactive
+(defn ^{:added "2.5.0"} plan
+  "The teller plan of this `service`, if any."
+  [service]
+  (:service/plan service))
+
+(s/fdef plan
+        :args (s/cat :service td/entity?)
+        :ret (s/nilable td/entityd?))
+
+
+;; TODO: This and `active?` are essentially a duplicate. Can we consolidate?
 (defn active
   "Is this service active?"
   [service]
@@ -289,31 +310,31 @@
 ;; lookups =====================================================================
 
 
-(defn moving-assistance [db]
+(defn ^{:deprecated "3.0.0"} moving-assistance [db]
   (by-code db "moving,move-in"))
 
 
-(defn small-bin [db property]
+(defn ^{:deprecated "3.0.0"} small-bin [db property]
   (by-code db "storage,bin,small" property))
 
 
-(defn large-bin [db property]
+(defn ^{:deprecated "3.0.0"} large-bin [db property]
   (by-code db "storage,bin,large" property))
 
 
-(defn misc-storage [db]
+(defn ^{:deprecated "3.0.0"} misc-storage [db]
   (by-code db "storage,misc"))
 
 
-(defn customize-furniture [db]
+(defn ^{:deprecated "3.0.0"} customize-furniture [db]
   (by-code db "customize,furniture,quote"))
 
 
-(defn customize-room [db]
+(defn ^{:deprecated "3.0.0"} customize-room [db]
   (by-code db "customize,room,quote"))
 
 
-(defn weekly-cleaning [db]
+(defn ^{:deprecated "3.0.0"} weekly-cleaning [db]
   (by-code db "cleaning,weekly"))
 
 

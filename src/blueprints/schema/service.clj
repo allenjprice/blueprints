@@ -151,8 +151,7 @@
 
      :db/doc "The interval of a time field in minutes."}
     {:db/id     :service/code
-     :db/unique :db.unique/identity}
-    ]))
+     :db/unique :db.unique/identity}]))
 
 
 (defn- service-types [part]
@@ -190,6 +189,15 @@
                      be fulfilled."}])
 
 
+(def ^{:added "2.5.0"} add-plan-reference
+  (s/generate-schema
+   [(s/schema
+     service
+     (s/fields
+      [plan :ref :indexed
+       "Reference to a teller plan."]))]))
+
+
 (defn norms [part]
   {:schema.services/add-schema-04132017
    {:txes [schema (billing-types part)]}
@@ -207,4 +215,7 @@
    {:txes [add-archive]}
 
    :schema.service/add-excluded-days-04192018
-   {:txes [excluded-days]}})
+   {:txes [excluded-days]}
+
+   :schema.service/add-plan-04102018
+   {:txes [add-plan-reference]}})
