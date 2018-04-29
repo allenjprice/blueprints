@@ -5,8 +5,7 @@
             [clojure.string :as string]
             [datomic.api :as d]
             [toolbelt.core :as tb]
-            [toolbelt.datomic :as td]
-            [taoensso.timbre :as timbre]))
+            [toolbelt.datomic :as td]))
 
 
 ;; =============================================================================

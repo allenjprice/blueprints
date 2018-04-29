@@ -98,7 +98,7 @@
                                                        :payment-id payment-id}}))
 
 (s/fdef remainder-deposit-payment-made
-        :args (s/cat :account td/entity? :payment-id string?)
+        :args (s/cat :account td/entity? :payment-id uuid?)
         :ret map?)
 
 
@@ -259,7 +259,6 @@
 (s/fdef alert-payment-due
         :args (s/cat :payment td/entity? :t inst?)
         :ret map?)
-
 
 
 ;; =============================================================================

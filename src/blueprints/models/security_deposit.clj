@@ -1,8 +1,6 @@
 (ns blueprints.models.security-deposit
   (:refer-clojure :exclude [type])
-  (:require [blueprints.models.charge :as charge]
-            [blueprints.models.check :as check]
-            [blueprints.models.payment :as payment]
+  (:require [blueprints.models.payment :as payment]
             [clojure.spec.alpha :as s]
             [datomic.api :as d]
             [toolbelt.core :as tb]
@@ -83,24 +81,6 @@
 (s/fdef account
         :args (s/cat :deposit td/entity?)
         :ret td/entity?)
-
-
-(def ^{:deprecated "1.10.0"} checks
-  "Check entities associated with this deposit."
-  :security-deposit/checks)
-
-(s/fdef checks
-        :args (s/cat :deposit td/entity?)
-        :ret (s/* td/entity?))
-
-
-(def ^{:deprecated "1.10.0"} charges
-  "Charge entities associated with this deposit."
-  :security-deposit/charges)
-
-(s/fdef charges
-        :args (s/cat :deposit td/entity?)
-        :ret (s/* td/entity?))
 
 
 (defn ^{:added "1.10.0"} payments
@@ -250,131 +230,6 @@
 ;; =============================================================================
 
 
-(defn- sum-charges
-  [deposit]
-  (or (->> (:security-deposit/charges deposit)
-           (filter (comp #{:charge.status/succeeded} :charge/status))
-           (map #(or (:charge/amount %) 0))
-           (apply +))
-      0))
-
-
-;; =====================================
-;; Checks
-
-
-(defn- include-check-amount?
-  "Based on `check`'s status, should its amount be included?"
-  [check]
-  (#{check/cleared check/received check/deposited} (check/status check)))
-
-
-(defn- has-check?
-  "Is `check` already part of `deposit`'s checks?"
-  [deposit check]
-  (some #(= (td/id check) (td/id %)) (checks deposit)))
-
-
-(defn- resolve-checks
-  [deposit new-or-updated-check]
-  (if (has-check? deposit new-or-updated-check)
-    ;; Replace
-    (map #(if (= (td/id %) (td/id new-or-updated-check))
-            new-or-updated-check
-            %)
-         (checks deposit))
-    ;; Add
-    (conj (checks deposit) new-or-updated-check)))
-
-
-(defn- sum-checks
-  "The sum of all amounts in existing checks on `security-deposit` including the
-  effect of `new-or-updated-check`."
-  [deposit new-or-updated-check]
-  (->> (resolve-checks deposit new-or-updated-check)
-       (reduce
-        (fn [acc check]
-          (if (include-check-amount? check)
-            (+ acc (check/amount check))
-            acc))
-        0)))
-
-
-(defn- new-amount-received
-  [deposit check]
-  (int (+ (sum-checks deposit check)
-          (sum-charges deposit))))
-
-
-(defn ^{:deprecated "1.10.0"} update-with-check
-  "Update a security deposit's `amount-received` with an updated check."
-  [deposit check updated-check]
-  (let [;; To calculate the new amount, we need at least the check's id, amount and status
-        params (merge (select-keys check [:db/id :check/amount :check/status])
-                      updated-check)]
-    {:db/id                            (td/id deposit)
-     :security-deposit/amount-received (new-amount-received deposit params)}))
-
-(s/fdef update-check
-        :args (s/cat :security-deposit td/entity?
-                     :check td/entity?
-                     :updated-check check/updated?)
-        :ret (s/keys :req [:db/id :security-deposit/amount-received]))
-
-
-(defn ^{:deprecated "1.10.0"} add-check
-  "Add a new `check` to the `security-deposit` entity, taking into consideration
-  the check's contribution to the total amount received."
-  [deposit check]
-  (let [amount-received (new-amount-received deposit check)]
-    {:db/id                            (td/id deposit)
-     :security-deposit/payment-method  :security-deposit.payment-method/check
-     :security-deposit/checks          check
-     :security-deposit/amount-received amount-received}))
-
-(s/fdef add-check
-        :args (s/cat :security-deposit td/entity?
-                     :check check/check?)
-        :ret (s/keys :req [:db/id
-                           :security-deposit/checks
-                           :security-deposit/amount-received]))
-
-
-(defn ^{:deprecated "1.10.0"} update-check
-  [security-deposit check updated-check]
-  (let [;; To calculate the new amount, we need at least the check's id, amount and status
-        params (merge (select-keys check [:db/id :check/amount :check/status])
-                      updated-check)]
-    {:db/id                            (td/id security-deposit)
-     :security-deposit/amount-received (new-amount-received security-deposit params)}))
-
-(s/fdef update-check
-        :args (s/cat :security-deposit td/entity?
-                     :check td/entity?
-                     :updated-check check/updated?)
-        :ret (s/keys :req [:db/id :security-deposit/amount-received]))
-
-
-
-(defn ^{:deprecated "1.10.0"} add-charge
-  "Add a charge to the deposit, updating the `amount-received` when the charge
-  has success status.."
-  [deposit charge]
-  (let [new-amount (when (charge/succeeded? charge)
-                     (+ (amount-received deposit)
-                        (int (charge/amount charge))))]
-    (tb/assoc-when
-     {:db/id                    (td/id deposit)
-      :security-deposit/charges (td/id charge)}
-     :security-deposit/amount-received new-amount)))
-
-(s/fdef add-charge
-        :args (s/cat :deposit td/entity? :charge td/entity?)
-        :ret (s/keys :req [:db/id
-                           :security-deposit/charges
-                           :security-deposit/amount-received]))
-
-
 (defn ^{:added "1.10.0"} add-payment
   "Add a payment to this deposit."
   [deposit payment]
@@ -414,15 +269,6 @@
 (s/fdef by-account
         :args (s/cat :account td/entityd?)
         :ret td/entityd?)
-
-
-(def ^{:deprecated "1.10.0"} by-charge
-  "Produce the security deposit given `charge`."
-  :security-deposit/_charges)
-
-(s/fdef by-charge
-        :args (s/cat :charge td/entity?)
-        :ret td/entity?)
 
 
 (defn by-payment
