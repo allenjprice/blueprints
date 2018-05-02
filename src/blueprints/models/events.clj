@@ -1,8 +1,6 @@
 (ns blueprints.models.events
-  (:require [blueprints.models.account :as account]
-            [blueprints.models.event :as event]
+  (:require [blueprints.models.event :as event]
             [blueprints.models.note :as note]
-            [blueprints.models.payment :as payment]
             [clojure.spec.alpha :as s]
             [clojure.string :as string]
             [toolbelt.core :as tb]
