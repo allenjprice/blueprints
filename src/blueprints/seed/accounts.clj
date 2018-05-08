@@ -76,15 +76,7 @@
    :member-license/ends         (utils/weeks-from-now 12)
    :member-license/license      license-id
    :member-license/unit         unit-id
-   :member-license/rate         amount
-   :member-license/rent-payments
-   {:payment/for     :payment.for/rent
-    :payment/amount  amount
-    :payment/account (:db/id account)
-    :payment/status  :payment.status/due
-    :payment/due     (utils/days-from-now 5)
-    :payment/pstart  (utils/now)
-    :payment/pend    (utils/end-of-month)}})
+   :member-license/rate         amount})
 
 
 (defn member
@@ -102,15 +94,7 @@
      {:db/id            (tempid)
       :deposit/account  (:db/id account)
       :deposit/amount   2000.0
-      :deposit/due      (utils/weeks-from-now 4)
-      :deposit/payments {:payment/for     :payment.for/deposit
-                         :payment/method  :payment.method/check
-                         :payment/check   (check/create first-name 500.0 (utils/now) 1234
-                                                        :status :check.status/cleared)
-                         :payment/account (:db/id account)
-                         :payment/status  :payment.status/paid
-                         :payment/amount  500.0
-                         :payment/paid-on (utils/now)}}]))
+      :deposit/due      (utils/weeks-from-now 4)}]))
 
 
 ;; =============================================================================
