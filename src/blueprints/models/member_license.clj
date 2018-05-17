@@ -7,7 +7,8 @@
             [clojure.spec.alpha :as s]
             [datomic.api :as d]
             [toolbelt.date :as date]
-            [toolbelt.datomic :as td]))
+            [toolbelt.datomic :as td]
+            [toolbelt.core :as tb]))
 
 ;; =============================================================================
 ;; Spec

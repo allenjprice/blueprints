@@ -2,6 +2,7 @@
   (:require [blueprints.schema.account :as account]
             [blueprints.schema.address :as address]
             [blueprints.schema.approval :as approval]
+            [blueprints.schema.asana :as asana]
             [blueprints.schema.avatar :as avatar]
             [blueprints.schema.catalogue :as catalogue]
             [blueprints.schema.charge :as charge]
@@ -39,6 +40,7 @@
   (let [gen-norms (->> [account/norms
                         address/norms
                         approval/norms
+                        asana/norms
                         avatar/norms
                         catalogue/norms
                         charge/norms
