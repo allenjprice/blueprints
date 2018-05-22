@@ -71,10 +71,22 @@
        "Reference to another entity--assumed to be the topic of this note."]))]))
 
 
+(def ^{:added "2.5.5"} change-references
+  "Change `:note/ref` attribute to have cardinality many, and rename to reflect plurality"
+  [{:db/id               :note/ref
+    :db/ident            :note/refs
+    :db/cardinality      :db.cardinality/many
+    :db.alter/_attribute :db.part/db}])
+
+
 (defn norms [part]
   {:schema.note/add-schema-02242017
    {:txes [schema (ticket-statuses part)]}
 
    :schema.note/index-attrs-and-add-ref-10222017
    {:txes     [index-attributes add-ref]
-    :requires [:schema.note/add-schema-02242017]}})
+    :requires [:schema.note/add-schema-02242017]}
+
+   :schema.note/change-references-05152018
+   {:txes     [change-references]
+    :requires [:schema.note/index-attrs-and-add-ref-10222017]}})
