@@ -182,7 +182,10 @@
        [type :ref :indexed
         "Indicates the type of transition for this license"]
 
-       ;; these are refs to *teller payments*, not *blueprints payments*
+       [uuid :uuid
+        "A uuid to identify this transition"]
+
+       ;; are refs to teller *these payments*, not *blueprints payments*
        [fees :ref :indexed :many
         "A list of any fees that may be incurred in this transition, like Early Termination or Room Reassignment"]
 

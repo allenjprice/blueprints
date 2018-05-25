@@ -4,7 +4,8 @@
             [clojure.spec.alpha :as s]
             [clojure.string :as string]
             [toolbelt.core :as tb]
-            [toolbelt.datomic :as td]))
+            [toolbelt.datomic :as td]
+            [blueprints.models.license-transition :as license-transition]))
 
 
 ;; =============================================================================
@@ -136,6 +137,17 @@
 (s/fdef alert-deposit-due
         :args (s/cat :deposit td/entity? :t inst?)
         :ret map?)
+
+
+
+;; ==============================================================================
+;; License Transitions
+;; ==============================================================================
+
+
+(defn transition-created
+  [transition]
+  (event/job :transition/move-out-created {:params {:transition-uuid (license-transition/uuid transition)}}))
 
 
 ;; =============================================================================
