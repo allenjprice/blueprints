@@ -182,7 +182,7 @@
        [type :ref :indexed
         "Indicates the type of transition for this license"]
 
-       [uuid :uuid
+       [uuid :uuid :unique-identity
         "A uuid to identify this transition"]
 
        ;; are refs to teller *these payments*, not *blueprints payments*
