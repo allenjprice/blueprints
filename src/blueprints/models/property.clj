@@ -247,3 +247,58 @@
   within `date`."
   [db property date]
   (amount-query db property date :rent-payment.status/pending))
+
+
+;; ==============================================================================
+;; transactions =================================================================
+;; ==============================================================================
+
+
+(defn create-license-price
+  [license price]
+  {:license-price/license license
+   :license-price/price   price})
+
+
+(defn create-unit
+  "Create a new unit with it's number and code"
+  [n code]
+  {:unit/name (str code "-" n)})
+
+
+(defn create-units
+  "Given the number of units and property code, generate the units"
+  [n code]
+  (map #(create-unit (inc %) code) (range n)))
+
+
+;; TODO add address back in
+(defn create
+  "Create a new property"
+  [name cover-image-url code address units available-on licenses]
+  {:db/id                    (d/tempid :db.part/starcity)
+   :property/name            name
+   :property/cover-image-url cover-image-url
+   :property/code            code
+   :property/address         address
+   :property/units           units
+   :property/available-on    available-on
+   :property/licenses        licenses
+   })
+
+
+(comment
+
+  (def units-tx (create-units 5 "414bryant"))
+
+  (def licenses-tx (map
+                    (fn [[license price]]
+                      (create-license-price license price))
+                    [[285873023222953 1900.0]
+                     [285873023222954 1800.0]
+                     [285873023222955 1700.0]]))
+
+  (def property-tx [(create "Bryant" "url" "414bryant" 285873023223087 units-tx #inst "2018-06-06" licenses-tx)])
+
+
+  )
