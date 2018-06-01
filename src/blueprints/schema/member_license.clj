@@ -214,9 +214,7 @@
     {:db/id (d/tempid part)
      :db/ident :license-transition.type/inter-xfer}
     {:db/id (d/tempid part)
-     :db/ident :license-transition.type/renewal}
-    {:db/id (d/tempid part)
-     :db/ident :license-transition.type/pending}]))
+     :db/ident :license-transition.type/renewal}]))
 
 
 ;;=============================================================================
