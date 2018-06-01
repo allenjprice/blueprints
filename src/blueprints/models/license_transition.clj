@@ -97,11 +97,22 @@
 ;; ==============================================================================
 
 (defn create
-  [license type date deposit-refund]
+  [license type date asana-task deposit-refund]
   (tb/assoc-when
    {:db/id                              (d/tempid :db.part/starcity)
     :license-transition/current-license (td/id license)
     :license-transition/type            (keyword "license-transition.type" (name type))
     :license-transition/date            date
     :license-transition/uuid            (d/squuid)}
-   :license-transition/deposit-refund (when-let [dr deposit-refund] (float dr))))
+   :license-transition/deposit-refund (when-let [dr deposit-refund] (float dr))
+   :asana/task asana-task))
+
+
+(defn edit
+  [id date deposit-refund room-walkthrough-doc asana-task]
+  (tb/assoc-when
+   {:db/id id}
+   :license-transition/date date
+   :license-transition/deposit-refund deposit-refund
+   :license-transition/room-walkthrough-doc room-walkthrough-doc
+   :asana/task asana-task))
