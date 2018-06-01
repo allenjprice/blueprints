@@ -4,7 +4,8 @@
             [clj-time.core :as t]
             [clojure.spec.alpha :as s]
             [datomic.api :as d]
-            [toolbelt.datomic :as td]))
+            [toolbelt.datomic :as td]
+            [toolbelt.core :as tb]))
 
 ;; =============================================================================
 ;; Selectors
@@ -212,19 +213,19 @@
 (defn- amount-query
   [db property date status]
   (->> (d/q '[:find ?py ?amount
-             :in $ ?p ?now ?status
-             :where
-             [?p :property/units ?u]
-             [?m :member-license/unit ?u]
-             [?m :member-license/status :member-license.status/active]
-             [?m :member-license/rent-payments ?py]
-             [?py :rent-payment/amount ?amount]
-             [?py :rent-payment/status ?status]
-             [?py :rent-payment/period-start ?start]
-             [?py :rent-payment/period-end ?end]
-             [(.after ^java.util.Date ?end ?now)]
-             [(.before ^java.util.Date ?start ?now)]]
-           db (:db/id property) date status)
+              :in $ ?p ?now ?status
+              :where
+              [?p :property/units ?u]
+              [?m :member-license/unit ?u]
+              [?m :member-license/status :member-license.status/active]
+              [?m :member-license/rent-payments ?py]
+              [?py :rent-payment/amount ?amount]
+              [?py :rent-payment/status ?status]
+              [?py :rent-payment/period-start ?start]
+              [?py :rent-payment/period-end ?end]
+              [(.after ^java.util.Date ?end ?now)]
+              [(.before ^java.util.Date ?start ?now)]]
+            db (:db/id property) date status)
        (reduce #(+ %1 (second %2)) 0)))
 
 
@@ -254,51 +255,50 @@
 ;; ==============================================================================
 
 
+(defn create-address
+  [lines locality region country postal-code]
+  {:address/lines       lines
+   :address/locality    locality
+   :address/region      region
+   :address/country     country
+   :address/postal-code postal-code})
+
+
 (defn create-license-price
   [license price]
   {:license-price/license license
    :license-price/price   price})
 
 
+(defn create-license-prices [lprices]
+  (map
+   (fn [{:keys [term price]}]
+     (create-license-price term price))
+   lprices))
+
+
 (defn create-unit
   "Create a new unit with it's number and code"
-  [n code]
+  [code n]
   {:unit/name (str code "-" n)})
 
 
 (defn create-units
-  "Given the number of units and property code, generate the units"
-  [n code]
-  (map #(create-unit (inc %) code) (range n)))
+  "Given the number (`n`) of units and property `code`, generate transaction
+  data."
+  [code n]
+  (map #(create-unit code (inc %)) (range n)))
 
 
-;; TODO add address back in
 (defn create
   "Create a new property"
-  [name cover-image-url code address units available-on licenses]
-  {:db/id                    (d/tempid :db.part/starcity)
-   :property/name            name
+  [name code units available-on license-prices & {:keys [cover-image-url address]}]
+  (tb/assoc-when
+   {:db/id                    (d/tempid :db.part/starcity)
+    :property/name            name
+    :property/code            code
+    :property/units           units
+    :property/available-on    available-on
+    :property/licenses        license-prices}
    :property/cover-image-url cover-image-url
-   :property/code            code
-   :property/address         address
-   :property/units           units
-   :property/available-on    available-on
-   :property/licenses        licenses
-   })
-
-
-(comment
-
-  (def units-tx (create-units 5 "414bryant"))
-
-  (def licenses-tx (map
-                    (fn [[license price]]
-                      (create-license-price license price))
-                    [[285873023222953 1900.0]
-                     [285873023222954 1800.0]
-                     [285873023222955 1700.0]]))
-
-  (def property-tx [(create "Bryant" "url" "414bryant" 285873023223087 units-tx #inst "2018-06-06" licenses-tx)])
-
-
-  )
+   :property/address         address))
