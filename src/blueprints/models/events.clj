@@ -5,7 +5,8 @@
             [clojure.string :as string]
             [toolbelt.core :as tb]
             [toolbelt.datomic :as td]
-            [blueprints.models.license-transition :as license-transition]))
+            [blueprints.models.license-transition :as license-transition]
+            [datomic.api :as d]))
 
 
 ;; =============================================================================
@@ -148,6 +149,11 @@
 (defn transition-created
   [transition]
   (event/job :transition/move-out-created {:params {:transition-uuid (license-transition/uuid transition)}}))
+
+
+(defn transition-updated
+  [transition-id]
+  (event/job :transition/move-out-updated {:params {:transition-id transition-id}}))
 
 
 ;; =============================================================================
