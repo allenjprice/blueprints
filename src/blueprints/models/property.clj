@@ -255,15 +255,6 @@
 ;; ==============================================================================
 
 
-(defn create-address
-  [lines locality region country postal-code]
-  {:address/lines       lines
-   :address/locality    locality
-   :address/region      region
-   :address/country     country
-   :address/postal-code postal-code})
-
-
 (defn create-license-price
   [license price]
   {:license-price/license license
@@ -275,19 +266,6 @@
    (fn [{:keys [term price]}]
      (create-license-price term price))
    lprices))
-
-
-(defn create-unit
-  "Create a new unit with it's number and code"
-  [code n]
-  {:unit/name (str code "-" n)})
-
-
-(defn create-units
-  "Given the number (`n`) of units and property `code`, generate transaction
-  data."
-  [code n]
-  (map #(create-unit code (inc %)) (range n)))
 
 
 (defn create

@@ -67,10 +67,3 @@
    :address/region      region
    :address/country     country
    :address/postal-code postal-code})
-
-
-(comment
-
-  (def address-tx [(create "414 Bryant St" "San Francisco" "CA" "USA" "94107")])
-
-  )
