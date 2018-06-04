@@ -377,12 +377,13 @@
         tz       (property/time-zone property)
         ends     (-> (c/to-date-time starts)
                      (t/plus (t/months (license/term license)))
+                     (t/minus (t/days 1))
                      (date/end-of-day tz))]
-    {:member-license/license      (:db/id license)
+    {:member-license/license      (td/id license)
      :member-license/rate         rate
      :member-license/status       status
      :member-license/commencement (date/beginning-of-day starts tz)
-     :member-license/unit         (:db/id unit)
+     :member-license/unit         (td/id unit)
      :member-license/ends         ends}))
 
 (s/fdef create
