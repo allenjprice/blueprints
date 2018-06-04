@@ -127,3 +127,20 @@
 (s/fdef by-name
         :args (s/cat :db td/db? :name string?)
         :ret td/entity?)
+
+
+;; ==============================================================================
+;; transactions =================================================================
+;; ==============================================================================
+
+
+(defn create
+  "Create a unit, given a community's `code` and a unit number (`n`)."
+  [code n]
+  {:unit/name (str code "-" n)})
+
+
+(defn create-community-units
+  "Given the number (`n`) of units and a community `code`, generate tx data for all units."
+  [code n]
+  (map #(create code (inc %)) (range n)))

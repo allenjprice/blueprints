@@ -4,7 +4,8 @@
             [clj-time.core :as t]
             [clojure.spec.alpha :as s]
             [datomic.api :as d]
-            [toolbelt.datomic :as td]))
+            [toolbelt.datomic :as td]
+            [toolbelt.core :as tb]))
 
 ;; =============================================================================
 ;; Selectors
@@ -212,19 +213,19 @@
 (defn- amount-query
   [db property date status]
   (->> (d/q '[:find ?py ?amount
-             :in $ ?p ?now ?status
-             :where
-             [?p :property/units ?u]
-             [?m :member-license/unit ?u]
-             [?m :member-license/status :member-license.status/active]
-             [?m :member-license/rent-payments ?py]
-             [?py :rent-payment/amount ?amount]
-             [?py :rent-payment/status ?status]
-             [?py :rent-payment/period-start ?start]
-             [?py :rent-payment/period-end ?end]
-             [(.after ^java.util.Date ?end ?now)]
-             [(.before ^java.util.Date ?start ?now)]]
-           db (:db/id property) date status)
+              :in $ ?p ?now ?status
+              :where
+              [?p :property/units ?u]
+              [?m :member-license/unit ?u]
+              [?m :member-license/status :member-license.status/active]
+              [?m :member-license/rent-payments ?py]
+              [?py :rent-payment/amount ?amount]
+              [?py :rent-payment/status ?status]
+              [?py :rent-payment/period-start ?start]
+              [?py :rent-payment/period-end ?end]
+              [(.after ^java.util.Date ?end ?now)]
+              [(.before ^java.util.Date ?start ?now)]]
+            db (:db/id property) date status)
        (reduce #(+ %1 (second %2)) 0)))
 
 
@@ -247,3 +248,35 @@
   within `date`."
   [db property date]
   (amount-query db property date :rent-payment.status/pending))
+
+
+;; ==============================================================================
+;; transactions =================================================================
+;; ==============================================================================
+
+
+(defn create-license-price
+  [license price]
+  {:license-price/license license
+   :license-price/price   price})
+
+
+(defn create-license-prices [lprices]
+  (map
+   (fn [{:keys [term price]}]
+     (create-license-price term price))
+   lprices))
+
+
+(defn create
+  "Create a new property"
+  [name code units available-on license-prices & {:keys [cover-image-url address]}]
+  (tb/assoc-when
+   {:db/id                    (d/tempid :db.part/starcity)
+    :property/name            name
+    :property/code            code
+    :property/units           units
+    :property/available-on    available-on
+    :property/licenses        license-prices}
+   :property/cover-image-url cover-image-url
+   :property/address         address))
