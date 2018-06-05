@@ -6,7 +6,8 @@
             [toolbelt.core :as tb]
             [toolbelt.datomic :as td]
             [blueprints.models.license-transition :as license-transition]
-            [datomic.api :as d]))
+            [datomic.api :as d]
+            [taoensso.timbre :as timbre]))
 
 
 ;; =============================================================================
@@ -152,8 +153,8 @@
 
 
 (defn transition-updated
-  [transition-id]
-  (event/job :transition/move-out-updated {:params {:transition-id transition-id}}))
+  [transition]
+  (event/job :transition/move-out-updated {:params {:transition-id (:db/id transition)}}))
 
 
 ;; =============================================================================
