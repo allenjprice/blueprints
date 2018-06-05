@@ -6,65 +6,58 @@
             [toolbelt.datomic :as td]
             [toolbelt.core :as tb]))
 
-;; NOTE - the schema definitions for `license-transition`s can be found in the `blueprints.schema.member-license`
-
-(comment
-  @(d/q
-    '[:find ?a
-      :in [$ ?license-id]
-      :where
-      [?a :account/licenses ?license-id]]
-    db 285873023223127)
-
-  )
-
 
 ;; ==============================================================================
 ;; Selectors ====================================================================
 ;; ==============================================================================
 
-;;TODO - write some great selectors
+
 (defn type
+  "The type of transition (move-out, renewal, etc)."
   [transition]
   (:license-transition/type transition))
 
 
 (defn uuid
+  "The UUID for this transition."
   [transition]
   (:license-transition/uuid transition))
 
 
 (defn date
+  "The date at which this transition takes effect (move-out day or renewal day, for instance)."
   [transition]
   (:license-transition/date transition))
 
 
 (defn current-license
+  "The license from which the member is transitioning away."
   [transition]
   (:license-transition/current-license transition))
 
 
-;; ==============================================================================
-;; Predicates ===================================================================
-;; ==============================================================================
-
-;; TODO - maybe you need some predicates?
-
+(defn new-license
+  "The license that the member is transitioning to."
+  [transition]
+  (:license-transition/new-license transition))
 
 
 ;; ==============================================================================
 ;; Queries ======================================================================
 ;; ==============================================================================
 
-;;TODO - write some helpful queries
 
-(defn by-license-id
-  [db license-id]
+(defn by-license
+  [db license]
   (->> (d/q '[:find ?e .
               :in $ ?id
               :where [?e :license-transition/current-license ?id]]
-            db license-id)
+            db (td/id license))
        (d/entity db)))
+
+(s/fdef by-license
+        :args (s/cat :db td/db? :license td/entity?)
+        :ret td/entityd?)
 
 
 (defn by-uuid
@@ -79,17 +72,6 @@
               :where [?e :license-transition/type ?pending]]
             db (keyword "license-transition.type" (name transition-type)))
        (map (partial d/entity db))))
-
-
-(comment
-
-  (d/q '[:find [?e ...]
-         :in $
-         :where [?e :license-transition/type _]]
-       db)
-
-
-  )
 
 
 ;; ==============================================================================
