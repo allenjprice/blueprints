@@ -366,7 +366,8 @@
   #{:member-license.status/active
     :member-license.status/inactive
     :member-license.status/renewal
-    :member-license.status/canceled})
+    :member-license.status/canceled
+    :member-license.status/pending})
 
 
 (defn create
@@ -380,7 +381,8 @@
                      (t/plus (t/months (license/term license)))
                      (t/minus (t/days 1))
                      (date/end-of-day tz))]
-    {:member-license/license      (td/id license)
+    {:db/id                       (d/tempid :db.part/starcity)
+     :member-license/license      (:db/id license)
      :member-license/rate         rate
      :member-license/status       status
      :member-license/commencement (date/beginning-of-day starts tz)
