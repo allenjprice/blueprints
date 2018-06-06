@@ -8,7 +8,8 @@
             [datomic.api :as d]
             [toolbelt.date :as date]
             [toolbelt.datomic :as td]
-            [toolbelt.core :as tb]))
+            [toolbelt.core :as tb]
+            [taoensso.timbre :as timbre]))
 
 ;; =============================================================================
 ;; Spec
@@ -19,7 +20,8 @@
   #{:member-license.status/active
     :member-license.status/inactive
     :member-license.status/canceled
-    :member-license.status/renewal})
+    :member-license.status/renewal
+    :member-license.status/pending})
 
 
 ;; =============================================================================
