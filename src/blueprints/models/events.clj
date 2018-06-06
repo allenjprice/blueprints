@@ -147,9 +147,17 @@
 ;; ==============================================================================
 
 
-(defn transition-created
+(defmulti transition-created license-transition/type)
+
+
+(defmethod transition-created :license-transition.type/move-out
   [transition]
   (event/job :transition/move-out-created {:params {:transition-uuid (license-transition/uuid transition)}}))
+
+
+(defmethod transition-created :license-transition.type/renewal
+  [transition]
+  (event/job :transition/renewal-created {:params {:transition-uuid (license-transition/uuid transition)}}))
 
 
 (defn transition-updated
