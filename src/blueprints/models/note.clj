@@ -2,6 +2,7 @@
   (:refer-clojure :exclude [update])
   (:require [blueprints.models.account :as account]
             [clojure.spec.alpha :as s]
+            [clojure.string :as string]
             [datomic.api :as d]
             [toolbelt.core :as tb]
             [toolbelt.datomic :as td]))
@@ -15,6 +16,7 @@
 (s/def :note/author (s/or :id integer? :entity td/entity?))           ; for return values
 (s/def :note/subject string?)
 (s/def :note/content string?)
+(s/def :note/refs (s/+ td/entity?))
 (s/def :note/children (s/* td/entity?))
 (s/def :note/tags (s/* td/entity?))
 
@@ -117,6 +119,12 @@
         :ret (s/or :nothing nil? :note td/entity?))
 
 
+(defn refs
+  "The entities that this notes references"
+  [note]
+  (:note/refs note))
+
+
 ;; =============================================================================
 ;; Predicates
 ;; =============================================================================
@@ -145,12 +153,54 @@
         :ret (s/or :nothing nil? :entity td/entity?))
 
 
+(defn- notes-query
+  [db {:keys [q refs]}]
+  (let [init '{:find  [[?n ...]]
+               :in    [$]
+               :args  []
+               :where []}]
+    (cond-> init
+      true
+      (clojure.core/update :args conj db)
+
+      (not (string/blank? q))
+      (-> (clojure.core/update :in conj '?q)
+          (clojure.core/update :args (td/safe-wildcard q))
+          (clojure.core/update :where conj
+                  '(or [(fulltext $ :note/subject ?q) [[?n]]]
+                       [(fulltext $ :note/content ?q) [[?n]]])))
+
+      (seq refs)
+      (-> (clojure.core/update :in conj '[?r ...])
+          (clojure.core/update :where conj '[?n :note/refs ?r])
+          (clojure.core/update :args conj (map td/id refs)))
+
+      true
+      (clojure.core/update :where #(if (empty? %) (conj % '[?n :note/uuid _]) %)))))
+
+
+(defn query
+  "Query notes using `params`"
+  [db params]
+  (->> (notes-query db params)
+       (td/remap-query)
+       (d/query)
+       (map (partial d/entity db))))
+
+
+(comment
+
+  (notes-query :conn {:refs [[:account/email "member@test.com"]]})
+
+  )
+
+
 ;; =============================================================================
 ;; Transactions
 ;; =============================================================================
 
 
-(defn create
+#_(defn create
   "Create a new note, optionally specifying whether or not this note should be a
   ticket (`ticket?`), and if this note should be `assigned-to` someone. Passing
   an account for `assigned-to` will result in this note being created as a
@@ -166,11 +216,30 @@
      :ticket/status status
      :ticket/assigned-to (:db/id assigned-to))))
 
+(defn create
+  "Create a new note, optionally specifying whether or not this note should be a
+  ticket (`ticket?`), and if this note should be `assigned-to` someone. Passing
+  an account for `assigned-to` will result in this note being created as a
+  ticket."
+  [subject content refs & {:keys [author ticket? assigned-to]}]
+  (let [status (when (or ticket? assigned-to) :ticket.status/open)]
+    (tb/assoc-when
+     {:db/id        (d/tempid :db.part/starcity)
+      :note/subject subject
+      :note/content content
+      :note/uuid    (d/squuid)
+      :note/refs    (when-some [rs refs]
+                      (map td/id rs))}
+     :note/author  (:db/id author)
+     :ticket/status status
+     :ticket/assigned-to (:db/id assigned-to))))
+
 (s/def ::author td/entity?)
 (s/def ::assigned-to td/entity?)
 (s/fdef create
         :args (s/cat :subject :note/subject
                      :content :note/content
+                     :refs :note/refs
                      :opts (s/keys* :opt-un [::ticket? ::assigned-to ::author]))
         :ret map?)
 

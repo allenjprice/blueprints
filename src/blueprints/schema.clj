@@ -71,7 +71,7 @@
 (defn conform
   "Install the schema by conforming all norms."
   ([conn]
-   (conform conn :db.part/user))
+   (conform conn :db.part/starcity))
   ([conn part]
    (c/ensure-conforms conn (partition-norms part))
    (c/ensure-conforms conn (assemble-norms part))))
