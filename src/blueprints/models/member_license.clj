@@ -36,7 +36,7 @@
         :ret (s/and float? pos?))
 
 
-(defn payments
+(defn ^{:deprecated "2.5.5"} payments
   "Rent payments made for this `license`."
   [license]
   (:member-license/rent-payments license))
@@ -147,14 +147,14 @@
   (-> member-license unit unit/property property/managed-account-id))
 
 
-(defn rent-connect-id
+(defn ^{:deprecated "2.5.5"} rent-connect-id
   "Retrieve the id of the managed Stripe account used for rent payments for the
   property that `member-license` belongs to."
   [member-license]
   (-> member-license unit unit/property property/rent-connect-id))
 
 
-(defn deposit-connect-id
+(defn ^{:deprecated "2.5.5"} deposit-connect-id
   "Retrieve the id of the managed Stripe account used for security deposit
   payments for the property that `member-license` belongs to."
   [member-license]
@@ -377,12 +377,13 @@
         tz       (property/time-zone property)
         ends     (-> (c/to-date-time starts)
                      (t/plus (t/months (license/term license)))
+                     (t/minus (t/days 1))
                      (date/end-of-day tz))]
-    {:member-license/license      (:db/id license)
+    {:member-license/license      (td/id license)
      :member-license/rate         rate
      :member-license/status       status
      :member-license/commencement (date/beginning-of-day starts tz)
-     :member-license/unit         (:db/id unit)
+     :member-license/unit         (td/id unit)
      :member-license/ends         ends}))
 
 (s/fdef create
