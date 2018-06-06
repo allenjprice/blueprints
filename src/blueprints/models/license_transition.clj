@@ -78,16 +78,20 @@
 ;; Transactions =================================================================
 ;; ==============================================================================
 
+
 (defn create
-  [license type date asana-task deposit-refund]
-  (tb/assoc-when
-   {:db/id                              (d/tempid :db.part/starcity)
-    :license-transition/current-license (td/id license)
-    :license-transition/type            (keyword "license-transition.type" (name type))
-    :license-transition/date            date
-    :license-transition/uuid            (d/squuid)}
-   :license-transition/deposit-refund (when-let [dr deposit-refund] (float dr))
-   :asana/task asana-task))
+  ([license type date]
+   (create license type date {}))
+  ([license type date {:keys [asana-task deposit-refund new-license]}]
+   (tb/assoc-when
+    {:db/id                              (d/tempid :db.part/starcity)
+     :license-transition/current-license (td/id license)
+     :license-transition/type            (keyword "license-transition.type" (name type))
+     :license-transition/date            date
+     :license-transition/uuid            (d/squuid)}
+    :license-transition/deposit-refund (when-let [dr deposit-refund] (float dr))
+    :license-transition/new-license (when-let [l new-license] (td/id l))
+    :asana/task asana-task)))
 
 
 (defn edit
