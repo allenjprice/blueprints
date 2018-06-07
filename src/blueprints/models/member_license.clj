@@ -8,8 +8,7 @@
             [datomic.api :as d]
             [toolbelt.date :as date]
             [toolbelt.datomic :as td]
-            [toolbelt.core :as tb]
-            [taoensso.timbre :as timbre]))
+            [toolbelt.core :as tb]))
 
 ;; =============================================================================
 ;; Spec
@@ -179,6 +178,16 @@
   (comp property/time-zone property))
 
 
+(defn transition
+  "Produce a `license-transition`, if one exists, for this license"
+  [license]
+  (first (:license-transition/_current-license license)))
+
+(s/fdef transition
+        :args (s/cat :license td/entityd?)
+        :ret (s/nilable td/entityd?))
+
+
 ;; =============================================================================
 ;; Queries
 ;; =============================================================================
@@ -321,6 +330,9 @@
                       {:member-license (:db/id member-license)}))))
 
 
+
+
+
 ;; =============================================================================
 ;; Predicates
 ;; =============================================================================
@@ -341,6 +353,12 @@
 (def bank-linked?
   "Is there a bank account linked to this member license?"
   (comp boolean :stripe-customer/bank-account-token customer))
+
+
+(defn has-transition?
+  "Does this license have a transition associated with it?"
+  [member-license]
+  (some? (:license-transition/_current-license member-license)))
 
 
 ;; =============================================================================
