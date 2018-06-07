@@ -165,6 +165,11 @@
   (event/job :transition/move-out-updated {:params {:transition-id (:db/id transition)}}))
 
 
+(defn month-to-month-transition-created
+  [transition]
+  (event/job :transition/month-to-month-created {:params {:transition-uuid (license-transition/uuid transition)}}))
+
+
 ;; =============================================================================
 ;; Newsletter
 ;; =============================================================================
