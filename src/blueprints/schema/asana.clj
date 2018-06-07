@@ -1,7 +1,6 @@
 (ns blueprints.schema.asana
   (:require [datomic-schema.schema :as s]))
 
-;; TODO: Version
 (def ^{:added "2.6.0"} schema
   (s/generate-schema
    [(s/schema
