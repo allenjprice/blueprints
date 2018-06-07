@@ -88,7 +88,7 @@
 (defn create
   ([license type date]
    (create license type date {}))
-  ([license type date {:keys [asana-task deposit-refund new-license]}]
+  ([license type date {:keys [asana-task deposit-refund new-license early-termination-fee]}]
    (tb/assoc-when
     {:db/id                              (d/tempid :db.part/starcity)
      :license-transition/current-license (td/id license)
@@ -97,6 +97,7 @@
      :license-transition/uuid            (d/squuid)}
     :license-transition/deposit-refund (when-let [dr deposit-refund] (float dr))
     :license-transition/new-license (when-let [l new-license] (td/id l))
+    :license-transition/early-termination-fee (when-let [etf early-termination-fee] (float etf))
     :asana/task asana-task)))
 
 
