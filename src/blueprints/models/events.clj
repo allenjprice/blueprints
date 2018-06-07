@@ -4,7 +4,10 @@
             [clojure.spec.alpha :as s]
             [clojure.string :as string]
             [toolbelt.core :as tb]
-            [toolbelt.datomic :as td]))
+            [toolbelt.datomic :as td]
+            [blueprints.models.license-transition :as license-transition]
+            [datomic.api :as d]
+            [taoensso.timbre :as timbre]))
 
 
 ;; =============================================================================
@@ -136,6 +139,35 @@
 (s/fdef alert-deposit-due
         :args (s/cat :deposit td/entity? :t inst?)
         :ret map?)
+
+
+
+;; ==============================================================================
+;; License Transitions
+;; ==============================================================================
+
+
+(defmulti transition-created license-transition/type)
+
+
+(defmethod transition-created :license-transition.type/move-out
+  [transition]
+  (event/job :transition/move-out-created {:params {:transition-uuid (license-transition/uuid transition)}}))
+
+
+(defmethod transition-created :license-transition.type/renewal
+  [transition]
+  (event/job :transition/renewal-created {:params {:transition-uuid (license-transition/uuid transition)}}))
+
+
+(defn transition-updated
+  [transition]
+  (event/job :transition/move-out-updated {:params {:transition-id (:db/id transition)}}))
+
+
+(defn month-to-month-transition-created
+  [transition]
+  (event/job :transition/month-to-month-created {:params {:transition-uuid (license-transition/uuid transition)}}))
 
 
 ;; =============================================================================

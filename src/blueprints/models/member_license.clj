@@ -7,7 +7,8 @@
             [clojure.spec.alpha :as s]
             [datomic.api :as d]
             [toolbelt.date :as date]
-            [toolbelt.datomic :as td]))
+            [toolbelt.datomic :as td]
+            [toolbelt.core :as tb]))
 
 ;; =============================================================================
 ;; Spec
@@ -18,7 +19,8 @@
   #{:member-license.status/active
     :member-license.status/inactive
     :member-license.status/canceled
-    :member-license.status/renewal})
+    :member-license.status/renewal
+    :member-license.status/pending})
 
 
 ;; =============================================================================
@@ -174,6 +176,16 @@
 (def time-zone
   "The time zone that this member is in (derived from property)."
   (comp property/time-zone property))
+
+
+(defn transition
+  "Produce a `license-transition`, if one exists, for this license"
+  [license]
+  (first (:license-transition/_current-license license)))
+
+(s/fdef transition
+        :args (s/cat :license td/entityd?)
+        :ret (s/nilable td/entityd?))
 
 
 ;; =============================================================================
@@ -340,6 +352,12 @@
   (comp boolean :stripe-customer/bank-account-token customer))
 
 
+(defn has-transition?
+  "Does this license have a transition associated with it?"
+  [member-license]
+  (some? (:license-transition/_current-license member-license)))
+
+
 ;; =============================================================================
 ;; Transactions
 ;; =============================================================================
@@ -365,7 +383,8 @@
   #{:member-license.status/active
     :member-license.status/inactive
     :member-license.status/renewal
-    :member-license.status/canceled})
+    :member-license.status/canceled
+    :member-license.status/pending})
 
 
 (defn create
@@ -379,7 +398,8 @@
                      (t/plus (t/months (license/term license)))
                      (t/minus (t/days 1))
                      (date/end-of-day tz))]
-    {:member-license/license      (td/id license)
+    {:db/id                       (d/tempid :db.part/starcity)
+     :member-license/license      (:db/id license)
      :member-license/rate         rate
      :member-license/status       status
      :member-license/commencement (date/beginning-of-day starts tz)

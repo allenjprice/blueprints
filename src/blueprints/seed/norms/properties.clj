@@ -29,7 +29,7 @@
 
 (defn property
   [part name internal-name available-on address licenses units
-   & {:keys [managed-account-id ops-fee tours]
+   & {:keys [managed-account-id ops-fee tours slack-channel]
       :or   {tours false}}]
   (tb/assoc-when
    {:db/id                  (d/tempid part)
@@ -39,6 +39,7 @@
     :property/licenses      licenses
     :property/units         units
     :property/tours         tours}
+   :slack/channel slack-channel
    :property/managed-account-id managed-account-id
    :property/ops-fee ops-fee))
 
@@ -56,13 +57,15 @@
                #inst "2016-12-01T00:00:00.000-00:00"
                (address "52 Gilbert St.")
                (licenses [1 2300.0] [3 2300.0] [6 2100.0] [12 2000.0])
-               (units "52gilbert" 6))
+               (units "52gilbert" 6)
+               :slack-channel "#52-gilbert")
      (property part "The Mission"
                "2072mission"
                #inst "2017-04-15T00:00:00.000-00:00"
                (address "2072 Mission St.")
                (licenses [1 2400.0] [3 2400.0] [6 2200.0] [12 2100.0])
-               (units "2072mission" 20))]))
+               (units "2072mission" 20)
+               :slack-channel "#2072-mission")]))
 
 
 (def ^{:added "1.8.0"} add-managed-ids
