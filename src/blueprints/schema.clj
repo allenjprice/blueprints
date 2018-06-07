@@ -23,6 +23,7 @@
             [blueprints.schema.security-deposit :as sd]
             [blueprints.schema.service :as service]
             [blueprints.schema.session :as session]
+            [blueprints.schema.slack :as slack]
             [blueprints.schema.source :as source]
             [blueprints.schema.stripe-event :as se]
             [blueprints.schema.suggestion :as suggestion]
@@ -61,6 +62,7 @@
                         sd/norms
                         service/norms
                         session/norms
+                        slack/norms
                         source/norms
                         se/norms
                         suggestion/norms
