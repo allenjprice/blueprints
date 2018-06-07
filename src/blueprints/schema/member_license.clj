@@ -189,6 +189,9 @@
        [fees :ref :indexed :many
         "A list of any fees that may be incurred in this transition, like Early Termination or Room Reassignment"]
 
+       [early-termination-fee :float :indexed
+        "A dollar amount that should be paid by the member for ending their license early."]
+
        [deposit-refund :float :indexed
         "How much of the security deposit for this license should be refunded to the member at the end of this transition?"]
 
