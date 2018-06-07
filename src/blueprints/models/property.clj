@@ -4,7 +4,8 @@
             [clj-time.core :as t]
             [clojure.spec.alpha :as s]
             [datomic.api :as d]
-            [toolbelt.datomic :as td]))
+            [toolbelt.datomic :as td]
+            [clojure.string :as string]))
 
 ;; =============================================================================
 ;; Selectors
@@ -139,6 +140,16 @@
   (get {"52gilbert"   "52 Gilbert LLC"
         "2072mission" "2072-2074 Mission LLC"}
        (code property)))
+
+
+(defn slack-channel
+  "The internal Slack channel associated with this property."
+  [property]
+  (:slack/channel property))
+
+(s/fdef slack-channel
+        :args (s/cat :property td/entity?)
+        :ret (s/and string? #(string/starts-with? % "#")))
 
 
 ;; =============================================================================
