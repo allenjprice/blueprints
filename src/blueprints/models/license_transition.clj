@@ -30,6 +30,12 @@
   (:license-transition/date transition))
 
 
+(defn early-termination-fee
+  "A fee that the member pays for canceling their license early."
+  [transition]
+  (:license-transition/early-termination-fee transition))
+
+
 (defn current-license
   "The license from which the member is transitioning away."
   [transition]
