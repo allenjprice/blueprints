@@ -165,10 +165,10 @@
 
 (defmethod transition-created :license-transition.type/inter-xfer
   [transition]
-  (event/job :transition/intra-xfer-created {:params {:transition-uuid (license-transition/uuid transition)}}))
+  (event/job :transition/inter-xfer-created {:params {:transition-uuid (license-transition/uuid transition)}}))
 
 
-(defmethod transition-created :license-transition.type/inter-xfer
+(defmethod transition-created :license-transition.type/intra-xfer
   [transition]
   (event/job :transition/intra-xfer-created {:params {:transition-uuid (license-transition/uuid transition)}}))
 
