@@ -147,6 +147,9 @@
 ;; ==============================================================================
 
 
+;; create transitions ===================
+
+
 (defmulti transition-created license-transition/type)
 
 
@@ -160,14 +163,31 @@
   (event/job :transition/renewal-created {:params {:transition-uuid (license-transition/uuid transition)}}))
 
 
-(defn transition-updated
+(defmethod transition-created :license-transition.type/inter-xfer
   [transition]
-  (event/job :transition/move-out-updated {:params {:transition-id (:db/id transition)}}))
+  (event/job :transition/intra-xfer-created {:params {:transition-uuid (license-transition/uuid transition)}}))
+
+
+(defmethod transition-created :license-transition.type/inter-xfer
+  [transition]
+  (event/job :transition/intra-xfer-created {:params {:transition-uuid (license-transition/uuid transition)}}))
 
 
 (defn month-to-month-transition-created
   [transition]
   (event/job :transition/month-to-month-created {:params {:transition-uuid (license-transition/uuid transition)}}))
+
+
+;; updated ==============================
+
+
+
+(defn transition-updated
+  [transition]
+  (event/job :transition/move-out-updated {:params {:transition-id (:db/id transition)}}))
+
+
+
 
 
 ;; =============================================================================
