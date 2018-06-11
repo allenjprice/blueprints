@@ -2,6 +2,7 @@
   (:require [blueprints.schema.account :as account]
             [blueprints.schema.address :as address]
             [blueprints.schema.approval :as approval]
+            [blueprints.schema.asana :as asana]
             [blueprints.schema.avatar :as avatar]
             [blueprints.schema.catalogue :as catalogue]
             [blueprints.schema.charge :as charge]
@@ -22,6 +23,7 @@
             [blueprints.schema.security-deposit :as sd]
             [blueprints.schema.service :as service]
             [blueprints.schema.session :as session]
+            [blueprints.schema.slack :as slack]
             [blueprints.schema.source :as source]
             [blueprints.schema.stripe-event :as se]
             [blueprints.schema.suggestion :as suggestion]
@@ -39,6 +41,7 @@
   (let [gen-norms (->> [account/norms
                         address/norms
                         approval/norms
+                        asana/norms
                         avatar/norms
                         catalogue/norms
                         charge/norms
@@ -59,6 +62,7 @@
                         sd/norms
                         service/norms
                         session/norms
+                        slack/norms
                         source/norms
                         se/norms
                         suggestion/norms
