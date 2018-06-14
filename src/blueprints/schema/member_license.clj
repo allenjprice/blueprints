@@ -220,6 +220,14 @@
      :db/ident :license-transition.type/renewal}]))
 
 
+(defn ^{:added "2.6.1"} add-notice-date [part]
+  (s/generate-schema
+   [(s/schema
+     license-transition
+     (s/fields
+      [notice-date :instant :indexed
+       "The date on which the member submitted written notice of their intent to move out."]))]))
+
 ;;=============================================================================
 ;; Norms
 ;; =============================================================================
@@ -247,4 +255,7 @@
 
 
    :schema.member-license/license-transitions-051018
-   {:txes [(license-transitions part)]}})
+   {:txes [(license-transitions part)]}
+
+   :schema.member-license/add-notice-date-061318
+   {:txes [(add-notice-date part)]}})
