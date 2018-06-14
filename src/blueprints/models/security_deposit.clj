@@ -176,7 +176,8 @@
   "A deposit is considered /unpaid/ if we have received no payment towards
   it (pending payments excepted)."
   [deposit]
-  (= (amount-remaining deposit) (amount deposit)))
+  (and (= (amount-remaining deposit) (amount deposit))
+       (not= 0.0 (amount-remaining deposit))))
 
 (s/fdef is-unpaid?
         :args (s/cat :deposit td/entity?)
