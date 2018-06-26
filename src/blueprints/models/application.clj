@@ -252,6 +252,10 @@
   {:db/id (d/tempid :db.part/starcity)
    :application/status :application.status/in-progress})
 
+(s/fdef create
+        :args (s/cat)
+        :ret td/entitdy?)
+
 
 ;; =============================================================================
 ;; Queries
