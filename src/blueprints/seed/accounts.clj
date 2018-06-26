@@ -162,12 +162,9 @@
   [& {:keys [first-name last-name email n]
       :or   {first-name (rand-first-name)
              last-name  (rand-last-name)}}]
-  (let [application {:db/id              (utils/tempid)
-                     :application/status :application.status/in-progress}]
-    [(-> (account :account.role/applicant
-                  :n n
-                  :first-name first-name
-                  :last-name last-name
-                  :email (or email (role-email first-name last-name :account.role/applicant)))
-         (assoc :account/application (:db/id application)))
-     application]))
+  [(account :account.role/applicant
+            :n n
+            :first-name first-name
+            :last-name last-name
+            :email (or email (role-email first-name last-name :account.role/applicant)))
+   ])
