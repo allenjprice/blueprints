@@ -247,6 +247,12 @@
         :ret vector?)
 
 
+(defn create
+  []
+  {:db/id (d/tempid :db.part/starcity)
+   :application/status :application.status/in-progress})
+
+
 ;; =============================================================================
 ;; Queries
 ;; =============================================================================
@@ -291,6 +297,9 @@
 (s/fdef last-modified-at
         :args (s/cat :db td/db? :application td/entity?)
         :ret inst?)
+
+
+
 
 
 ;; =============================================================================
