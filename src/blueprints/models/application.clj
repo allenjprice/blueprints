@@ -248,6 +248,7 @@
 
 
 (defn create
+  "Create a new member application."
   []
   {:db/id (d/tempid :db.part/starcity)
    :application/status :application.status/in-progress})
