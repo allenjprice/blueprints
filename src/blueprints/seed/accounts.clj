@@ -166,5 +166,4 @@
             :n n
             :first-name first-name
             :last-name last-name
-            :email (or email (role-email first-name last-name :account.role/applicant)))
-   ])
+            :email (or email (role-email first-name last-name :account.role/applicant)))])
