@@ -174,6 +174,15 @@
         "The percent fee to apply to premium service order payments."]))])))
 
 
+(def ^{:added "2.6.3"} add-region
+  (s/generate-schema
+   [(s/schema
+     property
+     (s/fields
+      [region :ref :indexed
+       "The region in which this community is located."]))]))
+
+
 (defn norms [part]
   {:starcity/add-property-schema
    {:txes [schema]}
