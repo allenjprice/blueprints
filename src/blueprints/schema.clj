@@ -20,6 +20,7 @@
             [blueprints.schema.order :as order]
             [blueprints.schema.property :as property]
             [blueprints.schema.referral :as referral]
+            [blueprints.schema.region :as region]
             [blueprints.schema.security-deposit :as sd]
             [blueprints.schema.service :as service]
             [blueprints.schema.session :as session]
@@ -60,6 +61,7 @@
                         order/norms
                         property/norms
                         referral/norms
+                        region/norms
                         sd/norms
                         service/norms
                         session/norms
