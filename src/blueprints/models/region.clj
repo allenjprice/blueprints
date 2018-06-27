@@ -36,5 +36,5 @@
   (:property/_region region))
 
 (s/fdef communities
-        :args  (s/cat :region td/entity?)
+        :args (s/cat :region td/entity?)
         :ret (s/* td/entityd?))

@@ -16,7 +16,9 @@
     :account.role/onboarding
     :account.role/collaborator
     :account.role/member
-    :account.role/admin})
+    :account.role/admin
+    :account.role/cosigner
+    :account.role/cooccupant})
 
 
 ;; =============================================================================
@@ -277,6 +279,11 @@
 (def admin?
   (partial is-role? :account.role/admin))
 
+(def cosigner?
+  (partial is-role? :account.role/cosigner))
+
+(def cooccupant?
+  (partial is-role? :account.role/cooccupant))
 
 (defn can-approve?
   "An account can be *approved* if the application is submitted and the account
@@ -401,6 +408,27 @@
 (s/fdef change-role
         :args (s/cat :account td/entity? :role ::role)
         :ret (s/keys :req [:db/id :account/role]))
+
+
+(defn cooccupant
+  "The account of this applicant's co-applicant."
+  [account]
+  (:account/cooccupant account))
+
+(s/fdef cooccupant
+        :args (s/cat :account td/entityd?)
+        :ret (s/nilable td/entityd?))
+
+
+(defn cosigner
+  "The account of this applicant's co-signer."
+  [account]
+  (:account/cosigner account))
+
+(s/fdef cosigner
+        :arg (s/cat :account td/entityd?)
+        :ret (s/nilable td/entityd?))
+
 
 
 ;; =============================================================================

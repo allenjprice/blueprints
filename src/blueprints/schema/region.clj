@@ -2,7 +2,7 @@
   (:require [datomic-schema.schema :as s]))
 
 
-(def ^{:added "2.6.3"} schema
+(def ^{:added "2.7.0"} schema
   (s/generate-schema
    [(s/schema
      region

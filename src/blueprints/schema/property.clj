@@ -174,7 +174,7 @@
         "The percent fee to apply to premium service order payments."]))])))
 
 
-(def ^{:added "2.6.3"} add-region
+(def ^{:added "2.7.0"} add-region
   (s/generate-schema
    [(s/schema
      property

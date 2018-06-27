@@ -203,6 +203,44 @@
        "Description of how the pet will be taken care of during the day."]))]))
 
 
+(defn- ^{:added "2.7.0"} add-ptm-attrubutes [part]
+  (concat
+   (s/generate-schema
+    [(s/schema
+      application ;;TODO - ask if this should be `member-application` or `application`
+      (s/fields
+       [move-in-range :ref :indexed
+        "Does the applicant wish to move in on a specific future date, as soon
+        as a unit is available, or are they flexible on their move-in date?"]
+
+       [occupancy :ref :indexed
+        "How many adults, including this applicant, are applying to share a unit?"]
+
+       [about :string :fulltext
+        "The applicant's description of themselves. Their hopes, their dreams,
+        their goals, their fears and insecurities."]))
+     (s/schema
+      pet
+      (s/fields
+       [name :string :indexed
+        "The name of the pet"]
+
+       [about :string :fulltext
+        "The description of a pet which is not a dog."]))])
+
+   [{:db/id    (d/tempid part)
+     :db/ident :application.occupancy/single}
+    {:db/id    (d/tempid part)
+     :db/ident :application.occupancy/double}]
+
+   [{:db/id    (d/tempid part)
+     :db/ident :application.move-in-range/date}
+    {:db/id    (d/tempid part)
+     :db/ident :application.move-in-range/asap}
+    {:db/id    (d/tempid part)
+     :db/ident :application.move-in-range/flexible}]))
+
+
 (defn norms [part]
   {:starcity/add-member-application-schema
    {:txes [schema]}
@@ -242,4 +280,7 @@
    {:txes [(add-application-submitted part)]}
 
    :schema.member-application.pets/add-attrs-06132017
-   {:txes [add-pet-attrs-06132017]}})
+   {:txes [add-pet-attrs-06132017]}
+
+   :schema.member-application/add-ptm-attrs-06282018
+   {:txes [(add-ptm-attrubutes part)]}})

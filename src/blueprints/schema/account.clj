@@ -141,6 +141,24 @@
       [emergency-contact :ref :component
        "Emergency contact information for this account."]))]))
 
+(defn- ^{:added "2.7.0"} add-ptm-attrs [part]
+  (concat
+   (s/generate-schema
+    [(s/schema
+      account
+      (s/fields
+       [cooccupant :ref :indexed
+        "The `account` of this applicant's co-occupant, if one exists."]
+
+       [cosigner :ref :indexed
+        "The `account` of this applicant's co-signer, if one exists."]))])
+
+   [{:db/id    (d/tempid part)
+     :db/ident :account.role/cosigner}
+    {:db/id    (d/tempid part)
+     :db/ident :account.role/sponsor}]))
+
+
 (defn norms [part]
   {:starcity/add-account-schema
    {:txes [schema]}
@@ -180,4 +198,7 @@
    :schema.account/improvements-06142017
    {:txes     [rename-person-attrs
                add-emergency-contact]
-    :requires [:starcity/add-account-schema]}})
+    :requires [:starcity/add-account-schema]}
+
+   :schema.account/add-ptm-attrs-06282018
+   {:txes [(add-ptm-attrs part)]}})
