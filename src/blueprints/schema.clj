@@ -29,6 +29,7 @@
             [blueprints.schema.suggestion :as suggestion]
             [blueprints.schema.sync :as sync]
             [blueprints.schema.tag :as tag]
+            [blueprints.schema.tipe :as tipe]
             [blueprints.schema.transaction :as transaction]
             [io.rkn.conformity :as c]))
 
@@ -68,6 +69,7 @@
                         suggestion/norms
                         sync/norms
                         tag/norms
+                        tipe/norms
                         transaction/norms]
                        (apply juxt))]
     (apply merge (gen-norms part))))
